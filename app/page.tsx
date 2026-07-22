@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import "leaflet/dist/leaflet.css";
 
 type Tab = "home" | "places" | "requests" | "profile";
 type Request = { id: number; title: string; detail: string; status: "En cours" | "Confirmé" };
@@ -110,8 +111,10 @@ function HomeView({ title, requests, setTab, setModal, notify }: { title: string
 function Globe({ onLombok }: { onLombok: () => void }) {
   const host = useRef<HTMLDivElement>(null);
   const resetView = useRef<(() => void) | null>(null);
+  const [regional, setRegional] = useState(false);
 
   useEffect(() => {
+    if (regional) return;
     const element = host.current;
     if (!element) return;
     const scene = new THREE.Scene();
@@ -185,13 +188,53 @@ function Globe({ onLombok }: { onLombok: () => void }) {
     const resize = () => { if (!element) return; camera.aspect = element.clientWidth / element.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(element.clientWidth, element.clientHeight); };
     window.addEventListener("resize", resize);
     return () => { cancelAnimationFrame(frame); window.removeEventListener("resize", resize); controls.dispose(); renderer.dispose(); texture.dispose(); element.replaceChildren(); };
-  }, []);
+  }, [regional]);
+
+  if (regional) return <RegionMap close={() => setRegional(false)} onLombok={onLombok} />;
 
   return <section className="globe-stage" aria-label="Globe terrestre interactif centré sur Lombok">
     <div className="space-glow"/><div className="cloud cloud-one"/><div className="cloud cloud-two"/><div className="globe-canvas" ref={host}/>
     <div className="globe-tip">Glisse pour explorer · Pince pour zoomer</div>
-    <button className="lombok-label" onClick={onLombok}><span>●</span><b>Lombok</b><small>Indonésie</small></button>
+    <button className="lombok-label" onClick={() => { setRegional(true); onLombok(); }}><span>●</span><b>Explorer l’Indonésie</b><small>Lombok et les îles voisines →</small></button>
     <button className="globe-reset" onClick={() => { resetView.current?.(); onLombok(); }} aria-label="Recentrer sur Lombok">◎</button>
+  </section>;
+}
+
+function RegionMap({ close, onLombok }: { close: () => void; onLombok: () => void }) {
+  const mapNode = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let disposed = false;
+    let map: import("leaflet").Map | undefined;
+    (async () => {
+      const L = await import("leaflet");
+      if (disposed || !mapNode.current) return;
+      const indonesiaBounds: import("leaflet").LatLngBoundsExpression = [[-12.5, 94], [8, 142]];
+      map = L.map(mapNode.current, { center: [-3.2, 118.2], zoom: 5, minZoom: 5, maxZoom: 13, maxBounds: indonesiaBounds, maxBoundsViscosity: 1, zoomControl: false, attributionControl: true });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+      L.control.zoom({ position: "bottomright" }).addTo(map);
+      const locations = [
+        { name: "Lombok", subtitle: "Ton point de départ", lat: -8.58, lon: 116.32, color: "#654de8", featured: true },
+        { name: "Bali", subtitle: "Culture & plages", lat: -8.34, lon: 115.09, color: "#ff765e" },
+        { name: "Komodo", subtitle: "Parc national", lat: -8.55, lon: 119.49, color: "#ff765e" },
+        { name: "Java", subtitle: "Volcans & villes", lat: -7.8, lon: 110.36, color: "#ff765e" },
+        { name: "Sulawesi", subtitle: "Nature sauvage", lat: -2.0, lon: 120.1, color: "#ff765e" },
+        { name: "Sumatra", subtitle: "Jungle & lacs", lat: 0.4, lon: 101.7, color: "#ff765e" },
+      ];
+      locations.forEach((location) => {
+        const icon = L.divIcon({ className: "island-marker-wrap", html: `<span class="island-marker ${location.featured ? "featured" : ""}" style="--marker:${location.color}">●</span><b>${location.name}</b>`, iconSize: [72, 44], iconAnchor: [21, 36] });
+        const marker = L.marker([location.lat, location.lon], { icon }).addTo(map!);
+        marker.bindPopup(`<strong>${location.name}</strong><br><span>${location.subtitle}</span>`, { closeButton: false, offset: [0, -8] });
+        if (location.featured) marker.on("click", () => { map?.flyTo([location.lat, location.lon], 9, { duration: 1.2 }); onLombok(); });
+      });
+      window.setTimeout(() => map?.invalidateSize(), 50);
+    })();
+    return () => { disposed = true; map?.remove(); };
+  }, [onLombok]);
+  return <section className="region-map-stage" aria-label="Carte interactive de l’Indonésie">
+    <div ref={mapNode} className="region-map"/>
+    <div className="region-title"><small>CARTE DES ÎLES</small><strong>Indonésie</strong><span>Explore Lombok et ses voisines</span></div>
+    <button className="back-globe" onClick={close}>← Globe</button>
+    <div className="region-limit">Navigation limitée à l’Indonésie</div>
   </section>;
 }
 
