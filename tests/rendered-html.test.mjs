@@ -25,3 +25,14 @@ test("les restaurants et la culture disposent d’un accès cartographique", asy
   assert.match(page, /place\.maps_url/);
   assert.ok((seed.match(/category: "culture"/g) || []).length >= 6);
 });
+
+test("chaque restaurant expose une carte et les sources officielles sont signalées", async () => {
+  const [page, places] = await Promise.all([
+    readFile(new URL("app/page.tsx", root), "utf8"),
+    readFile(new URL("app/data/places.ts", root), "utf8"),
+  ]);
+  assert.match(page, /Voir la carte complète/);
+  assert.match(page, /Source officielle/);
+  assert.match(places, /category === "restaurant" \? \{/);
+  assert.ok((places.match(/status: "officiel"/g) || []).length >= 8);
+});
