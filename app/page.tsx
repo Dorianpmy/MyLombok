@@ -85,29 +85,27 @@ export default function Home() {
 }
 
 function HomeView({ title, requests, setTab, setModal, notify }: { title: string; requests: Request[]; setTab: (t: Tab) => void; setModal: (m: "request" | "place") => void; notify: (s: string) => void }) {
+  const [selected, setSelected] = useState("Kuta Lombok");
+  const [category, setCategory] = useState("Explorer");
+  const mapSpots = [
+    { name: "Kuta Lombok", kind: "Ton quartier", icon: "⌂", x: 52, y: 78, note: "8 adresses testées autour de toi" },
+    { name: "Tanjung Aan", kind: "Plage", icon: "☀", x: 70, y: 72, note: "25 min · Idéal ce matin" },
+    { name: "Tetebatu", kind: "Nature", icon: "♧", x: 50, y: 48, note: "1 h 20 · Rizières & cascades" },
+    { name: "Mont Rinjani", kind: "Aventure", icon: "△", x: 62, y: 26, note: "2 h 10 · Guide recommandé" },
+    { name: "Senggigi", kind: "Coucher de soleil", icon: "◐", x: 25, y: 48, note: "1 h 30 · Route panoramique" },
+  ];
+  const current = mapSpots.find((spot) => spot.name === selected) || mapSpots[0];
   return <>
-    <div className="eyebrow">Mercredi 22 juillet · Kuta</div>
-    <h1>{title}</h1>
-    <p className="lead">Tout ce qu’il te faut pour profiter de Lombok, simplement.</p>
-
-    <section className="hero-card">
-      <div><span className="hero-kicker">Ton arrivée</span><h2>Prêt pour demain</h2><p>Chauffeur confirmé à 14:30</p></div>
-      <button onClick={() => { setTab("requests"); notify("Réservation ouverte"); }}>Voir le détail <span>→</span></button>
-      <div className="sun" /><div className="island"><i /><i /><i /></div>
+    <div className="map-head"><div><div className="eyebrow">Mercredi 22 juillet · Kuta</div><h1>{title}</h1></div><button className="weather" onClick={() => notify("Grand soleil · 29 °C")}>☀ <b>29°</b></button></div>
+    <p className="lead">Où veux-tu aller aujourd’hui ?</p>
+    <div className="map-filters">{["Explorer", "Manger", "Plages", "Services"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
+    <section className="explore-map" aria-label="Carte interactive des recommandations à Lombok">
+      <div className="map-texture"/><div className="coast one"/><div className="coast two"/><div className="map-road main"/><div className="map-road branch"/><div className="map-lake"/><span className="area-label north">RINJANI</span><span className="area-label middle">LOMBOK</span><span className="area-label south">KUTA</span>
+      {mapSpots.map((spot) => <button key={spot.name} className={`spot ${selected === spot.name ? "selected" : ""}`} style={{ left: `${spot.x}%`, top: `${spot.y}%` }} onClick={() => setSelected(spot.name)} aria-label={spot.name}><span>{spot.icon}</span></button>)}
+      <button className="locate" onClick={() => { setSelected("Kuta Lombok"); notify("Position recentrée sur Kuta"); }}>◎</button>
     </section>
-
-    <div className="section-title"><h2>Comment puis-je t’aider ?</h2></div>
-    <div className="quick-grid">
-      <button onClick={() => setModal("request")}><span className="quick-icon coral">↗</span><strong>Un trajet</strong><small>Chauffeur & transfert</small></button>
-      <button onClick={() => setModal("request")}><span className="quick-icon aqua">⌂</span><strong>Un logement</strong><small>Trouver ou réparer</small></button>
-      <button onClick={() => setModal("request")}><span className="quick-icon gold">◉</span><strong>Un scooter</strong><small>Louer en confiance</small></button>
-      <button onClick={() => setModal("request")}><span className="quick-icon green">✦</span><strong>Une activité</strong><small>Explorer Lombok</small></button>
-    </div>
-
-    <div className="section-title"><h2>À suivre</h2><button onClick={() => setTab("requests")}>Tout voir</button></div>
-    <button className="request-preview" onClick={() => setTab("requests")}>
-      <span className="calendar"><b>23</b>JUL</span><span><strong>{requests[0]?.title || "Aucune demande"}</strong><small>{requests[0]?.detail || "Commence par créer une demande"}</small></span><em>›</em>
-    </button>
+    <article className="map-place-card"><div className="spot-thumb"><span>{current.icon}</span></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { setTab("places"); notify(`${current.name} ouvert`); }}>→</button></article>
+    <div className="map-actions"><button className="map-request" onClick={() => setModal("request")}><span>＋</span><b>Demander à la conciergerie</b></button><button onClick={() => { setTab("requests"); notify("Réservation ouverte"); }}><span className="calendar"><b>23</b>JUL</span><strong>{requests[0]?.title || "Mes demandes"}</strong></button></div>
   </>;
 }
 
