@@ -7,7 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { categoryMeta, distanceKm, places as allPlaces, type Place, type PlaceCategory } from "./data/places";
 import { getDistanceOrigin, isOpenAtLombokTime, normalizeCategory, withinOptionalRadius } from "./lib/explorer-filters";
 import { CalculationMethod, Coordinates, PrayerTimes } from "adhan";
-import { Compass, Heart, Home as HomeIcon, MapPinned, NotebookTabs, UserRound } from "lucide-react";
+import { Compass, Heart, Home as HomeIcon, MapPinned, NotebookTabs, Route, UserRound } from "lucide-react";
 
 type Tab = "home" | "explorer" | "places" | "requests" | "profile";
 type Request = { id: number; title: string; detail: string; status: "En cours" | "Confirmé" };
@@ -27,7 +27,7 @@ const initialRequests: Request[] = [
 const nav = [
   { id: "home" as Tab, Icon: HomeIcon, label: "Accueil" },
   { id: "explorer" as Tab, Icon: Compass, label: "Explorer" },
-  { id: "places" as Tab, Icon: Heart, label: "Adresses" },
+  { id: "places" as Tab, Icon: Route, label: "Voyage" },
   { id: "requests" as Tab, Icon: NotebookTabs, label: "Demandes" },
   { id: "profile" as Tab, Icon: UserRound, label: "Profil" },
 ];
@@ -61,7 +61,7 @@ export default function Home() {
     requestPosition();
   }, []);
 
-  const title = useMemo(() => ({ home: "Où veux-tu aller aujourd’hui ?", explorer: "Explorer Lombok", places: "Mes bonnes adresses", requests: "Mes demandes", profile: "Mon séjour" }[tab]), [tab]);
+  const title = useMemo(() => ({ home: "Où veux-tu aller aujourd’hui ?", explorer: "Explorer Lombok", places: "Mon voyage", requests: "Mes demandes", profile: "Mon séjour" }[tab]), [tab]);
 
   function requestPosition() {
     if (!navigator.geolocation) { setGeoStatus("denied"); return; }
@@ -110,7 +110,7 @@ export default function Home() {
         <div className="content">
           {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} visited={visited} muslimMode={muslimMode} />}
           {tab === "explorer" && <ExplorerView muslimMode={muslimMode} position={position} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} setRequestDraft={setRequestDraft} visited={visited} checkIn={(id) => { const next = Array.from(new Set([...visited, id])); setVisited(next); localStorage.setItem("my-lombok-visited", JSON.stringify(next)); }} />}
-          {tab === "places" && <PlacesView title={title} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} />}
+          {tab === "places" && <PlacesView title={title} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} onPlan={() => { setRequestDraft("Je souhaite créer mon itinéraire personnalisé à Lombok"); setModal("request"); }} />}
           {tab === "requests" && <RequestsView title={title} requests={requests} setModal={setModal} />}
           {tab === "profile" && <ProfileView title={title} notify={notify} dark={dark} visited={visited} muslimMode={muslimMode} toggleMuslimMode={() => { const next = !muslimMode; setMuslimMode(next); localStorage.setItem("my-lombok-muslim-mode", String(next)); }} toggleDark={() => { const next = !dark; setDark(next); localStorage.setItem("my-lombok-theme", next ? "dark" : "light"); }} />}
         </div>
@@ -409,10 +409,12 @@ function RegionMap({ close, onLombok }: { close: () => void; onLombok: () => voi
   </section>;
 }
 
-function PlacesView({ title, favorites, toggleFavorite, setModal }: { title: string; favorites: string[]; toggleFavorite: (s: string) => void; setModal: (m: "place") => void }) {
+function PlacesView({ title, favorites, toggleFavorite, setModal, onPlan }: { title: string; favorites: string[]; toggleFavorite: (s: string) => void; setModal: (m: "place") => void; onPlan: () => void }) {
   const favoritePlaces = allPlaces.filter((place) => favorites.includes(place.id));
-  return <><div className="eyebrow">Ton carnet personnel</div><h1>{title}</h1><p className="lead">Les endroits que tu as testés et que tu recommandes.</p>
-    <div className="filter-row"><button className="selected">Tous</button><button>Manger</button><button>Bouger</button><button>Découvrir</button></div>
+  return <><div className="eyebrow">Ton séjour, simplement</div><h1>{title}</h1><p className="lead">Passe de tes envies à un itinéraire prêt à vivre.</p>
+    <section className="trip-funnel"><small>PLANIFICATEUR DE SÉJOUR</small><h2>Ton Lombok, sans perdre des heures</h2><div className="funnel-steps"><span><b>1</b>Ajoute tes envies</span><span><b>2</b>Reçois ton parcours</span><span><b>3</b>Réserve avec nous</span></div><button onClick={onPlan}>Créer mon itinéraire <b>→</b></button></section>
+    <div className="stay-plans"><article><small>LIBRE</small><strong>0 €</strong><p>Guide et favoris</p></article><article className="featured"><small>ESSENTIEL</small><strong>29 €</strong><p>Itinéraire 3 jours</p></article><article><small>SÉRÉNITÉ</small><strong>79 €</strong><p>Planning + réservations</p></article></div>
+    <div className="section-title trip-title"><h2>Mes envies</h2><span>{favoritePlaces.length} lieu{favoritePlaces.length > 1 ? "x" : ""}</span></div>
     <div className="place-list">{favoritePlaces.length ? favoritePlaces.map(place => <article className="place-card" key={place.id}><div className="place-art blue">{categoryMeta[place.category].icon}</div><div><small>{place.subcategory}</small><h3>{place.name}</h3><p>📍 {place.city}, {place.island}</p></div><button className="loved" onClick={() => toggleFavorite(place.id)} aria-label="Retirer des favoris">♥</button></article>) : <div className="empty-state"><span>♡</span><h3>Ton carnet est encore vide</h3><p>Ajoute tes premiers coups de cœur depuis Explorer.</p></div>}</div>
     <button className="primary wide" onClick={() => setModal("place")}>＋ Ajouter une adresse</button>
   </>;
