@@ -1,0 +1,24 @@
+{
+  "name": "MyLombok — Guide & conciergerie",
+  "short_name": "MyLombok",
+  "description": "Ton guide local et ta conciergerie à Lombok.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#09131B",
+  "theme_color": "#09131B",
+  "lang": "fr",
+  "categories": ["travel", "lifestyle", "navigation"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Explorer Lombok", "short_name": "Explorer", "url": "/?tab=explorer", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Conciergerie", "short_name": "Conciergerie", "url": "/?tab=requests", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

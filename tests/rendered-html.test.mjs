@@ -36,3 +36,18 @@ test("chaque restaurant expose une carte et les sources officielles sont signal�
   assert.match(places, /category === "restaurant" \? \{/);
   assert.ok((places.match(/status: "officiel"/g) || []).length >= 8);
 });
+
+test("MyLombok est installable comme application mobile", async () => {
+  const [layout, manifest, worker, installer] = await Promise.all([
+    readFile(new URL("app/layout.tsx", root), "utf8"),
+    readFile(new URL("public/manifest.webmanifest", root), "utf8"),
+    readFile(new URL("public/sw.js", root), "utf8"),
+    readFile(new URL("app/installer/page.tsx", root), "utf8"),
+  ]);
+  const parsed = JSON.parse(manifest);
+  assert.equal(parsed.display, "standalone");
+  assert.ok(parsed.icons.some((icon) => icon.sizes === "512x512"));
+  assert.match(layout, /appleWebApp/);
+  assert.match(worker, /offline\.html/);
+  assert.match(installer, /Sur l’écran d’accueil/);
+});
