@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 type Tab = "home" | "places" | "requests" | "profile";
 type Request = { id: number; title: string; detail: string; status: "En cours" | "Confirmé" };
@@ -99,14 +101,79 @@ function HomeView({ title, requests, setTab, setModal, notify }: { title: string
     <div className="map-head"><div><div className="eyebrow">Mercredi 22 juillet · Kuta</div><h1>{title}</h1></div><button className="weather" onClick={() => notify("Grand soleil · 29 °C")}>☀ <b>29°</b></button></div>
     <p className="lead">Où veux-tu aller aujourd’hui ?</p>
     <div className="map-filters">{["Explorer", "Manger", "Plages", "Services"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
-    <section className="explore-map" aria-label="Carte interactive des recommandations à Lombok">
-      <div className="map-texture"/><div className="coast one"/><div className="coast two"/><div className="map-road main"/><div className="map-road branch"/><div className="map-lake"/><span className="area-label north">RINJANI</span><span className="area-label middle">LOMBOK</span><span className="area-label south">KUTA</span>
-      {mapSpots.map((spot) => <button key={spot.name} className={`spot ${selected === spot.name ? "selected" : ""}`} style={{ left: `${spot.x}%`, top: `${spot.y}%` }} onClick={() => setSelected(spot.name)} aria-label={spot.name}><span>{spot.icon}</span></button>)}
-      <button className="locate" onClick={() => { setSelected("Kuta Lombok"); notify("Position recentrée sur Kuta"); }}>◎</button>
-    </section>
+    <Globe onLombok={() => { setSelected("Kuta Lombok"); notify("Bienvenue à Lombok"); }} />
     <article className="map-place-card"><div className="spot-thumb"><span>{current.icon}</span></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { setTab("places"); notify(`${current.name} ouvert`); }}>→</button></article>
     <div className="map-actions"><button className="map-request" onClick={() => setModal("request")}><span>＋</span><b>Demander à la conciergerie</b></button><button onClick={() => { setTab("requests"); notify("Réservation ouverte"); }}><span className="calendar"><b>23</b>JUL</span><strong>{requests[0]?.title || "Mes demandes"}</strong></button></div>
   </>;
+}
+
+function Globe({ onLombok }: { onLombok: () => void }) {
+  const host = useRef<HTMLDivElement>(null);
+  const resetView = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    const element = host.current;
+    if (!element) return;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, element.clientWidth / element.clientHeight, 0.1, 100);
+    camera.position.set(0, 0.1, 3.45);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(element.clientWidth, element.clientHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    element.appendChild(renderer.domElement);
+
+    const world = new THREE.Group();
+    scene.add(world);
+    const texture = new THREE.TextureLoader().load("/earth-blue-marble.png");
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 96), new THREE.MeshStandardMaterial({ map: texture, roughness: 0.82, metalness: 0.02 }));
+    world.add(earth);
+
+    const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(1.035, 96, 96), new THREE.ShaderMaterial({
+      transparent: true,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
+      vertexShader: "varying vec3 n; void main(){ n=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }",
+      fragmentShader: "varying vec3 n; void main(){ float i=pow(0.72-dot(n,vec3(0.0,0.0,1.0)),2.2); gl_FragColor=vec4(0.28,0.76,1.0,1.0)*i; }"
+    }));
+    world.add(atmosphere);
+
+    const lat = THREE.MathUtils.degToRad(-8.65);
+    const lon = THREE.MathUtils.degToRad(116.32);
+    const markerPosition = new THREE.Vector3(-Math.cos(lat) * Math.cos(lon + Math.PI), Math.sin(lat), Math.cos(lat) * Math.sin(lon + Math.PI)).multiplyScalar(1.025);
+    const marker = new THREE.Mesh(new THREE.SphereGeometry(0.032, 24, 24), new THREE.MeshBasicMaterial({ color: 0xff765e }));
+    marker.position.copy(markerPosition);
+    const pulse = new THREE.Mesh(new THREE.RingGeometry(0.045, 0.065, 40), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
+    pulse.position.copy(markerPosition).multiplyScalar(1.005);
+    pulse.lookAt(markerPosition.clone().multiplyScalar(2));
+    world.add(marker, pulse);
+
+    scene.add(new THREE.HemisphereLight(0xd9f4ff, 0x182923, 2.4));
+    const sun = new THREE.DirectionalLight(0xfff0d2, 3.5); sun.position.set(-3, 2, 4); scene.add(sun);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.dampingFactor = 0.055; controls.enablePan = false;
+    controls.minDistance = 1.65; controls.maxDistance = 5; controls.rotateSpeed = 0.58; controls.zoomSpeed = 0.7;
+    const focusLombok = () => { world.rotation.set(0.12, 2.68, 0); camera.position.set(0, 0.08, 3.25); controls.update(); };
+    resetView.current = focusLombok; focusLombok();
+
+    let frame = 0; let dragging = false;
+    controls.addEventListener("start", () => { dragging = true; });
+    controls.addEventListener("end", () => { dragging = false; });
+    const animate = () => { frame = requestAnimationFrame(animate); if (!dragging) world.rotation.y += 0.00045; const pulseScale = 1 + Math.sin(performance.now() * 0.004) * 0.18; pulse.scale.setScalar(pulseScale); controls.update(); renderer.render(scene, camera); };
+    animate();
+    const resize = () => { if (!element) return; camera.aspect = element.clientWidth / element.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(element.clientWidth, element.clientHeight); };
+    window.addEventListener("resize", resize);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("resize", resize); controls.dispose(); renderer.dispose(); texture.dispose(); element.replaceChildren(); };
+  }, []);
+
+  return <section className="globe-stage" aria-label="Globe terrestre interactif centré sur Lombok">
+    <div className="space-glow"/><div className="globe-canvas" ref={host}/>
+    <div className="globe-tip">Glisse pour explorer · Pince pour zoomer</div>
+    <button className="lombok-label" onClick={onLombok}><span>●</span><b>Lombok</b><small>Indonésie</small></button>
+    <button className="globe-reset" onClick={() => { resetView.current?.(); onLombok(); }} aria-label="Recentrer sur Lombok">◎</button>
+  </section>;
 }
 
 function PlacesView({ title, favorites, toggleFavorite, setModal }: { title: string; favorites: string[]; toggleFavorite: (s: string) => void; setModal: (m: "place") => void }) {
