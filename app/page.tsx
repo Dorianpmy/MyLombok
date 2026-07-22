@@ -42,6 +42,7 @@ export default function Home() {
   const [geoStatus, setGeoStatus] = useState<"loading" | "ready" | "denied">("loading");
   const [requestDraft, setRequestDraft] = useState("");
   const [dark, setDark] = useState(false);
+  const [muslimMode, setMuslimMode] = useState(false);
   const [visited, setVisited] = useState<string[]>([]);
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function Home() {
     const cachedFavorites = localStorage.getItem("my-lombok-favorites");
     if (cachedFavorites) setFavorites(JSON.parse(cachedFavorites));
     setDark(localStorage.getItem("my-lombok-theme") === "dark");
+    setMuslimMode(localStorage.getItem("my-lombok-muslim-mode") === "true");
     const savedVisited = localStorage.getItem("my-lombok-visited"); if (savedVisited) setVisited(JSON.parse(savedVisited));
     let id = localStorage.getItem("my-lombok-device");
     if (!id) { id = crypto.randomUUID(); localStorage.setItem("my-lombok-device", id); }
@@ -94,7 +96,7 @@ export default function Home() {
   }
 
   return (
-    <main className={`app-shell ${dark ? "dark" : ""}`}>
+    <main className={`app-shell ${dark ? "dark" : ""} ${muslimMode ? "muslim-on" : "muslim-off"}`}>
       <section className="phone-app">
         <header className="topbar">
           <button className="brand" onClick={() => setTab("home")} aria-label="Retour à l'accueil">
@@ -105,11 +107,11 @@ export default function Home() {
         </header>
 
         <div className="content">
-          {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} visited={visited} />}
-          {tab === "explorer" && <ExplorerView position={position} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} setRequestDraft={setRequestDraft} visited={visited} checkIn={(id) => { const next = Array.from(new Set([...visited, id])); setVisited(next); localStorage.setItem("my-lombok-visited", JSON.stringify(next)); }} />}
+          {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} visited={visited} muslimMode={muslimMode} />}
+          {tab === "explorer" && <ExplorerView muslimMode={muslimMode} position={position} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} setRequestDraft={setRequestDraft} visited={visited} checkIn={(id) => { const next = Array.from(new Set([...visited, id])); setVisited(next); localStorage.setItem("my-lombok-visited", JSON.stringify(next)); }} />}
           {tab === "places" && <PlacesView title={title} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} />}
           {tab === "requests" && <RequestsView title={title} requests={requests} setModal={setModal} />}
-          {tab === "profile" && <ProfileView title={title} notify={notify} dark={dark} visited={visited} toggleDark={() => { const next = !dark; setDark(next); localStorage.setItem("my-lombok-theme", next ? "dark" : "light"); }} />}
+          {tab === "profile" && <ProfileView title={title} notify={notify} dark={dark} visited={visited} muslimMode={muslimMode} toggleMuslimMode={() => { const next = !muslimMode; setMuslimMode(next); localStorage.setItem("my-lombok-muslim-mode", String(next)); }} toggleDark={() => { const next = !dark; setDark(next); localStorage.setItem("my-lombok-theme", next ? "dark" : "light"); }} />}
         </div>
 
         <nav className="bottom-nav" aria-label="Navigation principale">
@@ -123,7 +125,7 @@ export default function Home() {
   );
 }
 
-function HomeView({ title, requests, setTab, setModal, notify, position, geoStatus, requestPosition, visited }: { title: string; requests: Request[]; setTab: (t: Tab) => void; setModal: (m: "request" | "place") => void; notify: (s: string) => void; position: UserPosition | null; geoStatus: "loading" | "ready" | "denied"; requestPosition: () => void; visited: string[] }) {
+function HomeView({ title, requests, setTab, setModal, notify, position, geoStatus, requestPosition, visited, muslimMode }: { title: string; requests: Request[]; setTab: (t: Tab) => void; setModal: (m: "request" | "place") => void; notify: (s: string) => void; position: UserPosition | null; geoStatus: "loading" | "ready" | "denied"; requestPosition: () => void; visited: string[]; muslimMode: boolean }) {
   const [selected, setSelected] = useState("Kuta Lombok");
   const [category, setCategory] = useState("Explorer");
   const mapSpots = [
@@ -137,7 +139,7 @@ function HomeView({ title, requests, setTab, setModal, notify, position, geoStat
   return <>
     <div className="map-head"><div><div className="eyebrow">Mercredi 22 juillet · Kuta</div><h1>{title}</h1></div><button className="weather" onClick={() => notify("Grand soleil · 29 °C")}>☀ <b>29°</b></button></div>
     <p className="lead">Une sélection locale pour vivre l’île à ton rythme.</p>
-    <div className="home-widgets"><PrayerWidget position={position}/><button className="progress-widget" onClick={() => setTab("profile")}><span style={{ "--progress": `${Math.round(visited.length / allPlaces.length * 100)}%` } as React.CSSProperties}><b>{Math.round(visited.length / allPlaces.length * 100)}%</b></span><div><small>TON EXPLORATION</small><strong>{visited.length ? "Continue comme ça" : "L’aventure commence"}</strong><p>{visited.length} lieu{visited.length > 1 ? "x" : ""} visité{visited.length > 1 ? "s" : ""}</p></div></button></div>
+    <div className={`home-widgets ${muslimMode ? "" : "solo"}`}>{muslimMode && <PrayerWidget position={position}/>}<button className="progress-widget" onClick={() => setTab("profile")}><span style={{ "--progress": `${Math.round(visited.length / allPlaces.length * 100)}%` } as React.CSSProperties}><b>{Math.round(visited.length / allPlaces.length * 100)}%</b></span><div><small>TON EXPLORATION</small><strong>{visited.length ? "Continue comme ça" : "L’aventure commence"}</strong><p>{visited.length} lieu{visited.length > 1 ? "x" : ""} visité{visited.length > 1 ? "s" : ""}</p></div></button></div>
     <div className="map-filters">{["Explorer", "Manger", "Plages", "Services"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); if (item === "Explorer") setTab("explorer"); else notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
     <Globe onLombok={() => { setSelected("Kuta Lombok"); notify("Bienvenue à Lombok"); }} position={position} geoStatus={geoStatus} requestPosition={requestPosition} />
     <article className="map-place-card"><div className="spot-thumb"><span>{current.icon}</span></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { setTab("places"); notify(`${current.name} ouvert`); }}>→</button></article>
@@ -175,7 +177,7 @@ function CurrencyConverter() {
   return <section className="converter"><div><small>CONVERTISSEUR HORS LIGNE</small><strong>{new Intl.NumberFormat("id-ID").format(amount)} Rp</strong><input aria-label="Montant en roupies" type="number" value={amount} onChange={(event) => setAmount(Number(event.target.value))}/></div><span>⇄</span><div><select value={currency} onChange={(event) => setCurrency(event.target.value)}>{["EUR","USD","GBP","CHF","AUD","SGD","MYR","SAR","AED"].map((code) => <option key={code}>{code}</option>)}</select><strong>{new Intl.NumberFormat("fr-FR", { style: "currency", currency }).format(amount * rate)}</strong><small>Taux du {date}</small></div><footer>Repères : warung ≈ 35k · plein scooter ≈ 45k · scooter-taxi ≈ 25k</footer></section>;
 }
 
-function ExplorerView({ position, favorites, toggleFavorite, setModal, setRequestDraft, visited, checkIn }: { position: UserPosition | null; favorites: string[]; toggleFavorite: (id: string) => void; setModal: (type: "request") => void; setRequestDraft: (value: string) => void; visited: string[]; checkIn: (id: string) => void }) {
+function ExplorerView({ position, favorites, toggleFavorite, setModal, setRequestDraft, visited, checkIn, muslimMode }: { position: UserPosition | null; favorites: string[]; toggleFavorite: (id: string) => void; setModal: (type: "request") => void; setRequestDraft: (value: string) => void; visited: string[]; checkIn: (id: string) => void; muslimMode: boolean }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<PlaceCategory | "all">("all");
   const [city, setCity] = useState("all");
@@ -204,6 +206,7 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
     .filter((place) => {
       const text = `${place.name} ${place.city} ${place.subcategory} ${place.tags.join(" ")}`.toLowerCase();
       return (!query || text.includes(query.toLowerCase())) &&
+        (muslimMode || place.subcategory !== "mosquée") &&
         (category === "all" || normalizeCategory(place.category) === category) &&
         (city === "all" || place.city === city) &&
         (!price || place.price_level === price) &&
@@ -217,7 +220,7 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
         withinOptionalRadius(place.distance, radiusEnabled, radius) && (place.rating || 0) >= minRating;
     })
     .sort((a, b) => sort === "rating" ? (b.rating || 0) - (a.rating || 0) : sort === "price" ? (a.price_level || 9) - (b.price_level || 9) : a.distance - b.distance),
-  [query, category, city, price, tested, halal, noAlcohol, romantic, nearMosque, calm, openNow, radius, radiusEnabled, minRating, sort, user.lat, user.lng]);
+  [query, category, city, price, tested, halal, noAlcohol, romantic, nearMosque, calm, openNow, radius, radiusEnabled, minRating, sort, user.lat, user.lng, muslimMode]);
 
   const activeFilterLabels = [query && "la recherche", category !== "all" && "la catégorie", city !== "all" && "la zone", price && "le prix", tested && "testé", halal && "halal", noAlcohol && "sans alcool", romantic && "pour deux", nearMosque && "mosquée proche", calm && "calme", openNow && "ouvert maintenant", radiusEnabled && "la distance", minRating && "la note"].filter(Boolean);
   function resetFilters() { setQuery(""); setCategory("all"); setCity("all"); setPrice(0); setTested(false); setHalal(false); setNoAlcohol(false); setRomantic(false); setNearMosque(false); setCalm(false); setOpenNow(false); setRadiusEnabled(false); setMinRating(0); }
@@ -233,18 +236,18 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
     <div className="explorer-title"><div><h1>Explorer Lombok</h1><p>Les meilleures adresses, testées ou à découvrir.</p></div><span>🇮🇩</span></div>
     <label className="search-box"><span>⌕</span><input value={query} onChange={(event) => { setQuery(event.target.value); setVisible(14); }} placeholder="Rechercher un lieu, une zone, une envie…"/><button onClick={() => setShowFilters(!showFilters)} className={showFilters ? "active" : ""}>☷</button></label>
     {distanceOrigin.usingReference && <button className="distance-notice" onClick={() => setRadiusEnabled(false)}>⌖ Distances depuis Kuta — active ta position sur place</button>}
-    <button className="couple-selection" onClick={() => { setRomantic(true); setCategory("all"); }}><span>♥</span><div><small>SÉLECTION ÉDITORIALE</small><strong>Pour deux</strong><p>Dîners avec vue, plages calmes et spas en duo</p></div><em>→</em></button>
+    <div className="editorial-selections"><button className="couple-selection" onClick={() => { setRomantic(true); setCategory("all"); }}><span>01</span><div><small>SÉLECTION ÉDITORIALE</small><strong>Lombok à deux</strong><p>Dîners avec vue, criques calmes et parenthèses en duo</p></div><em>→</em></button><button className="couple-selection essential" onClick={() => { setTested(true); setRomantic(false); setCategory("all"); }}><span>02</span><div><small>LE CARNET LOCAL</small><strong>Nos essentiels</strong><p>Les adresses que l’on recommande les yeux fermés</p></div><em>→</em></button></div>
     <div className="category-scroll"><button className={category === "all" ? "active" : ""} onClick={() => setCategory("all")}><span>✦</span>Tout</button>{(Object.entries(categoryMeta) as [PlaceCategory, { label: string; icon: string }][]).map(([key, meta]) => <button key={key} className={category === key ? "active" : ""} onClick={() => { setCategory(key); setVisible(14); }}><span>{meta.icon}</span>{meta.label}</button>)}</div>
     {showFilters && <section className="filter-panel">
       <label>Zone<select value={city} onChange={(event) => setCity(event.target.value)}><option value="all">Toutes les zones</option>{cities.map((item) => <option key={item}>{item}</option>)}</select></label>
       <label>Prix<select value={price} onChange={(event) => setPrice(Number(event.target.value))}><option value="0">Tous les budgets</option><option value="1">€ · petit prix</option><option value="2">€€ · moyen</option><option value="3">€€€ · premium</option></select></label>
       <label>Distance <button className={radiusEnabled ? "radius-on" : ""} onClick={() => setRadiusEnabled(!radiusEnabled)}>{radiusEnabled ? "Activée" : "Désactivée"}</button><strong>{radius} km</strong><input type="range" min="2" max="100" value={radius} disabled={!radiusEnabled} onChange={(event) => setRadius(Number(event.target.value))}/></label>
       <label>Note minimale<select value={minRating} onChange={(event) => setMinRating(Number(event.target.value))}><option value="0">Toutes</option><option value="4">4,0+</option><option value="4.5">4,5+</option><option value="4.8">4,8+</option></select></label>
-      <div className="check-row"><button className={tested ? "on" : ""} onClick={() => setTested(!tested)}>✓ Testé par nous</button><button className={halal ? "on" : ""} onClick={() => setHalal(!halal)}>Halal</button><button className={noAlcohol ? "on" : ""} onClick={() => setNoAlcohol(!noAlcohol)}>Sans alcool</button><button className={romantic ? "on" : ""} onClick={() => setRomantic(!romantic)}>Pour deux</button><button className={nearMosque ? "on" : ""} onClick={() => setNearMosque(!nearMosque)}>Mosquée &lt; 500 m</button><button className={calm ? "on" : ""} onClick={() => setCalm(!calm)}>Calme</button><button className={openNow ? "on" : ""} onClick={() => setOpenNow(!openNow)}>Ouvert en WITA</button></div>
+      <div className="check-row"><button className={tested ? "on" : ""} onClick={() => setTested(!tested)}>✓ Testé par nous</button>{muslimMode && <><button className={halal ? "on" : ""} onClick={() => setHalal(!halal)}>Halal</button><button className={noAlcohol ? "on" : ""} onClick={() => setNoAlcohol(!noAlcohol)}>Sans alcool</button><button className={nearMosque ? "on" : ""} onClick={() => setNearMosque(!nearMosque)}>Mosquée &lt; 500 m</button></>}<button className={romantic ? "on" : ""} onClick={() => setRomantic(!romantic)}>Pour deux</button><button className={calm ? "on" : ""} onClick={() => setCalm(!calm)}>Calme</button><button className={openNow ? "on" : ""} onClick={() => setOpenNow(!openNow)}>Ouvert en WITA</button></div>
     </section>}
     <div className="results-bar"><span><b>{results.length}</b> lieux</span><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}><option value="distance">Plus proches</option><option value="rating">Mieux notés</option><option value="price">Prix croissant</option></select><div><button className={view === "list" ? "active" : ""} onClick={() => setView("list")}>☰</button><button className={view === "map" ? "active" : ""} onClick={() => setView("map")}>⌖</button></div></div>
     {view === "map" ? <ExplorerMap items={results} onSelect={setDetail} /> : <div className="explorer-list">{results.slice(0, visible).map((place, index) => <PlaceResultCard key={place.id} place={place} index={index} favorite={favorites.includes(place.id)} onFavorite={() => toggleFavorite(place.id)} onOpen={() => setDetail(place)} />)}{visible < results.length && <button className="load-more" onClick={() => setVisible((value) => value + 14)}>Voir plus de lieux</button>}{!results.length && <div className="empty-state"><span>⌕</span><h3>Aucun lieu trouvé</h3><p>Filtres responsables : {activeFilterLabels.join(", ") || "aucun"}.</p><button onClick={resetFilters}>Tout réinitialiser</button></div>}</div>}
-    {detail && <PlaceDetail place={detail} distance={position ? distanceKm(position, detail) : distanceKm(user, detail)} favorite={favorites.includes(detail.id)} visited={visited.includes(detail.id)} canCheckIn={!!position && distanceKm(position, detail) <= .2} close={() => setDetail(null)} toggleFavorite={() => toggleFavorite(detail.id)} checkIn={() => checkIn(detail.id)} concierge={() => concierge(detail)} />}
+    {detail && <PlaceDetail muslimMode={muslimMode} place={detail} distance={position ? distanceKm(position, detail) : distanceKm(user, detail)} favorite={favorites.includes(detail.id)} visited={visited.includes(detail.id)} canCheckIn={!!position && distanceKm(position, detail) <= .2} close={() => setDetail(null)} toggleFavorite={() => toggleFavorite(detail.id)} checkIn={() => checkIn(detail.id)} concierge={() => concierge(detail)} />}
   </div>;
 }
 
@@ -261,7 +264,7 @@ function ExplorerMap({ items, onSelect }: { items: (Place & { distance: number }
       const L = await import("leaflet");
       if (!node.current || disposed) return;
       map = L.map(node.current, { center: [-8.72, 116.25], zoom: 9, minZoom: 8, maxZoom: 15, maxBounds: [[-9.4, 115.6], [-7.7, 117.2]], maxBoundsViscosity: 1, zoomControl: false });
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap" }).addTo(map);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { attribution: "© OpenStreetMap · CARTO" }).addTo(map);
       L.control.zoom({ position: "bottomright" }).addTo(map);
       items.slice(0, 120).forEach((place) => {
         const meta = categoryMeta[place.category];
@@ -274,7 +277,7 @@ function ExplorerMap({ items, onSelect }: { items: (Place & { distance: number }
   return <div className="explorer-map" ref={node}/>;
 }
 
-function PlaceDetail({ place, distance, favorite, visited, canCheckIn, close, toggleFavorite, checkIn, concierge }: { place: Place; distance: number; favorite: boolean; visited: boolean; canCheckIn: boolean; close: () => void; toggleFavorite: () => void; checkIn: () => void; concierge: () => void }) {
+function PlaceDetail({ place, distance, favorite, visited, canCheckIn, close, toggleFavorite, checkIn, concierge, muslimMode }: { place: Place; distance: number; favorite: boolean; visited: boolean; canCheckIn: boolean; close: () => void; toggleFavorite: () => void; checkIn: () => void; concierge: () => void; muslimMode: boolean }) {
   const whatsApp = place.whatsapp?.replace(/[^0-9]/g, "");
   return <div className="detail-backdrop" onMouseDown={close}><article className="place-detail" onMouseDown={(event) => event.stopPropagation()}><button className="detail-close" onClick={close}>×</button><div className="detail-gallery"><img src={place.photos[0]} alt={place.name}/><span>{categoryMeta[place.category].label}</span></div><div className="detail-body"><div className="eyebrow">{place.city} · {place.island}</div><h2>{place.name}</h2><div className="detail-stats"><span>★ {place.rating?.toFixed(1) || "—"}</span><span>⌖ {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div><p>{place.description}</p>{place.mosquee_proche && <div className="mosque-near">◒ Mosquée la plus proche : <strong>{place.mosquee_proche.nom}</strong>, à {place.mosquee_proche.distance_m} m</div>}{place.specialty && <div className="specialty"><small>LA SPÉCIALITÉ</small><strong>{place.specialty}</strong></div>}{place.vigilance && <div className="vigilance"><span>!</span><div><strong>À savoir avant d’y aller</strong><p>{place.vigilance}</p></div></div>}<div className="practical"><div><small>Horaires</small><strong>{place.opening_hours || "À confirmer"}</strong></div><div><small>Meilleur moment</small><strong>{place.best_time || "Toute la journée"}</strong></div>{place.level && <div><small>Niveau</small><strong>{place.level}</strong></div>}</div><button className={`checkin ${visited ? "done" : ""}`} disabled={!canCheckIn || visited} onClick={checkIn}>{visited ? "✓ Lieu visité" : canCheckIn ? "⌖ Valider ma visite" : "Check-in disponible à moins de 200 m"}</button><div className="tag-list">{place.tags.map((tag) => <span key={tag}>{tag}</span>)}</div><div className="detail-actions"><a href={place.maps_url} target="_blank" rel="noreferrer">↗ Itinéraire</a>{whatsApp && <a className="whatsapp" href={`https://wa.me/${whatsApp}`} target="_blank" rel="noreferrer">◉ WhatsApp</a>}<button className={favorite ? "favorite" : ""} onClick={toggleFavorite}>♥ {favorite ? "Dans mes favoris" : "Ajouter aux favoris"}</button><button className="concierge" onClick={concierge}>✦ Demander à la conciergerie</button></div></div></article></div>;
 }
@@ -377,7 +380,7 @@ function RegionMap({ close, onLombok }: { close: () => void; onLombok: () => voi
       if (disposed || !mapNode.current) return;
       const indonesiaBounds: import("leaflet").LatLngBoundsExpression = [[-12.5, 94], [8, 142]];
       map = L.map(mapNode.current, { center: [-3.2, 118.2], zoom: 5, minZoom: 5, maxZoom: 13, maxBounds: indonesiaBounds, maxBoundsViscosity: 1, zoomControl: false, attributionControl: true });
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 19, attribution: "© OpenStreetMap · CARTO" }).addTo(map);
       L.control.zoom({ position: "bottomright" }).addTo(map);
       const locations = [
         { name: "Lombok", subtitle: "Ton point de départ", lat: -8.58, lon: 116.32, color: "#2E7D8A", featured: true },
@@ -421,14 +424,14 @@ function RequestsView({ title, requests, setModal }: { title: string; requests: 
   </>;
 }
 
-function ProfileView({ title, notify, dark, toggleDark, visited }: { title: string; notify: (s: string) => void; dark: boolean; toggleDark: () => void; visited: string[] }) {
+function ProfileView({ title, notify, dark, toggleDark, visited, muslimMode, toggleMuslimMode }: { title: string; notify: (s: string) => void; dark: boolean; toggleDark: () => void; visited: string[]; muslimMode: boolean; toggleMuslimMode: () => void }) {
   const [currency, setCurrency] = useState("EUR");
   useEffect(() => { setCurrency(localStorage.getItem("my-lombok-currency") || "EUR"); }, []);
   const percent = Math.round(visited.length / allPlaces.length * 100);
   return <><div className="eyebrow">Tes informations</div><h1>{title}</h1><div className="profile-card"><div className="profile-avatar">○</div><div><h2>Mon profil voyageur</h2><p>Séjour à Lombok · paramètres locaux</p></div></div>
     <div className="trip-progress"><div><strong>Ton exploration de Lombok</strong><span>{percent}%</span></div><div className="progress"><i style={{ width: `${percent}%` }}/></div><p>{visited.length} lieux visités sur {allPlaces.length} · Kuta/Mandalika, Gerupuk, Selong Belanak, Tetebatu, Rinjani et Gili</p></div>
     <label className="currency-choice"><span>Devise d’affichage</span><select value={currency} onChange={(event) => { setCurrency(event.target.value); localStorage.setItem("my-lombok-currency", event.target.value); }}>{["EUR","USD","GBP","CHF","AUD","SGD","MYR","SAR","AED","IDR"].map((code) => <option key={code}>{code}</option>)}</select></label>
-    <div className="settings"><button onClick={() => notify("Tes informations sont à jour")}><span>⌂</span><b>Mon logement</b><em>›</em></button><button onClick={() => notify("Tes contacts sont disponibles hors ligne")}><span>☏</span><b>Mes contacts utiles</b><em>›</em></button><button onClick={() => notify("Mode hors ligne activé")}><span>↓</span><b>Accès hors ligne</b><em>›</em></button><button onClick={toggleDark}><span>{dark ? "☀" : "◐"}</span><b>Mode {dark ? "clair" : "sombre"}</b><em>›</em></button></div>
+    <div className="settings"><button className="muslim-setting" onClick={toggleMuslimMode}><span>☾</span><b><small>PRÉFÉRENCE DE SÉJOUR</small>Voyage musulman</b><em className={muslimMode ? "switch on" : "switch"}><i/></em></button><button onClick={() => notify("Tes informations sont à jour")}><span>⌂</span><b>Mon logement</b><em>›</em></button><button onClick={() => notify("Tes contacts sont disponibles hors ligne")}><span>☏</span><b>Mes contacts utiles</b><em>›</em></button><button onClick={() => notify("Mode hors ligne activé")}><span>↓</span><b>Accès hors ligne</b><em>›</em></button><button onClick={toggleDark}><span>{dark ? "☀" : "◐"}</span><b>Mode {dark ? "clair" : "sombre"}</b><em>›</em></button></div>
   </>;
 }
 
