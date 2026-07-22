@@ -1,6 +1,9 @@
 import seedPlaces from "./seed-lombok";
 
 export type PlaceCategory = "restaurant" | "plage" | "service" | "nature" | "excursion" | "culture";
+export type HalalStatus = "certifié" | "sans porc ni alcool" | "non" | "inconnu";
+export type Ambiance = "romantique" | "calme" | "familial" | "animé" | "vue";
+export type NearbyMosque = { nom: string; distance_m: number; mawaqit_slug: string };
 
 export interface Place {
   id: string;
@@ -27,6 +30,12 @@ export interface Place {
   best_time: string | null;
   level: string | null;
   vigilance: string | null;
+  zone: string;
+  halal: HalalStatus;
+  alcool_servi: boolean | null;
+  ambiance: Ambiance[];
+  mosquee_proche: NearbyMosque | null;
+  prive: boolean;
   created_at: string;
 }
 
@@ -72,11 +81,17 @@ export const importedPlaces: Place[] = seedPlaces.map((item) => {
     best_time: item.best_time,
     level: item.level,
     vigilance: item.vigilance,
+    zone: item.city,
+    halal: item.tags.some((tag) => tag.toLowerCase().includes("halal")) ? "sans porc ni alcool" : "inconnu",
+    alcool_servi: item.tags.some((tag) => /cocktail|bar|vin/i.test(tag)) ? true : null,
+    ambiance: [item.tags.some((tag) => /calme|travailler/i.test(tag)) ? "calme" : "animé"],
+    mosquee_proche: { nom: "Masjid Nurul Bilad Mandalika", distance_m: Math.round(Math.hypot(item.lat + 8.8937, item.lng - 116.2965) * 111000), mawaqit_slug: "nurul-bilad-mandalika" },
+    prive: item.tags.some((tag) => /cabana|privé|date/i.test(tag)),
     created_at: "2026-07-22T00:00:00.000Z",
   };
 });
 
-const extraPlaces: Place[] = [
+const extraPlacesBase: Omit<Place, "zone" | "halal" | "alcool_servi" | "ambiance" | "mosquee_proche" | "prive">[] = [
   {
     id: "rinjani-trek", region: "north-lombok", island: "lombok", city: "Senaru", category: "nature", subcategory: "trek",
     name: "Trek du Mont Rinjani", slug: "trek-rinjani", description: "Ascension guidée du volcan et nuit face au lac Segara Anak. Réservation avec guide agréé indispensable.",
@@ -109,7 +124,14 @@ const extraPlaces: Place[] = [
   },
 ];
 
-export const places: Place[] = [...importedPlaces, ...extraPlaces];
+const extraPlaces: Place[] = extraPlacesBase.map((place) => ({ ...place, zone: place.city, halal: "inconnu", alcool_servi: null, ambiance: place.category === "culture" ? ["calme", "familial"] : place.category === "nature" || place.category === "plage" ? ["vue", "romantique"] : ["calme"], mosquee_proche: { nom: "Masjid Nurul Bilad Mandalika", distance_m: Math.round(Math.hypot(place.lat + 8.8937, place.lng - 116.2965) * 111000), mawaqit_slug: "nurul-bilad-mandalika" }, prive: false }));
+
+const mosques: Place[] = [
+  { id: "masjid-nurul-bilad", region: "central-lombok", island: "lombok", city: "Kuta", category: "service", subcategory: "mosquée", name: "Masjid Nurul Bilad Mandalika", slug: "masjid-nurul-bilad", description: "Grande mosquée de Mandalika, facilement accessible depuis Kuta.", specialty: "Salle de prière et ablutions", tags: ["mosquée", "prière", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.8937, lng: 116.2965, opening_hours: "04:30–21:00", whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8937,116.2965", photos: [categoryPhotos.culture], tested_by_us: true, rating: 4.8, best_time: "hors grande affluence du vendredi", level: null, vigilance: null, zone: "Kuta/Mandalika", halal: "certifié", alcool_servi: false, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
+  { id: "masjid-hubbul-wathan", region: "west-lombok", island: "lombok", city: "Mataram", category: "service", subcategory: "mosquée", name: "Islamic Center Hubbul Wathan", slug: "islamic-center-lombok", description: "Mosquée emblématique de Mataram et centre culturel islamique de Lombok.", specialty: "Architecture et grande salle de prière", tags: ["mosquée", "culture", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.5831, lng: 116.1036, opening_hours: "04:30–21:30", whatsapp: null, maps_url: "https://maps.google.com/?q=-8.5831,116.1036", photos: [categoryPhotos.culture], tested_by_us: false, rating: 4.8, best_time: "avant le coucher du soleil", level: null, vigilance: null, zone: "Mataram", halal: "certifié", alcool_servi: false, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
+];
+
+export const places: Place[] = [...importedPlaces, ...extraPlaces, ...mosques];
 
 export const categoryMeta: Record<PlaceCategory, { label: string; icon: string }> = {
   restaurant: { label: "Restaurants", icon: "♨" },

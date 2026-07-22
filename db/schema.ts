@@ -25,6 +25,12 @@ export const places = sqliteTable("places", {
   bestTime: text("best_time"),
   level: text("level"),
   vigilance: text("vigilance"),
+  zone: text("zone").notNull().default("Kuta/Mandalika"),
+  halal: text("halal").notNull().default("inconnu"),
+  alcoolServi: integer("alcool_servi", { mode: "boolean" }),
+  ambiance: text("ambiance", { mode: "json" }).$type<string[]>().notNull().default([]),
+  mosqueeProche: text("mosquee_proche", { mode: "json" }).$type<{ nom: string; distance_m: number; mawaqit_slug: string } | null>(),
+  prive: integer("prive", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull(),
 });
 
