@@ -127,7 +127,26 @@ function Globe({ onLombok }: { onLombok: () => void }) {
     scene.add(world);
     const texture = new THREE.TextureLoader().load("/earth-blue-marble.png");
     texture.colorSpace = THREE.SRGBColorSpace;
-    const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 96), new THREE.MeshStandardMaterial({ map: texture, roughness: 0.82, metalness: 0.02 }));
+    const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 96), new THREE.ShaderMaterial({
+      uniforms: { globeMap: { value: texture } },
+      vertexShader: "varying vec2 uvMap; varying vec3 worldNormal; void main(){ uvMap=uv; worldNormal=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }",
+      fragmentShader: `
+        uniform sampler2D globeMap; varying vec2 uvMap; varying vec3 worldNormal;
+        void main(){
+          vec3 src=texture2D(globeMap,uvMap).rgb;
+          float ocean=step(src.r*1.05,src.b)*step(src.g*0.94,src.b);
+          float ice=step(0.72,min(src.r,min(src.g,src.b)));
+          float warm=step(src.g,src.r);
+          vec3 sea=mix(vec3(0.08,0.55,0.84),vec3(0.14,0.68,0.91),step(0.32,src.b));
+          vec3 green=mix(vec3(0.30,0.66,0.28),vec3(0.57,0.80,0.31),step(0.36,src.g));
+          vec3 sand=mix(vec3(0.82,0.56,0.25),vec3(0.94,0.76,0.36),step(0.48,src.r));
+          vec3 land=mix(green,sand,warm); vec3 color=mix(land,sea,ocean); color=mix(color,vec3(0.91,0.96,0.91),ice);
+          float light=dot(worldNormal,normalize(vec3(-0.6,0.7,1.0)))*0.5+0.55;
+          light=floor(light*4.0)/4.0; color*=mix(0.58,1.12,light);
+          float rim=pow(1.0-max(0.0,dot(worldNormal,vec3(0.0,0.0,1.0))),2.0);
+          gl_FragColor=vec4(mix(color,vec3(0.36,0.80,0.96),rim*0.32),1.0);
+        }`
+    }));
     world.add(earth);
 
     const atmosphere = new THREE.Mesh(new THREE.SphereGeometry(1.035, 96, 96), new THREE.ShaderMaterial({
@@ -135,7 +154,7 @@ function Globe({ onLombok }: { onLombok: () => void }) {
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
       vertexShader: "varying vec3 n; void main(){ n=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }",
-      fragmentShader: "varying vec3 n; void main(){ float i=pow(0.72-dot(n,vec3(0.0,0.0,1.0)),2.2); gl_FragColor=vec4(0.28,0.76,1.0,1.0)*i; }"
+      fragmentShader: "varying vec3 n; void main(){ float i=pow(0.72-dot(n,vec3(0.0,0.0,1.0)),2.2); gl_FragColor=vec4(0.52,0.88,1.0,1.0)*i; }"
     }));
     world.add(atmosphere);
 
@@ -169,7 +188,7 @@ function Globe({ onLombok }: { onLombok: () => void }) {
   }, []);
 
   return <section className="globe-stage" aria-label="Globe terrestre interactif centré sur Lombok">
-    <div className="space-glow"/><div className="globe-canvas" ref={host}/>
+    <div className="space-glow"/><div className="cloud cloud-one"/><div className="cloud cloud-two"/><div className="globe-canvas" ref={host}/>
     <div className="globe-tip">Glisse pour explorer · Pince pour zoomer</div>
     <button className="lombok-label" onClick={onLombok}><span>●</span><b>Lombok</b><small>Indonésie</small></button>
     <button className="globe-reset" onClick={() => { resetView.current?.(); onLombok(); }} aria-label="Recentrer sur Lombok">◎</button>
