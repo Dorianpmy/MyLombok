@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { categoryMeta, distanceKm, places as allPlaces, type Place, type PlaceCategory } from "./data/places";
 import { getDistanceOrigin, isOpenAtLombokTime, normalizeCategory, withinOptionalRadius } from "./lib/explorer-filters";
 import { CalculationMethod, Coordinates, PrayerTimes } from "adhan";
+import { Compass, Heart, Home as HomeIcon, MapPinned, NotebookTabs, UserRound } from "lucide-react";
 
 type Tab = "home" | "explorer" | "places" | "requests" | "profile";
 type Request = { id: number; title: string; detail: string; status: "En cours" | "Confirmé" };
@@ -24,11 +25,11 @@ const initialRequests: Request[] = [
 ];
 
 const nav = [
-  { id: "home" as Tab, icon: "⌂", label: "Accueil" },
-  { id: "explorer" as Tab, icon: "◎", label: "Explorer" },
-  { id: "places" as Tab, icon: "♡", label: "Adresses" },
-  { id: "requests" as Tab, icon: "◫", label: "Demandes" },
-  { id: "profile" as Tab, icon: "○", label: "Profil" },
+  { id: "home" as Tab, Icon: HomeIcon, label: "Accueil" },
+  { id: "explorer" as Tab, Icon: Compass, label: "Explorer" },
+  { id: "places" as Tab, Icon: Heart, label: "Adresses" },
+  { id: "requests" as Tab, Icon: NotebookTabs, label: "Demandes" },
+  { id: "profile" as Tab, Icon: UserRound, label: "Profil" },
 ];
 
 export default function Home() {
@@ -115,7 +116,7 @@ export default function Home() {
         </div>
 
         <nav className="bottom-nav" aria-label="Navigation principale">
-          {nav.map((item) => <button key={item.id} className={tab === item.id ? "active" : ""} onClick={() => setTab(item.id)}><span>{item.icon}</span>{item.label}</button>)}
+          {nav.map((item) => <button key={item.id} className={tab === item.id ? "active" : ""} onClick={() => setTab(item.id)}><span><item.Icon strokeWidth={1.8}/></span>{item.label}</button>)}
         </nav>
       </section>
 
@@ -252,7 +253,7 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
 }
 
 function PlaceResultCard({ place, index, favorite, onFavorite, onOpen }: { place: Place & { distance: number }; index: number; favorite: boolean; onFavorite: () => void; onOpen: () => void }) {
-  return <article className="result-card-place" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}><button className="result-main" onClick={onOpen}><div className={`result-photo category-${place.category}`}><img src={place.photos[0]} alt="" loading="lazy"/><span>{categoryMeta[place.category].icon}</span>{place.tested_by_us && <b>Testé</b>}</div><div className="result-copy"><small>{place.city} · {place.subcategory}</small><h2>{place.name}</h2><p>{place.specialty || place.description}</p><div><span>★ {place.rating?.toFixed(1) || "—"}</span><span>{place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div></div></button><button className={`heart ${favorite ? "on" : ""}`} onClick={onFavorite} aria-label="Ajouter aux favoris">♥</button></article>;
+  return <article className="result-card-place" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}><button className="result-main" onClick={onOpen}><div className={`result-photo category-${place.category}`}><img src={place.photos[0]} alt="" loading="lazy"/><span>{categoryMeta[place.category].icon}</span>{place.tested_by_us && <b>Testé</b>}</div><div className="result-copy"><small>{place.city} · {place.subcategory}</small><h2>{place.name}</h2><p>{place.specialty || place.description}</p><div><span>★ {place.rating?.toFixed(1) || "—"}</span><span>{place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div></div></button><button className={`heart ${favorite ? "on" : ""}`} onClick={onFavorite} aria-label="Ajouter aux favoris"><Heart fill={favorite ? "currentColor" : "none"}/></button>{place.category === "restaurant" && <a className="card-map-link" href={place.maps_url} target="_blank" rel="noreferrer"><MapPinned/> Voir sur la carte</a>}</article>;
 }
 
 function ExplorerMap({ items, onSelect }: { items: (Place & { distance: number })[]; onSelect: (place: Place) => void }) {

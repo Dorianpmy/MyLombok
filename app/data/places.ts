@@ -74,7 +74,7 @@ export const importedPlaces: Place[] = seedPlaces.map((item) => {
     lng: item.lng,
     opening_hours: item.opening_hours,
     whatsapp: item.whatsapp,
-    maps_url: `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}&query_place_id=${item.google_place_id}`,
+    maps_url: `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}${item.google_place_id ? `&query_place_id=${item.google_place_id}` : ""}`,
     photos: item.photos.length ? item.photos : [categoryPhotos[category]],
     tested_by_us: item.tested_by_us,
     rating: item.rating || item.google_rating,
