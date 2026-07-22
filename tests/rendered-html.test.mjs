@@ -9,7 +9,10 @@ test("l’application expose une navigation accessible et cohérente", async () 
   assert.match(page, /aria-label="Navigation principale"/);
   assert.match(page, /HomeIcon/);
   assert.match(page, /Compass/);
-  assert.match(page, /NotebookTabs/);
+  assert.match(page, /MessageCircle/);
+  assert.match(page, /label: "Conciergerie"/);
+  assert.doesNotMatch(page, /label: "Voyage"/);
+  assert.match(page, /Mes favoris/);
   assert.match(page, /UserRound/);
 });
 

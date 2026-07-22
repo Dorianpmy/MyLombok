@@ -7,9 +7,9 @@ import "leaflet/dist/leaflet.css";
 import { categoryMeta, distanceKm, places as allPlaces, type Place, type PlaceCategory } from "./data/places";
 import { getDistanceOrigin, isOpenAtLombokTime, normalizeCategory, withinOptionalRadius } from "./lib/explorer-filters";
 import { CalculationMethod, Coordinates, PrayerTimes } from "adhan";
-import { Compass, Heart, Home as HomeIcon, MapPinned, NotebookTabs, Route, UserRound } from "lucide-react";
+import { Compass, Heart, Home as HomeIcon, MapPinned, MessageCircle, UserRound } from "lucide-react";
 
-type Tab = "home" | "explorer" | "places" | "requests" | "profile";
+type Tab = "home" | "explorer" | "requests" | "profile";
 type Request = { id: number; title: string; detail: string; status: "En cours" | "Confirmé" };
 type UserPosition = { lat: number; lng: number };
 
@@ -27,8 +27,7 @@ const initialRequests: Request[] = [
 const nav = [
   { id: "home" as Tab, Icon: HomeIcon, label: "Accueil" },
   { id: "explorer" as Tab, Icon: Compass, label: "Explorer" },
-  { id: "places" as Tab, Icon: Route, label: "Voyage" },
-  { id: "requests" as Tab, Icon: NotebookTabs, label: "Demandes" },
+  { id: "requests" as Tab, Icon: MessageCircle, label: "Conciergerie" },
   { id: "profile" as Tab, Icon: UserRound, label: "Profil" },
 ];
 
@@ -61,7 +60,7 @@ export default function Home() {
     requestPosition();
   }, []);
 
-  const title = useMemo(() => ({ home: "Où veux-tu aller aujourd’hui ?", explorer: "Explorer Lombok", places: "Mon voyage", requests: "Mes demandes", profile: "Mon séjour" }[tab]), [tab]);
+  const title = useMemo(() => ({ home: "Où veux-tu aller aujourd’hui ?", explorer: "Explorer Lombok", requests: "Ma conciergerie", profile: "Mon séjour" }[tab]), [tab]);
 
   function requestPosition() {
     if (!navigator.geolocation) { setGeoStatus("denied"); return; }
@@ -110,7 +109,6 @@ export default function Home() {
         <div className="content">
           {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} visited={visited} muslimMode={muslimMode} />}
           {tab === "explorer" && <ExplorerView muslimMode={muslimMode} position={position} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} setRequestDraft={setRequestDraft} visited={visited} checkIn={(id) => { const next = Array.from(new Set([...visited, id])); setVisited(next); localStorage.setItem("my-lombok-visited", JSON.stringify(next)); }} />}
-          {tab === "places" && <PlacesView title={title} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} onPlan={() => { setRequestDraft("Je souhaite créer mon itinéraire personnalisé à Lombok"); setModal("request"); }} />}
           {tab === "requests" && <RequestsView title={title} requests={requests} setModal={setModal} />}
           {tab === "profile" && <ProfileView title={title} notify={notify} dark={dark} visited={visited} muslimMode={muslimMode} toggleMuslimMode={() => { const next = !muslimMode; setMuslimMode(next); localStorage.setItem("my-lombok-muslim-mode", String(next)); }} toggleDark={() => { const next = !dark; setDark(next); localStorage.setItem("my-lombok-theme", next ? "dark" : "light"); }} />}
         </div>
@@ -143,7 +141,7 @@ function HomeView({ title, requests, setTab, setModal, notify, position, geoStat
     <div className={`home-widgets ${muslimMode ? "" : "solo"}`}>{muslimMode && <PrayerWidget position={position}/>}<button className="progress-widget" onClick={() => setTab("profile")}><span style={{ "--progress": `${Math.round(visited.length / allPlaces.length * 100)}%` } as React.CSSProperties}><b>{Math.round(visited.length / allPlaces.length * 100)}%</b></span><div><small>TON EXPLORATION</small><strong>{visited.length ? "Continue comme ça" : "L’aventure commence"}</strong><p>{visited.length} lieu{visited.length > 1 ? "x" : ""} visité{visited.length > 1 ? "s" : ""}</p></div></button></div>
     <div className="map-filters">{["Explorer", "Manger", "Plages", "Services"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); if (item === "Explorer") setTab("explorer"); else notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
     <Globe onLombok={() => { setSelected("Kuta Lombok"); notify("Bienvenue à Lombok"); }} position={position} geoStatus={geoStatus} requestPosition={requestPosition} />
-    <article className="map-place-card"><div className="spot-thumb"><span>{current.icon}</span></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { setTab("places"); notify(`${current.name} ouvert`); }}>→</button></article>
+    <article className="map-place-card"><div className="spot-thumb"><span>{current.icon}</span></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { setTab("explorer"); notify(`${current.name} ouvert dans Explorer`); }}>→</button></article>
     <div className="map-actions"><button className="map-request" onClick={() => setModal("request")}><span>＋</span><b>Demander à la conciergerie</b></button><button onClick={() => { setTab("requests"); notify("Réservation ouverte"); }}><span className="calendar"><b>23</b>JUL</span><strong>{requests[0]?.title || "Mes demandes"}</strong></button></div>
     <CurrencyConverter />
   </>;
@@ -198,6 +196,7 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
   const [showFilters, setShowFilters] = useState(false);
   const [detail, setDetail] = useState<Place | null>(null);
   const [visible, setVisible] = useState(14);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const distanceOrigin = getDistanceOrigin(position);
   const user = distanceOrigin.position;
   const cities = Array.from(new Set(allPlaces.map((place) => place.city))).sort();
@@ -212,6 +211,7 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
         (city === "all" || place.city === city) &&
         (!price || place.price_level === price) &&
         (!tested || place.tested_by_us) &&
+        (!favoritesOnly || favorites.includes(place.id)) &&
         (!halal || place.halal === "certifié" || place.halal === "sans porc ni alcool") &&
         (!noAlcohol || place.alcool_servi === false) &&
         (!romantic || place.ambiance.includes("romantique") || place.ambiance.includes("vue")) &&
@@ -221,10 +221,10 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
         withinOptionalRadius(place.distance, radiusEnabled, radius) && (place.rating || 0) >= minRating;
     })
     .sort((a, b) => sort === "rating" ? (b.rating || 0) - (a.rating || 0) : sort === "price" ? (a.price_level || 9) - (b.price_level || 9) : a.distance - b.distance),
-  [query, category, city, price, tested, halal, noAlcohol, romantic, nearMosque, calm, openNow, radius, radiusEnabled, minRating, sort, user.lat, user.lng, muslimMode]);
+  [query, category, city, price, tested, halal, noAlcohol, romantic, nearMosque, calm, openNow, radius, radiusEnabled, minRating, sort, user.lat, user.lng, muslimMode, favoritesOnly, favorites]);
 
-  const activeFilterLabels = [query && "la recherche", category !== "all" && "la catégorie", city !== "all" && "la zone", price && "le prix", tested && "testé", halal && "halal", noAlcohol && "sans alcool", romantic && "pour deux", nearMosque && "mosquée proche", calm && "calme", openNow && "ouvert maintenant", radiusEnabled && "la distance", minRating && "la note"].filter(Boolean);
-  function resetFilters() { setQuery(""); setCategory("all"); setCity("all"); setPrice(0); setTested(false); setHalal(false); setNoAlcohol(false); setRomantic(false); setNearMosque(false); setCalm(false); setOpenNow(false); setRadiusEnabled(false); setMinRating(0); }
+  const activeFilterLabels = [query && "la recherche", favoritesOnly && "les favoris", category !== "all" && "la catégorie", city !== "all" && "la zone", price && "le prix", tested && "testé", halal && "halal", noAlcohol && "sans alcool", romantic && "pour deux", nearMosque && "mosquée proche", calm && "calme", openNow && "ouvert maintenant", radiusEnabled && "la distance", minRating && "la note"].filter(Boolean);
+  function resetFilters() { setQuery(""); setFavoritesOnly(false); setCategory("all"); setCity("all"); setPrice(0); setTested(false); setHalal(false); setNoAlcohol(false); setRomantic(false); setNearMosque(false); setCalm(false); setOpenNow(false); setRadiusEnabled(false); setMinRating(0); }
 
   function concierge(place: Place) {
     setRequestDraft(`Demande concernant ${place.name}`);
@@ -237,6 +237,7 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
     <div className="explorer-title"><div><h1>Explorer Lombok</h1><p>Les meilleures adresses, testées ou à découvrir.</p></div><span>🇮🇩</span></div>
     <label className="search-box"><span>⌕</span><input value={query} onChange={(event) => { setQuery(event.target.value); setVisible(14); }} placeholder="Rechercher un lieu, une zone, une envie…"/><button onClick={() => setShowFilters(!showFilters)} className={showFilters ? "active" : ""}>☷</button></label>
     {distanceOrigin.usingReference && <button className="distance-notice" onClick={() => setRadiusEnabled(false)}>⌖ Distances depuis Kuta — active ta position sur place</button>}
+    <button className={`explorer-favorites ${favoritesOnly ? "on" : ""}`} onClick={() => setFavoritesOnly(!favoritesOnly)}><Heart fill={favoritesOnly ? "currentColor" : "none"}/><span>Mes favoris</span><b>{favorites.length}</b></button>
     <div className="editorial-selections"><button className="couple-selection" onClick={() => { setRomantic(true); setCategory("all"); }}><span>01</span><div><small>SÉLECTION ÉDITORIALE</small><strong>Lombok à deux</strong><p>Dîners avec vue, criques calmes et parenthèses en duo</p></div><em>→</em></button><button className="couple-selection essential" onClick={() => { setTested(true); setRomantic(false); setCategory("all"); }}><span>02</span><div><small>LE CARNET LOCAL</small><strong>Nos essentiels</strong><p>Les adresses que l’on recommande les yeux fermés</p></div><em>→</em></button></div>
     <div className="category-scroll"><button className={category === "all" ? "active" : ""} onClick={() => setCategory("all")}><span>✦</span>Tout</button>{(Object.entries(categoryMeta) as [PlaceCategory, { label: string; icon: string }][]).map(([key, meta]) => <button key={key} className={category === key ? "active" : ""} onClick={() => { setCategory(key); setVisible(14); }}><span>{meta.icon}</span>{meta.label}</button>)}</div>
     {showFilters && <section className="filter-panel">
@@ -409,21 +410,11 @@ function RegionMap({ close, onLombok }: { close: () => void; onLombok: () => voi
   </section>;
 }
 
-function PlacesView({ title, favorites, toggleFavorite, setModal, onPlan }: { title: string; favorites: string[]; toggleFavorite: (s: string) => void; setModal: (m: "place") => void; onPlan: () => void }) {
-  const favoritePlaces = allPlaces.filter((place) => favorites.includes(place.id));
-  return <><div className="eyebrow">Ton séjour, simplement</div><h1>{title}</h1><p className="lead">Passe de tes envies à un itinéraire prêt à vivre.</p>
-    <section className="trip-funnel"><small>PLANIFICATEUR DE SÉJOUR</small><h2>Ton Lombok, sans perdre des heures</h2><div className="funnel-steps"><span><b>1</b>Ajoute tes envies</span><span><b>2</b>Reçois ton parcours</span><span><b>3</b>Réserve avec nous</span></div><button onClick={onPlan}>Créer mon itinéraire <b>→</b></button></section>
-    <div className="stay-plans"><article><small>LIBRE</small><strong>0 €</strong><p>Guide et favoris</p></article><article className="featured"><small>ESSENTIEL</small><strong>29 €</strong><p>Itinéraire 3 jours</p></article><article><small>SÉRÉNITÉ</small><strong>79 €</strong><p>Planning + réservations</p></article></div>
-    <div className="section-title trip-title"><h2>Mes envies</h2><span>{favoritePlaces.length} lieu{favoritePlaces.length > 1 ? "x" : ""}</span></div>
-    <div className="place-list">{favoritePlaces.length ? favoritePlaces.map(place => <article className="place-card" key={place.id}><div className="place-art blue">{categoryMeta[place.category].icon}</div><div><small>{place.subcategory}</small><h3>{place.name}</h3><p>📍 {place.city}, {place.island}</p></div><button className="loved" onClick={() => toggleFavorite(place.id)} aria-label="Retirer des favoris">♥</button></article>) : <div className="empty-state"><span>♡</span><h3>Ton carnet est encore vide</h3><p>Ajoute tes premiers coups de cœur depuis Explorer.</p></div>}</div>
-    <button className="primary wide" onClick={() => setModal("place")}>＋ Ajouter une adresse</button>
-  </>;
-}
-
 function RequestsView({ title, requests, setModal }: { title: string; requests: Request[]; setModal: (m: "request") => void }) {
-  return <><div className="eyebrow">Ta conciergerie</div><h1>{title}</h1><p className="lead">Garde un œil sur tout ce que tu dois organiser.</p>
+  return <><div className="eyebrow">Service local · gratuit pour toi</div><h1>{title}</h1><p className="lead">Dis-nous ce que tu veux organiser. Nous trouvons le bon prestataire et suivons ta réservation.</p>
+    <section className="concierge-promise"><span>✦</span><div><strong>Un seul message, on s’occupe du reste</strong><p>Conseils locaux · partenaires vérifiés · suivi jusqu’à confirmation</p></div></section>
     <div className="request-list">{requests.map((request) => <article className="request-card" key={request.id}><div className="status-dot"/><div><span className={`badge ${request.status === "Confirmé" ? "confirmed" : ""}`}>{request.status}</span><h3>{request.title}</h3><p>{request.detail}</p></div><button>›</button></article>)}</div>
-    <button className="primary wide" onClick={() => setModal("request")}>＋ Nouvelle demande</button>
+    <button className="primary wide" onClick={() => setModal("request")}>＋ Demander à la conciergerie</button>
   </>;
 }
 
