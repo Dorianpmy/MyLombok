@@ -1,0 +1,134 @@
+import seedPlaces from "./seed-lombok";
+
+export type PlaceCategory = "restaurant" | "plage" | "service" | "nature" | "excursion" | "culture";
+
+export interface Place {
+  id: string;
+  region: string;
+  island: string;
+  city: string;
+  category: PlaceCategory;
+  subcategory: string;
+  name: string;
+  slug: string;
+  description: string;
+  specialty: string | null;
+  tags: string[];
+  price_level: 1 | 2 | 3 | null;
+  price_range: string | null;
+  lat: number;
+  lng: number;
+  opening_hours: string | null;
+  whatsapp: string | null;
+  maps_url: string;
+  photos: string[];
+  tested_by_us: boolean;
+  rating: number | null;
+  best_time: string | null;
+  level: string | null;
+  vigilance: string | null;
+  created_at: string;
+}
+
+const categoryPhotos: Record<PlaceCategory, string> = {
+  restaurant: "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=78",
+  plage: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=78",
+  service: "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=900&q=78",
+  nature: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=900&q=78",
+  excursion: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=78",
+  culture: "https://images.unsplash.com/photo-1533669955142-6a73332af4db?auto=format&fit=crop&w=900&q=78",
+};
+
+const priceDefaults: Record<number, string> = {
+  1: "20–60k Rp · 1–4 €",
+  2: "60–150k Rp · 4–9 €",
+  3: "150–350k Rp · 9–21 €",
+};
+
+export const importedPlaces: Place[] = seedPlaces.map((item) => {
+  const category = item.category as PlaceCategory;
+  return {
+    id: item.id,
+    region: item.region,
+    island: item.island,
+    city: item.city,
+    category,
+    subcategory: item.subcategory,
+    name: item.name,
+    slug: item.slug,
+    description: item.specialty || `Une adresse utile à ${item.city}, sélectionnée pour préparer ton séjour à Lombok.`,
+    specialty: item.specialty,
+    tags: item.tags,
+    price_level: item.price_level,
+    price_range: item.price_range || (item.price_level ? priceDefaults[item.price_level] : null),
+    lat: item.lat,
+    lng: item.lng,
+    opening_hours: item.opening_hours,
+    whatsapp: item.whatsapp,
+    maps_url: `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}&query_place_id=${item.google_place_id}`,
+    photos: item.photos.length ? item.photos : [categoryPhotos[category]],
+    tested_by_us: item.tested_by_us,
+    rating: item.rating || item.google_rating,
+    best_time: item.best_time,
+    level: item.level,
+    vigilance: item.vigilance,
+    created_at: "2026-07-22T00:00:00.000Z",
+  };
+});
+
+const extraPlaces: Place[] = [
+  {
+    id: "rinjani-trek", region: "north-lombok", island: "lombok", city: "Senaru", category: "nature", subcategory: "trek",
+    name: "Trek du Mont Rinjani", slug: "trek-rinjani", description: "Ascension guidée du volcan et nuit face au lac Segara Anak. Réservation avec guide agréé indispensable.",
+    specialty: "Trek 2 jours / 1 nuit", tags: ["trek", "volcan", "sunrise", "guide"], price_level: 3, price_range: "2,5–4,5 M Rp · 145–260 €", lat: -8.4112, lng: 116.4573,
+    opening_hours: "Départs 05:00–07:00", whatsapp: "+62 812-3900-1122", maps_url: "https://maps.google.com/?q=-8.4112,116.4573", photos: [categoryPhotos.nature], tested_by_us: true, rating: 4.9, best_time: "avril à novembre", level: "difficile", vigilance: "Trek exigeant : vérifier l’état des sentiers et la météo avant le départ.", created_at: "2026-07-22T00:00:00.000Z"
+  },
+  {
+    id: "gili-air-day", region: "north-lombok", island: "gili-air", city: "Gili Air", category: "excursion", subcategory: "snorkeling",
+    name: "Journée snorkeling aux Gili", slug: "snorkeling-gili", description: "Bateau en petit groupe vers Gili Air, Meno et Trawangan, avec spots de tortues et statues sous-marines.",
+    specialty: "3 îles & tortues", tags: ["bateau", "snorkeling", "tortues", "famille"], price_level: 2, price_range: "350–650k Rp · 21–39 €", lat: -8.349, lng: 116.082,
+    opening_hours: "Départs 08:30 et 10:00", whatsapp: "+62 878-6401-2020", maps_url: "https://maps.google.com/?q=-8.349,116.082", photos: [categoryPhotos.excursion], tested_by_us: true, rating: 4.8, best_time: "matin, mer calme", level: "facile", vigilance: "Privilégier les opérateurs qui ne nourrissent pas les tortues.", created_at: "2026-07-22T00:00:00.000Z"
+  },
+  {
+    id: "sade-village", region: "central-lombok", island: "lombok", city: "Sengkol", category: "culture", subcategory: "village sasak",
+    name: "Village traditionnel de Sade", slug: "village-sade", description: "Village Sasak vivant, maisons en terre, tissage traditionnel et découverte des usages locaux avec un guide du village.",
+    specialty: "Culture et tissage Sasak", tags: ["sasak", "artisanat", "famille", "histoire"], price_level: 1, price_range: "Donation conseillée 50–100k Rp · 3–6 €", lat: -8.8396, lng: 116.2918,
+    opening_hours: "08:00–18:00", whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8396,116.2918", photos: [categoryPhotos.culture], tested_by_us: true, rating: 4.5, best_time: "09:00 avant les groupes", level: null, vigilance: "Les achats de textile sont facultatifs : convenir du prix avant toute démonstration.", created_at: "2026-07-22T00:00:00.000Z"
+  },
+  {
+    id: "selong-belanak", region: "south-lombok", island: "lombok", city: "Selong Belanak", category: "plage", subcategory: "baignade & surf débutant",
+    name: "Selong Belanak Beach", slug: "selong-belanak", description: "Grande baie de sable clair, idéale pour apprendre le surf et se baigner lorsque la mer est calme.",
+    specialty: "Surf débutant", tags: ["plage", "surf", "baignade", "sunset", "warung"], price_level: 1, price_range: "Parking 10k Rp · <1 €", lat: -8.8739, lng: 116.1624,
+    opening_hours: "06:00–19:00", whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8739,116.1624", photos: [categoryPhotos.plage], tested_by_us: true, rating: 4.7, best_time: "matin ou coucher du soleil", level: "débutant · mi-marée", vigilance: "Rester dans la zone surveillée ; vagues plus fortes à marée haute.", created_at: "2026-07-22T00:00:00.000Z"
+  },
+  {
+    id: "lombok-airport-driver", region: "central-lombok", island: "lombok", city: "Praya", category: "service", subcategory: "chauffeur & transfert",
+    name: "My Lombok Driver", slug: "chauffeur-aeroport", description: "Chauffeur vérifié, accueil nominatif à l’aéroport et prix confirmé avant le trajet.",
+    specialty: "Aéroport LOP ↔ Kuta", tags: ["chauffeur", "aéroport", "24h/24", "fiable"], price_level: 2, price_range: "180–250k Rp · 11–15 €", lat: -8.7573, lng: 116.2767,
+    opening_hours: "24h/24 sur réservation", whatsapp: "+62 812-1111-2026", maps_url: "https://maps.google.com/?q=-8.7573,116.2767", photos: [categoryPhotos.service], tested_by_us: true, rating: 5, best_time: "réserver 24 h avant", level: null, vigilance: null, created_at: "2026-07-22T00:00:00.000Z"
+  },
+];
+
+export const places: Place[] = [...importedPlaces, ...extraPlaces];
+
+export const categoryMeta: Record<PlaceCategory, { label: string; icon: string }> = {
+  restaurant: { label: "Restaurants", icon: "♨" },
+  plage: { label: "Plages", icon: "☀" },
+  service: { label: "Services", icon: "✦" },
+  nature: { label: "Nature", icon: "♧" },
+  excursion: { label: "Îles", icon: "≈" },
+  culture: { label: "Culture", icon: "◈" },
+};
+
+export const messages = {
+  fr: { search: "Rechercher un lieu, une zone, une envie…", all: "Tout", map: "Carte", list: "Liste", filters: "Filtres" },
+  en: { search: "Search a place, area or activity…", all: "All", map: "Map", list: "List", filters: "Filters" },
+} as const;
+
+export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const toRad = (value: number) => value * Math.PI / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}

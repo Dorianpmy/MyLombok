@@ -4,9 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import "leaflet/dist/leaflet.css";
+import { categoryMeta, distanceKm, places as allPlaces, type Place, type PlaceCategory } from "./data/places";
 
-type Tab = "home" | "places" | "requests" | "profile";
+type Tab = "home" | "explorer" | "places" | "requests" | "profile";
 type Request = { id: number; title: string; detail: string; status: "En cours" | "Confirmé" };
+type UserPosition = { lat: number; lng: number };
 
 const places = [
   { icon: "☕", name: "Bush Radio", area: "Kuta", type: "Café & coworking", color: "peach" },
@@ -21,6 +23,7 @@ const initialRequests: Request[] = [
 
 const nav = [
   { id: "home" as Tab, icon: "⌂", label: "Accueil" },
+  { id: "explorer" as Tab, icon: "◎", label: "Explorer" },
   { id: "places" as Tab, icon: "♡", label: "Adresses" },
   { id: "requests" as Tab, icon: "◫", label: "Demandes" },
   { id: "profile" as Tab, icon: "○", label: "Profil" },
@@ -31,14 +34,37 @@ export default function Home() {
   const [modal, setModal] = useState<"request" | "place" | null>(null);
   const [toast, setToast] = useState("");
   const [requests, setRequests] = useState<Request[]>(initialRequests);
-  const [favorites, setFavorites] = useState<string[]>(["Bush Radio", "Tanjung Aan"]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [deviceId, setDeviceId] = useState("");
+  const [position, setPosition] = useState<UserPosition | null>(null);
+  const [geoStatus, setGeoStatus] = useState<"loading" | "ready" | "denied">("loading");
+  const [requestDraft, setRequestDraft] = useState("");
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("my-lombok-requests");
     if (saved) setRequests(JSON.parse(saved));
+    const cachedFavorites = localStorage.getItem("my-lombok-favorites");
+    if (cachedFavorites) setFavorites(JSON.parse(cachedFavorites));
+    setDark(localStorage.getItem("my-lombok-theme") === "dark" || (!localStorage.getItem("my-lombok-theme") && matchMedia("(prefers-color-scheme: dark)").matches));
+    let id = localStorage.getItem("my-lombok-device");
+    if (!id) { id = crypto.randomUUID(); localStorage.setItem("my-lombok-device", id); }
+    setDeviceId(id);
+    fetch(`/api/favorites?deviceId=${encodeURIComponent(id)}`).then((response) => response.ok ? response.json() : null).then((data) => { if (data?.favorites?.length) setFavorites(data.favorites); }).catch(() => {});
+    requestPosition();
   }, []);
 
-  const title = useMemo(() => ({ home: "Bonjour Dorian 👋", places: "Mes bonnes adresses", requests: "Mes demandes", profile: "Mon séjour" }[tab]), [tab]);
+  const title = useMemo(() => ({ home: "Bonjour Dorian 👋", explorer: "Explorer Lombok", places: "Mes bonnes adresses", requests: "Mes demandes", profile: "Mon séjour" }[tab]), [tab]);
+
+  function requestPosition() {
+    if (!navigator.geolocation) { setGeoStatus("denied"); return; }
+    setGeoStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => { setPosition({ lat: coords.latitude, lng: coords.longitude }); setGeoStatus("ready"); },
+      () => { setPosition({ lat: -8.891, lng: 116.277 }); setGeoStatus("denied"); },
+      { enableHighAccuracy: true, timeout: 9000, maximumAge: 300000 }
+    );
+  }
 
   function notify(message: string) {
     setToast(message);
@@ -55,12 +81,16 @@ export default function Home() {
     notify("Demande ajoutée — on s’en occupe !");
   }
 
-  function toggleFavorite(name: string) {
-    setFavorites((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
+  function toggleFavorite(placeId: string) {
+    const active = !favorites.includes(placeId);
+    const next = active ? [...favorites, placeId] : favorites.filter((item) => item !== placeId);
+    setFavorites(next);
+    localStorage.setItem("my-lombok-favorites", JSON.stringify(next));
+    if (deviceId) fetch("/api/favorites", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ deviceId, placeId, active }) }).catch(() => {});
   }
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${dark ? "dark" : ""}`}>
       <section className="phone-app">
         <header className="topbar">
           <button className="brand" onClick={() => setTab("home")} aria-label="Retour à l'accueil">
@@ -70,10 +100,11 @@ export default function Home() {
         </header>
 
         <div className="content">
-          {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} notify={notify} />}
+          {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} />}
+          {tab === "explorer" && <ExplorerView position={position} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} setRequestDraft={setRequestDraft} />}
           {tab === "places" && <PlacesView title={title} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} />}
           {tab === "requests" && <RequestsView title={title} requests={requests} setModal={setModal} />}
-          {tab === "profile" && <ProfileView title={title} notify={notify} />}
+          {tab === "profile" && <ProfileView title={title} notify={notify} dark={dark} toggleDark={() => { const next = !dark; setDark(next); localStorage.setItem("my-lombok-theme", next ? "dark" : "light"); }} />}
         </div>
 
         <nav className="bottom-nav" aria-label="Navigation principale">
@@ -81,13 +112,13 @@ export default function Home() {
         </nav>
       </section>
 
-      {modal && <Modal type={modal} close={() => setModal(null)} addRequest={addRequest} notify={notify} />}
+      {modal && <Modal type={modal} close={() => { setModal(null); setRequestDraft(""); }} addRequest={addRequest} notify={notify} draft={requestDraft} />}
       {toast && <div className="toast" role="status">✓ {toast}</div>}
     </main>
   );
 }
 
-function HomeView({ title, requests, setTab, setModal, notify }: { title: string; requests: Request[]; setTab: (t: Tab) => void; setModal: (m: "request" | "place") => void; notify: (s: string) => void }) {
+function HomeView({ title, requests, setTab, setModal, notify, position, geoStatus, requestPosition }: { title: string; requests: Request[]; setTab: (t: Tab) => void; setModal: (m: "request" | "place") => void; notify: (s: string) => void; position: UserPosition | null; geoStatus: "loading" | "ready" | "denied"; requestPosition: () => void }) {
   const [selected, setSelected] = useState("Kuta Lombok");
   const [category, setCategory] = useState("Explorer");
   const mapSpots = [
@@ -101,14 +132,103 @@ function HomeView({ title, requests, setTab, setModal, notify }: { title: string
   return <>
     <div className="map-head"><div><div className="eyebrow">Mercredi 22 juillet · Kuta</div><h1>{title}</h1></div><button className="weather" onClick={() => notify("Grand soleil · 29 °C")}>☀ <b>29°</b></button></div>
     <p className="lead">Où veux-tu aller aujourd’hui ?</p>
-    <div className="map-filters">{["Explorer", "Manger", "Plages", "Services"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
-    <Globe onLombok={() => { setSelected("Kuta Lombok"); notify("Bienvenue à Lombok"); }} />
+    <div className="map-filters">{["Explorer", "Manger", "Plages", "Services"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); if (item === "Explorer") setTab("explorer"); else notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
+    <Globe onLombok={() => { setSelected("Kuta Lombok"); notify("Bienvenue à Lombok"); }} position={position} geoStatus={geoStatus} requestPosition={requestPosition} />
     <article className="map-place-card"><div className="spot-thumb"><span>{current.icon}</span></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { setTab("places"); notify(`${current.name} ouvert`); }}>→</button></article>
     <div className="map-actions"><button className="map-request" onClick={() => setModal("request")}><span>＋</span><b>Demander à la conciergerie</b></button><button onClick={() => { setTab("requests"); notify("Réservation ouverte"); }}><span className="calendar"><b>23</b>JUL</span><strong>{requests[0]?.title || "Mes demandes"}</strong></button></div>
   </>;
 }
 
-function Globe({ onLombok }: { onLombok: () => void }) {
+function ExplorerView({ position, favorites, toggleFavorite, setModal, setRequestDraft }: { position: UserPosition | null; favorites: string[]; toggleFavorite: (id: string) => void; setModal: (type: "request") => void; setRequestDraft: (value: string) => void }) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<PlaceCategory | "all">("all");
+  const [city, setCity] = useState("all");
+  const [price, setPrice] = useState(0);
+  const [tested, setTested] = useState(false);
+  const [halal, setHalal] = useState(false);
+  const [openNow, setOpenNow] = useState(false);
+  const [radius, setRadius] = useState(100);
+  const [minRating, setMinRating] = useState(0);
+  const [sort, setSort] = useState<"distance" | "rating" | "price">("distance");
+  const [view, setView] = useState<"list" | "map">("list");
+  const [showFilters, setShowFilters] = useState(false);
+  const [detail, setDetail] = useState<Place | null>(null);
+  const [visible, setVisible] = useState(14);
+  const user = position || { lat: -8.891, lng: 116.277 };
+  const cities = Array.from(new Set(allPlaces.map((place) => place.city))).sort();
+
+  const results = useMemo(() => allPlaces
+    .map((place) => ({ ...place, distance: distanceKm(user, place) }))
+    .filter((place) => {
+      const text = `${place.name} ${place.city} ${place.subcategory} ${place.tags.join(" ")}`.toLowerCase();
+      return (!query || text.includes(query.toLowerCase())) &&
+        (category === "all" || place.category === category) &&
+        (city === "all" || place.city === city) &&
+        (!price || place.price_level === price) &&
+        (!tested || place.tested_by_us) &&
+        (!halal || place.tags.some((tag) => tag.toLowerCase().includes("halal"))) &&
+        (!openNow || place.opening_hours?.includes("24h") || place.opening_hours?.includes("7j/7")) &&
+        place.distance <= radius && (place.rating || 0) >= minRating;
+    })
+    .sort((a, b) => sort === "rating" ? (b.rating || 0) - (a.rating || 0) : sort === "price" ? (a.price_level || 9) - (b.price_level || 9) : a.distance - b.distance),
+  [query, category, city, price, tested, halal, openNow, radius, minRating, sort, user.lat, user.lng]);
+
+  function concierge(place: Place) {
+    setRequestDraft(`Demande concernant ${place.name}`);
+    setDetail(null);
+    setModal("request");
+  }
+
+  return <div className="explorer-view">
+    <div className="eyebrow">Guide vérifié · {allPlaces.length} adresses</div>
+    <div className="explorer-title"><div><h1>Explorer Lombok</h1><p>Les meilleures adresses, testées ou à découvrir.</p></div><span>🇮🇩</span></div>
+    <label className="search-box"><span>⌕</span><input value={query} onChange={(event) => { setQuery(event.target.value); setVisible(14); }} placeholder="Rechercher un lieu, une zone, une envie…"/><button onClick={() => setShowFilters(!showFilters)} className={showFilters ? "active" : ""}>☷</button></label>
+    <div className="category-scroll"><button className={category === "all" ? "active" : ""} onClick={() => setCategory("all")}><span>✦</span>Tout</button>{(Object.entries(categoryMeta) as [PlaceCategory, { label: string; icon: string }][]).map(([key, meta]) => <button key={key} className={category === key ? "active" : ""} onClick={() => { setCategory(key); setVisible(14); }}><span>{meta.icon}</span>{meta.label}</button>)}</div>
+    {showFilters && <section className="filter-panel">
+      <label>Zone<select value={city} onChange={(event) => setCity(event.target.value)}><option value="all">Toutes les zones</option>{cities.map((item) => <option key={item}>{item}</option>)}</select></label>
+      <label>Prix<select value={price} onChange={(event) => setPrice(Number(event.target.value))}><option value="0">Tous les budgets</option><option value="1">€ · petit prix</option><option value="2">€€ · moyen</option><option value="3">€€€ · premium</option></select></label>
+      <label>Distance<strong>{radius} km</strong><input type="range" min="2" max="100" value={radius} onChange={(event) => setRadius(Number(event.target.value))}/></label>
+      <label>Note minimale<select value={minRating} onChange={(event) => setMinRating(Number(event.target.value))}><option value="0">Toutes</option><option value="4">4,0+</option><option value="4.5">4,5+</option><option value="4.8">4,8+</option></select></label>
+      <div className="check-row"><button className={tested ? "on" : ""} onClick={() => setTested(!tested)}>✓ Testé par nous</button><button className={halal ? "on" : ""} onClick={() => setHalal(!halal)}>Halal</button><button className={openNow ? "on" : ""} onClick={() => setOpenNow(!openNow)}>Ouvert</button></div>
+    </section>}
+    <div className="results-bar"><span><b>{results.length}</b> lieux</span><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}><option value="distance">Plus proches</option><option value="rating">Mieux notés</option><option value="price">Prix croissant</option></select><div><button className={view === "list" ? "active" : ""} onClick={() => setView("list")}>☰</button><button className={view === "map" ? "active" : ""} onClick={() => setView("map")}>⌖</button></div></div>
+    {view === "map" ? <ExplorerMap items={results} onSelect={setDetail} /> : <div className="explorer-list">{results.slice(0, visible).map((place, index) => <PlaceResultCard key={place.id} place={place} index={index} favorite={favorites.includes(place.id)} onFavorite={() => toggleFavorite(place.id)} onOpen={() => setDetail(place)} />)}{visible < results.length && <button className="load-more" onClick={() => setVisible((value) => value + 14)}>Voir plus de lieux</button>}{!results.length && <div className="empty-state"><span>⌕</span><h3>Aucun lieu trouvé</h3><p>Élargis la distance ou retire un filtre.</p></div>}</div>}
+    {detail && <PlaceDetail place={detail} distance={distanceKm(user, detail)} favorite={favorites.includes(detail.id)} close={() => setDetail(null)} toggleFavorite={() => toggleFavorite(detail.id)} concierge={() => concierge(detail)} />}
+  </div>;
+}
+
+function PlaceResultCard({ place, index, favorite, onFavorite, onOpen }: { place: Place & { distance: number }; index: number; favorite: boolean; onFavorite: () => void; onOpen: () => void }) {
+  return <article className="result-card-place" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}><button className="result-main" onClick={onOpen}><div className={`result-photo category-${place.category}`}><img src={place.photos[0]} alt="" loading="lazy"/><span>{categoryMeta[place.category].icon}</span>{place.tested_by_us && <b>Testé</b>}</div><div className="result-copy"><small>{place.city} · {place.subcategory}</small><h2>{place.name}</h2><p>{place.specialty || place.description}</p><div><span>★ {place.rating?.toFixed(1) || "—"}</span><span>{place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div></div></button><button className={`heart ${favorite ? "on" : ""}`} onClick={onFavorite} aria-label="Ajouter aux favoris">♥</button></article>;
+}
+
+function ExplorerMap({ items, onSelect }: { items: (Place & { distance: number })[]; onSelect: (place: Place) => void }) {
+  const node = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let map: import("leaflet").Map | undefined;
+    let disposed = false;
+    (async () => {
+      const L = await import("leaflet");
+      if (!node.current || disposed) return;
+      map = L.map(node.current, { center: [-8.72, 116.25], zoom: 9, minZoom: 8, maxZoom: 15, maxBounds: [[-9.4, 115.6], [-7.7, 117.2]], maxBoundsViscosity: 1, zoomControl: false });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap" }).addTo(map);
+      L.control.zoom({ position: "bottomright" }).addTo(map);
+      items.slice(0, 120).forEach((place) => {
+        const meta = categoryMeta[place.category];
+        const icon = L.divIcon({ className: "explorer-pin-wrap", html: `<span class="explorer-pin category-${place.category}">${meta.icon}</span>`, iconSize: [34, 40], iconAnchor: [17, 36] });
+        L.marker([place.lat, place.lng], { icon }).addTo(map!).on("click", () => onSelect(place));
+      });
+    })();
+    return () => { disposed = true; map?.remove(); };
+  }, [items, onSelect]);
+  return <div className="explorer-map" ref={node}/>;
+}
+
+function PlaceDetail({ place, distance, favorite, close, toggleFavorite, concierge }: { place: Place; distance: number; favorite: boolean; close: () => void; toggleFavorite: () => void; concierge: () => void }) {
+  const whatsApp = place.whatsapp?.replace(/[^0-9]/g, "");
+  return <div className="detail-backdrop" onMouseDown={close}><article className="place-detail" onMouseDown={(event) => event.stopPropagation()}><button className="detail-close" onClick={close}>×</button><div className="detail-gallery"><img src={place.photos[0]} alt={place.name}/><span>{categoryMeta[place.category].label}</span></div><div className="detail-body"><div className="eyebrow">{place.city} · {place.island}</div><h2>{place.name}</h2><div className="detail-stats"><span>★ {place.rating?.toFixed(1) || "—"}</span><span>⌖ {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div><p>{place.description}</p>{place.specialty && <div className="specialty"><small>LA SPÉCIALITÉ</small><strong>{place.specialty}</strong></div>}{place.vigilance && <div className="vigilance"><span>!</span><div><strong>À savoir avant d’y aller</strong><p>{place.vigilance}</p></div></div>}<div className="practical"><div><small>Horaires</small><strong>{place.opening_hours || "À confirmer"}</strong></div><div><small>Meilleur moment</small><strong>{place.best_time || "Toute la journée"}</strong></div>{place.level && <div><small>Niveau</small><strong>{place.level}</strong></div>}</div><div className="tag-list">{place.tags.map((tag) => <span key={tag}>{tag}</span>)}</div><div className="detail-actions"><a href={place.maps_url} target="_blank" rel="noreferrer">↗ Itinéraire</a>{whatsApp && <a className="whatsapp" href={`https://wa.me/${whatsApp}`} target="_blank" rel="noreferrer">◉ WhatsApp</a>}<button className={favorite ? "favorite" : ""} onClick={toggleFavorite}>♥ {favorite ? "Dans mes favoris" : "Ajouter aux favoris"}</button><button className="concierge" onClick={concierge}>✦ Demander à la conciergerie</button></div></div></article></div>;
+}
+
+function Globe({ onLombok, position, geoStatus, requestPosition }: { onLombok: () => void; position: UserPosition | null; geoStatus: "loading" | "ready" | "denied"; requestPosition: () => void }) {
   const host = useRef<HTMLDivElement>(null);
   const resetView = useRef<(() => void) | null>(null);
   const [regional, setRegional] = useState(false);
@@ -161,8 +281,9 @@ function Globe({ onLombok }: { onLombok: () => void }) {
     }));
     world.add(atmosphere);
 
-    const lat = THREE.MathUtils.degToRad(-8.65);
-    const lon = THREE.MathUtils.degToRad(116.32);
+    const target = position || { lat: -8.65, lng: 116.32 };
+    const lat = THREE.MathUtils.degToRad(target.lat);
+    const lon = THREE.MathUtils.degToRad(target.lng);
     const markerPosition = new THREE.Vector3(-Math.cos(lat) * Math.cos(lon + Math.PI), Math.sin(lat), Math.cos(lat) * Math.sin(lon + Math.PI)).multiplyScalar(1.025);
     const marker = new THREE.Mesh(new THREE.SphereGeometry(0.032, 24, 24), new THREE.MeshBasicMaterial({ color: 0xff765e }));
     marker.position.copy(markerPosition);
@@ -177,8 +298,8 @@ function Globe({ onLombok }: { onLombok: () => void }) {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.dampingFactor = 0.055; controls.enablePan = false;
     controls.minDistance = 1.65; controls.maxDistance = 5; controls.rotateSpeed = 0.58; controls.zoomSpeed = 0.7;
-    const focusLombok = () => { world.rotation.set(0.12, 2.68, 0); camera.position.set(0, 0.08, 3.25); controls.update(); };
-    resetView.current = focusLombok; focusLombok();
+    const focusPosition = () => { world.rotation.set(-lat * 0.35, Math.atan2(-markerPosition.x, markerPosition.z), 0); camera.position.set(0, 0.08, 3.05); controls.update(); };
+    resetView.current = focusPosition; window.setTimeout(focusPosition, 250);
 
     let frame = 0; let dragging = false;
     controls.addEventListener("start", () => { dragging = true; });
@@ -188,15 +309,16 @@ function Globe({ onLombok }: { onLombok: () => void }) {
     const resize = () => { if (!element) return; camera.aspect = element.clientWidth / element.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(element.clientWidth, element.clientHeight); };
     window.addEventListener("resize", resize);
     return () => { cancelAnimationFrame(frame); window.removeEventListener("resize", resize); controls.dispose(); renderer.dispose(); texture.dispose(); element.replaceChildren(); };
-  }, [regional]);
+  }, [regional, position]);
 
   if (regional) return <RegionMap close={() => setRegional(false)} onLombok={onLombok} />;
 
   return <section className="globe-stage" aria-label="Globe terrestre interactif centré sur Lombok">
     <div className="space-glow"/><div className="cloud cloud-one"/><div className="cloud cloud-two"/><div className="globe-canvas" ref={host}/>
-    <div className="globe-tip">Glisse pour explorer · Pince pour zoomer</div>
+    <div className="globe-tip">{geoStatus === "loading" ? "Localisation en cours…" : "Glisse pour explorer · Pince pour zoomer"}</div>
     <button className="lombok-label" onClick={() => { setRegional(true); onLombok(); }}><span>●</span><b>Explorer l’Indonésie</b><small>Lombok et les îles voisines →</small></button>
     <button className="globe-reset" onClick={() => { resetView.current?.(); onLombok(); }} aria-label="Recentrer sur Lombok">◎</button>
+    {geoStatus === "denied" && <button className="geo-enable" onClick={requestPosition}>⌖ Activer ma position</button>}
   </section>;
 }
 
@@ -239,9 +361,10 @@ function RegionMap({ close, onLombok }: { close: () => void; onLombok: () => voi
 }
 
 function PlacesView({ title, favorites, toggleFavorite, setModal }: { title: string; favorites: string[]; toggleFavorite: (s: string) => void; setModal: (m: "place") => void }) {
+  const favoritePlaces = allPlaces.filter((place) => favorites.includes(place.id));
   return <><div className="eyebrow">Ton carnet personnel</div><h1>{title}</h1><p className="lead">Les endroits que tu as testés et que tu recommandes.</p>
     <div className="filter-row"><button className="selected">Tous</button><button>Manger</button><button>Bouger</button><button>Découvrir</button></div>
-    <div className="place-list">{places.map(place => <article className="place-card" key={place.name}><div className={`place-art ${place.color}`}>{place.icon}</div><div><small>{place.type}</small><h3>{place.name}</h3><p>📍 {place.area}, Lombok</p></div><button className={favorites.includes(place.name) ? "loved" : ""} onClick={() => toggleFavorite(place.name)} aria-label="Ajouter aux favoris">♥</button></article>)}</div>
+    <div className="place-list">{favoritePlaces.length ? favoritePlaces.map(place => <article className="place-card" key={place.id}><div className="place-art blue">{categoryMeta[place.category].icon}</div><div><small>{place.subcategory}</small><h3>{place.name}</h3><p>📍 {place.city}, {place.island}</p></div><button className="loved" onClick={() => toggleFavorite(place.id)} aria-label="Retirer des favoris">♥</button></article>) : <div className="empty-state"><span>♡</span><h3>Ton carnet est encore vide</h3><p>Ajoute tes premiers coups de cœur depuis Explorer.</p></div>}</div>
     <button className="primary wide" onClick={() => setModal("place")}>＋ Ajouter une adresse</button>
   </>;
 }
@@ -253,14 +376,14 @@ function RequestsView({ title, requests, setModal }: { title: string; requests: 
   </>;
 }
 
-function ProfileView({ title, notify }: { title: string; notify: (s: string) => void }) {
+function ProfileView({ title, notify, dark, toggleDark }: { title: string; notify: (s: string) => void; dark: boolean; toggleDark: () => void }) {
   return <><div className="eyebrow">Tes informations</div><h1>{title}</h1><div className="profile-card"><div className="profile-avatar">D</div><div><h2>Dorian</h2><p>Installation à Lombok · Juillet 2026</p></div></div>
     <div className="trip-progress"><div><strong>Ton installation</strong><span>60%</span></div><div className="progress"><i /></div><p>3 étapes complétées sur 5</p></div>
-    <div className="settings"><button onClick={() => notify("Tes informations sont à jour")}><span>⌂</span><b>Mon logement</b><em>›</em></button><button onClick={() => notify("Tes contacts sont disponibles hors ligne")}><span>☏</span><b>Mes contacts utiles</b><em>›</em></button><button onClick={() => notify("Mode hors ligne activé")}><span>↓</span><b>Accès hors ligne</b><em>›</em></button></div>
+    <div className="settings"><button onClick={() => notify("Tes informations sont à jour")}><span>⌂</span><b>Mon logement</b><em>›</em></button><button onClick={() => notify("Tes contacts sont disponibles hors ligne")}><span>☏</span><b>Mes contacts utiles</b><em>›</em></button><button onClick={() => notify("Mode hors ligne activé")}><span>↓</span><b>Accès hors ligne</b><em>›</em></button><button onClick={toggleDark}><span>{dark ? "☀" : "◐"}</span><b>Mode {dark ? "clair" : "sombre"}</b><em>›</em></button></div>
   </>;
 }
 
-function Modal({ type, close, addRequest, notify }: { type: "request" | "place"; close: () => void; addRequest: (d: FormData) => void; notify: (s: string) => void }) {
+function Modal({ type, close, addRequest, notify, draft = "" }: { type: "request" | "place"; close: () => void; addRequest: (d: FormData) => void; notify: (s: string) => void; draft?: string }) {
   return <div className="modal-backdrop" onMouseDown={close}><section className="modal" onMouseDown={e => e.stopPropagation()}><div className="modal-handle"/><button className="close" onClick={close}>×</button><span className="modal-icon">{type === "request" ? "✦" : "♡"}</span><h2>{type === "request" ? "De quoi as-tu besoin ?" : "Nouvelle bonne adresse"}</h2><p>{type === "request" ? "Décris ta demande, même en quelques mots." : "Ajoute un lieu à ton carnet personnel."}</p>
-    <form action={type === "request" ? addRequest : () => { close(); notify("Adresse ajoutée à ton carnet"); }}><label>{type === "request" ? "Ma demande" : "Nom du lieu"}<input name="title" required placeholder={type === "request" ? "Ex. Un scooter pour un mois" : "Ex. Café Mana"}/></label><label>Précisions<textarea placeholder="Lieu, date, budget…" /></label><button className="primary" type="submit">{type === "request" ? "Envoyer ma demande" : "Enregistrer l’adresse"}</button></form></section></div>;
+    <form action={type === "request" ? addRequest : () => { close(); notify("Adresse ajoutée à ton carnet"); }}><label>{type === "request" ? "Ma demande" : "Nom du lieu"}<input name="title" required defaultValue={draft} placeholder={type === "request" ? "Ex. Un scooter pour un mois" : "Ex. Café Mana"}/></label><label>Précisions<textarea placeholder="Lieu, date, budget…" /></label><button className="primary" type="submit">{type === "request" ? "Envoyer ma demande" : "Enregistrer l’adresse"}</button></form></section></div>;
 }
