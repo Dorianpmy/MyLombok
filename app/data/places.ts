@@ -48,13 +48,38 @@ const categoryPhotos: Record<PlaceCategory, string> = {
   culture: "https://images.unsplash.com/photo-1533669955142-6a73332af4db?auto=format&fit=crop&w=900&q=78",
 };
 
+const restaurantPhotoIds = [
+  "photo-1504674900247-0877df9cc836", "photo-1565299624946-b28f40a0ae38", "photo-1547592180-85f173990554", "photo-1512621776951-a57141f2eefd",
+  "photo-1482049016688-2d3e1b311543", "photo-1473093295043-cdd812d0e601", "photo-1563379926898-05f4575a45d8", "photo-1546069901-ba9599a7e63c",
+  "photo-1551218808-94e220e084d2", "photo-1565958011703-44f9829ba187", "photo-1498837167922-ddd27525d352", "photo-1543353071-873f17a7a088",
+  "photo-1559339352-11d035aa65de", "photo-1528712306091-ed0763094c98", "photo-1476224203421-9ac39bcb3327", "photo-1529042410759-befb1204b468",
+  "photo-1490645935967-10de6ba17061", "photo-1540189549336-e6e99c3679fe", "photo-1551183053-bf91a1d81141", "photo-1569058242253-92a9c755a0ec",
+  "photo-1495474472287-4d71bcdd2085", "photo-1562565652-a0d8f0c59eb4", "photo-1533777857889-4be7c70b33f7", "photo-1555396273-367ea4eb4db5",
+];
+
+const travelPhotoIds = [
+  "photo-1507525428034-b723cf961d3e", "photo-1518509562904-e7ef99cdcc86", "photo-1469474968028-56623f02e42e", "photo-1441974231531-c6227db76b6e",
+  "photo-1470770841072-f978cf4d019e", "photo-1500530855697-b586d89ba3ee", "photo-1464822759023-fed622ff2c3b", "photo-1501785888041-af3ef285b470",
+  "photo-1521292270410-a8c4d716d518", "photo-1472396961693-142e6e269027", "photo-1510414842594-a61c69b5ae57", "photo-1544551763-46a013bb70d5",
+  "photo-1526772662000-3f88f10405ff", "photo-1493558103817-58b2924bce98", "photo-1539635278303-d4002c07eae3", "photo-1527631746610-bca00a040d60",
+  "photo-1516483638261-f4dbaf036963", "photo-1500534314209-a25ddb2bd429", "photo-1511497584788-876760111969", "photo-1461696114087-397271a7aedc",
+  "photo-1470214304380-aadaedcfff1b", "photo-1465146344425-f00d5f5c8f07", "photo-1500534623283-312aade485b7", "photo-1497436072909-f5e4be1713c0",
+  "photo-1473445361085-b9a07f55608b", "photo-1497250681960-ef046c08a56e", "photo-1533669955142-6a73332af4db", "photo-1528181304800-259b08848526",
+  "photo-1528127269322-539801943592", "photo-1540202404-a2f29016b523", "photo-1540206395-68808572332f", "photo-1530789253388-582c481c54b0",
+];
+
+function editorialPhoto(category: PlaceCategory, index: number) {
+  const collection = category === "restaurant" ? restaurantPhotoIds : travelPhotoIds;
+  return `https://images.unsplash.com/${collection[index % collection.length]}?auto=format&fit=crop&w=900&q=78`;
+}
+
 const priceDefaults: Record<number, string> = {
   1: "20–60k Rp · 1–4 €",
   2: "60–150k Rp · 4–9 €",
   3: "150–350k Rp · 9–21 €",
 };
 
-export const importedPlaces: Place[] = seedPlaces.map((item) => {
+export const importedPlaces: Place[] = seedPlaces.map((item, index) => {
   const category = item.category as PlaceCategory;
   return {
     id: item.id,
@@ -75,7 +100,7 @@ export const importedPlaces: Place[] = seedPlaces.map((item) => {
     opening_hours: item.opening_hours,
     whatsapp: item.whatsapp,
     maps_url: `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}${item.google_place_id ? `&query_place_id=${item.google_place_id}` : ""}`,
-    photos: item.photos.length ? item.photos : [categoryPhotos[category]],
+    photos: item.photos.length ? item.photos : [editorialPhoto(category, index)],
     tested_by_us: item.tested_by_us,
     rating: item.rating || item.google_rating,
     best_time: item.best_time,
@@ -124,7 +149,7 @@ const extraPlacesBase: Omit<Place, "zone" | "halal" | "alcool_servi" | "ambiance
   },
 ];
 
-const extraPlaces: Place[] = extraPlacesBase.map((place) => ({ ...place, zone: place.city, halal: "inconnu", alcool_servi: null, ambiance: place.category === "culture" ? ["calme", "familial"] : place.category === "nature" || place.category === "plage" ? ["vue", "romantique"] : ["calme"], mosquee_proche: { nom: "Masjid Nurul Bilad Mandalika", distance_m: Math.round(Math.hypot(place.lat + 8.8937, place.lng - 116.2965) * 111000), mawaqit_slug: "nurul-bilad-mandalika" }, prive: false }));
+const extraPlaces: Place[] = extraPlacesBase.map((place, index) => ({ ...place, photos: [editorialPhoto(place.category, importedPlaces.length + index)], zone: place.city, halal: "inconnu", alcool_servi: null, ambiance: place.category === "culture" ? ["calme", "familial"] : place.category === "nature" || place.category === "plage" ? ["vue", "romantique"] : ["calme"], mosquee_proche: { nom: "Masjid Nurul Bilad Mandalika", distance_m: Math.round(Math.hypot(place.lat + 8.8937, place.lng - 116.2965) * 111000), mawaqit_slug: "nurul-bilad-mandalika" }, prive: false }));
 
 const mosques: Place[] = [
   { id: "masjid-nurul-bilad", region: "central-lombok", island: "lombok", city: "Kuta", category: "service", subcategory: "mosquée", name: "Masjid Nurul Bilad Mandalika", slug: "masjid-nurul-bilad", description: "Grande mosquée de Mandalika, facilement accessible depuis Kuta.", specialty: "Salle de prière et ablutions", tags: ["mosquée", "prière", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.8937, lng: 116.2965, opening_hours: "04:30–21:00", whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8937,116.2965", photos: [categoryPhotos.culture], tested_by_us: true, rating: 4.8, best_time: "hors grande affluence du vendredi", level: null, vigilance: null, zone: "Kuta/Mandalika", halal: "certifié", alcool_servi: false, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },

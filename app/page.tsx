@@ -100,7 +100,7 @@ export default function Home() {
       <section className="phone-app">
         <header className="topbar">
           <button className="brand" onClick={() => setTab("home")} aria-label="Retour à l'accueil">
-            <span className="brand-mark">M</span><span>my lombok</span>
+            <img src="/mylombok-logo.svg" alt="MyLombok"/>
           </button>
           <select className="destination" aria-label="Destination"><option>Lombok</option><option disabled>Bali · bientôt</option><option disabled>Gili · bientôt</option><option disabled>Sumbawa · bientôt</option><option disabled>Flores · bientôt</option></select>
           <button className="avatar" onClick={() => setTab("profile")} aria-label="Ouvrir mon profil">○</button>
@@ -164,14 +164,23 @@ function PrayerWidget({ position }: { position: UserPosition | null }) {
 }
 
 function CurrencyConverter() {
-  const [amount, setAmount] = useState(100000);
+  const fallbackRates: Record<string, number> = { EUR: .000052, USD: .000061, GBP: .000045, CHF: .000048, AUD: .000091, SGD: .000078, MYR: .000258, SAR: .000229, AED: .000224 };
+  const [amount, setAmount] = useState(1000000);
   const [currency, setCurrency] = useState("EUR");
-  const [rate, setRate] = useState(0.000052);
+  const [rate, setRate] = useState(fallbackRates.EUR);
   const [date, setDate] = useState("hors ligne");
   useEffect(() => {
     const cache = localStorage.getItem("my-lombok-rates");
-    if (cache) { const saved = JSON.parse(cache); if (Date.now() - saved.savedAt < 86400000) { setRate(saved.rates[currency] || rate); setDate(saved.date); return; } }
-    fetch(`https://api.frankfurter.dev/v2/rate/IDR/${currency}`).then((response) => response.json()).then((data) => { setRate(data.rate); setDate(data.date); localStorage.setItem("my-lombok-rates", JSON.stringify({ savedAt: Date.now(), date: data.date, rates: { [currency]: data.rate } })); }).catch(() => {});
+    const saved = cache ? JSON.parse(cache) : { savedAt: 0, date: "hors ligne", rates: {} };
+    const cachedRate = Number(saved.rates?.[currency]);
+    setRate(cachedRate || fallbackRates[currency]);
+    setDate(cachedRate ? saved.date : "indicatif hors ligne");
+    if (cachedRate && Date.now() - saved.savedAt < 86400000) return;
+    fetch(`https://api.frankfurter.dev/v2/rate/IDR/${currency}`).then((response) => response.json()).then((data) => {
+      const nextRates = { ...saved.rates, [currency]: data.rate };
+      setRate(data.rate); setDate(data.date);
+      localStorage.setItem("my-lombok-rates", JSON.stringify({ savedAt: Date.now(), date: data.date, rates: nextRates }));
+    }).catch(() => {});
   }, [currency]);
   return <section className="converter"><div><small>CONVERTISSEUR HORS LIGNE</small><strong>{new Intl.NumberFormat("id-ID").format(amount)} Rp</strong><input aria-label="Montant en roupies" type="number" value={amount} onChange={(event) => setAmount(Number(event.target.value))}/></div><span>⇄</span><div><select value={currency} onChange={(event) => setCurrency(event.target.value)}>{["EUR","USD","GBP","CHF","AUD","SGD","MYR","SAR","AED"].map((code) => <option key={code}>{code}</option>)}</select><strong>{new Intl.NumberFormat("fr-FR", { style: "currency", currency }).format(amount * rate)}</strong><small>Taux du {date}</small></div><footer>Repères : warung ≈ 35k · plein scooter ≈ 45k · scooter-taxi ≈ 25k</footer></section>;
 }
@@ -418,11 +427,22 @@ function RequestsView({ title, requests, setModal }: { title: string; requests: 
   </>;
 }
 
+const officialGuides = [
+  { icon: "◎", title: "Visa & titre de séjour", summary: "e-VOA, visa, KITAS/KITAP et prolongations.", href: "https://evisa.imigrasi.go.id/", source: "Immigration indonésienne" },
+  { icon: "◇", title: "Créer une activité", summary: "NIB, licences et niveau de risque de l’activité.", href: "https://oss.go.id/", source: "OSS Indonesia" },
+  { icon: "▦", title: "Impôts & NPWP", summary: "Enregistrement fiscal des particuliers et entreprises.", href: "https://www.pajak.go.id/en/requirements-individual-taxpayer-identification-number-tin-registration", source: "Direction générale des impôts" },
+  { icon: "+", title: "Couverture santé", summary: "Informations et services de l’assurance santé nationale.", href: "https://www.bpjs-kesehatan.go.id/", source: "BPJS Kesehatan" },
+  { icon: "⌁", title: "Téléphone & IMEI", summary: "Règles douanières pour les appareils importés.", href: "https://www.beacukai.go.id/", source: "Douanes indonésiennes" },
+  { icon: "⌂", title: "Services locaux NTB", summary: "Portail officiel de la province de Nusa Tenggara Barat.", href: "https://ntbprov.go.id/", source: "Gouvernement de NTB" },
+];
+
 function ProfileView({ title, notify, dark, toggleDark, visited, muslimMode, toggleMuslimMode }: { title: string; notify: (s: string) => void; dark: boolean; toggleDark: () => void; visited: string[]; muslimMode: boolean; toggleMuslimMode: () => void }) {
   const [currency, setCurrency] = useState("EUR");
+  const [adminOpen, setAdminOpen] = useState(false);
   useEffect(() => { setCurrency(localStorage.getItem("my-lombok-currency") || "EUR"); }, []);
   const percent = Math.round(visited.length / allPlaces.length * 100);
-  return <><div className="eyebrow">Tes informations</div><h1>{title}</h1><div className="profile-card"><div className="profile-avatar">○</div><div><h2>Mon profil voyageur</h2><p>Séjour à Lombok · paramètres locaux</p></div></div>
+  if (adminOpen) return <section className="admin-guide"><button className="admin-back" onClick={() => setAdminOpen(false)}>← Mon profil</button><div className="eyebrow">Sources officielles · vérifiées le 22 juillet 2026</div><h1>S’installer à Lombok</h1><p className="lead">Les bons points de départ pour préparer une expatriation, sans dépendre de groupes Facebook ou d’informations périmées.</p><div className="admin-warning"><b>À savoir</b><span>Les règles changent. Consulte toujours la source officielle avant de payer ou déposer un dossier.</span></div><div className="admin-list">{officialGuides.map((guide) => <a key={guide.title} href={guide.href} target="_blank" rel="noreferrer"><i>{guide.icon}</i><div><strong>{guide.title}</strong><p>{guide.summary}</p><small>{guide.source} · Ouvrir la source ↗</small></div></a>)}</div><button className="primary wide" onClick={() => notify("La conciergerie peut t’aider à préparer tes démarches")}>Demander un accompagnement</button></section>;
+  return <><div className="eyebrow">Tes informations</div><h1>{title}</h1><button className="profile-card profile-main" onClick={() => setAdminOpen(true)}><div className="profile-avatar">ML</div><div><small>GUIDE EXPATRIATION</small><h2>S’installer à Lombok</h2><p>Visa, société, fiscalité, santé et démarches officielles</p></div><em>›</em></button>
     <div className="trip-progress"><div><strong>Ton exploration de Lombok</strong><span>{percent}%</span></div><div className="progress"><i style={{ width: `${percent}%` }}/></div><p>{visited.length} lieux visités sur {allPlaces.length} · Kuta/Mandalika, Gerupuk, Selong Belanak, Tetebatu, Rinjani et Gili</p></div>
     <label className="currency-choice"><span>Devise d’affichage</span><select value={currency} onChange={(event) => { setCurrency(event.target.value); localStorage.setItem("my-lombok-currency", event.target.value); }}>{["EUR","USD","GBP","CHF","AUD","SGD","MYR","SAR","AED","IDR"].map((code) => <option key={code}>{code}</option>)}</select></label>
     <div className="settings"><button className="muslim-setting" onClick={toggleMuslimMode}><span>☾</span><b><small>PRÉFÉRENCE DE SÉJOUR</small>Voyage musulman</b><em className={muslimMode ? "switch on" : "switch"}><i/></em></button><button onClick={() => notify("Tes informations sont à jour")}><span>⌂</span><b>Mon logement</b><em>›</em></button><button onClick={() => notify("Tes contacts sont disponibles hors ligne")}><span>☏</span><b>Mes contacts utiles</b><em>›</em></button><button onClick={() => notify("Mode hors ligne activé")}><span>↓</span><b>Accès hors ligne</b><em>›</em></button><button onClick={toggleDark}><span>{dark ? "☀" : "◐"}</span><b>Mode {dark ? "clair" : "sombre"}</b><em>›</em></button></div>
