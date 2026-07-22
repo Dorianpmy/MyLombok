@@ -49,7 +49,7 @@ export default function Home() {
     if (saved) setRequests(JSON.parse(saved));
     const cachedFavorites = localStorage.getItem("my-lombok-favorites");
     if (cachedFavorites) setFavorites(JSON.parse(cachedFavorites));
-    setDark(localStorage.getItem("my-lombok-theme") === "dark" || (!localStorage.getItem("my-lombok-theme") && matchMedia("(prefers-color-scheme: dark)").matches));
+    setDark(localStorage.getItem("my-lombok-theme") === "dark");
     const savedVisited = localStorage.getItem("my-lombok-visited"); if (savedVisited) setVisited(JSON.parse(savedVisited));
     let id = localStorage.getItem("my-lombok-device");
     if (!id) { id = crypto.randomUUID(); localStorage.setItem("my-lombok-device", id); }
@@ -308,17 +308,11 @@ function Globe({ onLombok, position, geoStatus, requestPosition }: { onLombok: (
         uniform sampler2D globeMap; varying vec2 uvMap; varying vec3 worldNormal;
         void main(){
           vec3 src=texture2D(globeMap,uvMap).rgb;
-          float ocean=step(src.r*1.05,src.b)*step(src.g*0.94,src.b);
-          float ice=step(0.72,min(src.r,min(src.g,src.b)));
-          float warm=step(src.g,src.r);
-          vec3 sea=mix(vec3(0.08,0.55,0.84),vec3(0.14,0.68,0.91),step(0.32,src.b));
-          vec3 green=mix(vec3(0.30,0.66,0.28),vec3(0.57,0.80,0.31),step(0.36,src.g));
-          vec3 sand=mix(vec3(0.82,0.56,0.25),vec3(0.94,0.76,0.36),step(0.48,src.r));
-          vec3 land=mix(green,sand,warm); vec3 color=mix(land,sea,ocean); color=mix(color,vec3(0.91,0.96,0.91),ice);
-          float light=dot(worldNormal,normalize(vec3(-0.6,0.7,1.0)))*0.5+0.55;
-          light=floor(light*4.0)/4.0; color*=mix(0.58,1.12,light);
+          float light=dot(worldNormal,normalize(vec3(-0.6,0.7,1.0)))*0.48+0.52;
+          vec3 color=pow(src,vec3(1.06))*vec3(0.72,0.82,0.94);
+          color*=mix(0.28,1.04,smoothstep(0.0,1.0,light));
           float rim=pow(1.0-max(0.0,dot(worldNormal,vec3(0.0,0.0,1.0))),2.0);
-          gl_FragColor=vec4(mix(color,vec3(0.36,0.80,0.96),rim*0.32),1.0);
+          gl_FragColor=vec4(mix(color,vec3(0.13,0.55,0.82),rim*0.24),1.0);
         }`
     }));
     world.add(earth);
@@ -328,7 +322,7 @@ function Globe({ onLombok, position, geoStatus, requestPosition }: { onLombok: (
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
       vertexShader: "varying vec3 n; void main(){ n=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }",
-      fragmentShader: "varying vec3 n; void main(){ float i=pow(0.72-dot(n,vec3(0.0,0.0,1.0)),2.2); gl_FragColor=vec4(0.52,0.88,1.0,1.0)*i; }"
+      fragmentShader: "varying vec3 n; void main(){ float i=pow(0.72-dot(n,vec3(0.0,0.0,1.0)),2.2); gl_FragColor=vec4(0.12,0.55,0.95,1.0)*i; }"
     }));
     world.add(atmosphere);
 
