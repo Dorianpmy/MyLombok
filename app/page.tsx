@@ -198,7 +198,7 @@ export default function Home() {
   }
 
   return (
-    <main className={`app-shell ${dark ? "dark" : ""} ${muslimMode ? "muslim-on" : "muslim-off"}`}>
+    <main className={`app-shell tab-${tab} ${dark ? "dark" : ""} ${muslimMode ? "muslim-on" : "muslim-off"}`}>
       <section className="phone-app">
         <header className="topbar">
           <button className="brand" onClick={() => setTab("home")} aria-label="Retour à l'accueil">
@@ -216,7 +216,7 @@ export default function Home() {
         </div>
 
         <nav className="bottom-nav" aria-label="Navigation principale">
-          {nav.map((item) => <button key={item.id} className={tab === item.id ? "active" : ""} onClick={() => setTab(item.id)}><span><item.Icon strokeWidth={2}/></span>{item.label}</button>)}
+          {nav.map((item) => <button key={item.id} className={tab === item.id ? "active" : ""} aria-current={tab === item.id ? "page" : undefined} onClick={() => setTab(item.id)}><span><item.Icon strokeWidth={1.8}/></span>{item.label}</button>)}
         </nav>
       </section>
 
@@ -243,9 +243,9 @@ function HomeView({ title, requests, setTab, setModal, notify, position, geoStat
     <p className="lead">Une sélection locale pour vivre l’île à ton rythme.</p>
     <div className={`home-widgets ${muslimMode ? "" : "solo"}`}>{muslimMode && <PrayerWidget position={position}/>}<button className="progress-widget" onClick={() => setTab("profile")}><span style={{ "--progress": `${Math.round(visited.length / allPlaces.length * 100)}%` } as React.CSSProperties}><b>{Math.round(visited.length / allPlaces.length * 100)}%</b></span><div><small>TON EXPLORATION</small><strong>{visited.length ? "Continue comme ça" : "L’aventure commence"}</strong><p>{visited.length} lieu{visited.length > 1 ? "x" : ""} visité{visited.length > 1 ? "s" : ""}</p></div></button></div>
     <div className="map-filters">{["Explorer", "Manger", "Plages", "Services"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); if (item === "Explorer") setTab("explorer"); else notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
-    <Globe onLombok={() => { setSelected("Kuta Lombok"); notify("Bienvenue à Lombok"); }} position={position} geoStatus={geoStatus} requestPosition={requestPosition} />
     <article className="map-place-card home-location-card"><div className="spot-thumb"><current.Icon strokeWidth={1.8}/></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { setTab("explorer"); notify(`${current.name} ouvert dans Explorer`); }} aria-label={`Explorer ${current.name}`}><ChevronRight/></button></article>
-    <div className="map-actions"><button className="map-request" onClick={() => setModal("request")}><span>＋</span><b>Demander à la conciergerie</b></button><button onClick={() => { setTab("requests"); notify("Réservation ouverte"); }}><span className="calendar"><b>23</b>JUL</span><strong>{requests[0]?.title || "Mes demandes"}</strong></button></div>
+    <Globe onLombok={() => { setSelected("Kuta Lombok"); notify("Bienvenue à Lombok"); }} position={position} geoStatus={geoStatus} requestPosition={requestPosition} />
+    <div className="map-actions"><button className="map-request" onClick={() => setModal("request")}><span className="action-icon"><MessageCircle strokeWidth={1.8}/></span><b><small>CONCIERGERIE</small>Faire une demande</b></button><button className="airport-action" onClick={() => { setTab("requests"); notify("Réservation ouverte"); }}><span className="action-icon"><MapPinned strokeWidth={1.8}/></span><strong><small>PROCHAIN TRAJET</small>{requests[0]?.title || "Mes demandes"}</strong><ChevronRight/></button></div>
     <CurrencyConverter />
   </>;
 }
@@ -538,9 +538,9 @@ function RegionMap({ close, onLombok }: { close: () => void; onLombok: () => voi
 
 function RequestsView({ title, requests, setModal }: { title: string; requests: Request[]; setModal: (m: "request") => void }) {
   return <><div className="eyebrow">Service local · gratuit pour toi</div><h1>{title}</h1><p className="lead">Dis-nous ce que tu veux organiser. Nous trouvons le bon prestataire et suivons ta réservation.</p>
-    <section className="concierge-promise"><span>✦</span><div><strong>Un seul message, on s’occupe du reste</strong><p>Conseils locaux · partenaires vérifiés · suivi jusqu’à confirmation</p></div></section>
-    <div className="request-list">{requests.map((request) => <article className="request-card" key={request.id}><div className="status-dot"/><div><span className={`badge ${request.status === "Confirmé" ? "confirmed" : ""}`}>{request.status}</span><h3>{request.title}</h3><p>{request.detail}</p></div><button>›</button></article>)}</div>
-    <button className="primary wide" onClick={() => setModal("request")}>＋ Demander à la conciergerie</button>
+    <section className="concierge-promise"><span><Sparkles strokeWidth={1.8}/></span><div><strong>Un seul message, on s’occupe du reste</strong><p>Conseils locaux · partenaires vérifiés · suivi jusqu’à confirmation</p></div></section>
+    <div className="request-list">{requests.map((request) => <article className="request-card" key={request.id}><div className="request-card-icon">{request.title.toLowerCase().includes("aéroport") ? <MapPinned strokeWidth={1.8}/> : <Compass strokeWidth={1.8}/>}</div><div><span className={`badge ${request.status === "Confirmé" ? "confirmed" : ""}`}>{request.status}</span><h3>{request.title}</h3><p>{request.detail}</p></div><button aria-label={`Ouvrir ${request.title}`}><ChevronRight/></button></article>)}</div>
+    <button className="primary wide concierge-cta" onClick={() => setModal("request")}><MessageCircle strokeWidth={1.8}/> Demander à la conciergerie</button>
   </>;
 }
 
