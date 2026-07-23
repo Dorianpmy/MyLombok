@@ -8,6 +8,7 @@ import { categoryMeta, distanceKm, places as allPlaces, type Place, type PlaceCa
 import { getDistanceOrigin, isOpenAtLombokTime, normalizeCategory, withinOptionalRadius } from "./lib/explorer-filters";
 import { CalculationMethod, Coordinates, PrayerTimes } from "adhan";
 import {
+  Activity,
   BadgeCheck,
   BookOpen,
   CalendarDays,
@@ -30,6 +31,7 @@ import {
   Mountain,
   Phone,
   Plane,
+  Plus,
   Sailboat,
   Search,
   ShieldCheck,
@@ -37,6 +39,7 @@ import {
   Sparkles,
   Sun,
   Sunset,
+  Timer,
   Trees,
   UserRound,
   UtensilsCrossed,
@@ -51,6 +54,33 @@ type Request = { id: number; title: string; detail: string; status: "En cours" |
 type UserPosition = { lat: number; lng: number };
 type TripPlan = { arrival: string; departure: string; travelers: string; interests: string[]; createdAt: string };
 type UserPreferences = { dark: boolean; muslimMode: boolean; tripPlan?: TripPlan | null };
+type ExplorerCategory = PlaceCategory | "activite" | "all";
+
+const MYLOMBOK_WHATSAPP = "33763664857";
+const activityTerms = ["activité", "surf", "snorkeling", "plongée", "trek", "randonnée", "bateau", "yoga", "massage", "spa", "cours", "tour", "pêche"];
+
+function isActivityPlace(place: Place) {
+  const searchable = `${place.subcategory} ${place.specialty || ""} ${place.tags.join(" ")}`.toLocaleLowerCase("fr");
+  return activityTerms.some((term) => searchable.includes(term));
+}
+
+function safeParse<T>(value: string | null, fallback: T): T {
+  if (!value) return fallback;
+  try { return JSON.parse(value) as T; } catch { return fallback; }
+}
+
+function normalizeWhatsAppNumber(value: string | null) {
+  if (!value) return null;
+  const digits = value.replace(/[^0-9]/g, "");
+  return digits.length >= 8 && digits.length <= 15 ? digits : null;
+}
+
+function providerWhatsAppUrl(place: Place) {
+  const number = normalizeWhatsAppNumber(place.whatsapp);
+  if (!number) return null;
+  const message = `Bonjour ${place.name}, je vous contacte depuis MyLombok au sujet de vos services.`;
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
 
 const places = [
   { icon: "☕", name: "Bush Radio", area: "Kuta", type: "Café & coworking", color: "peach" },
@@ -105,13 +135,13 @@ export default function Home() {
 
   useEffect(() => {
     const saved = localStorage.getItem("my-lombok-requests");
-    if (saved) setRequests(JSON.parse(saved));
+    if (saved) setRequests(safeParse<Request[]>(saved, initialRequests));
     const cachedFavorites = localStorage.getItem("my-lombok-favorites");
-    if (cachedFavorites) setFavorites(JSON.parse(cachedFavorites));
+    if (cachedFavorites) setFavorites(safeParse<string[]>(cachedFavorites, []));
     setDark(localStorage.getItem("my-lombok-theme") === "dark");
     setMuslimMode(localStorage.getItem("my-lombok-muslim-mode") === "true");
-    const savedTripPlan = localStorage.getItem("my-lombok-trip-plan"); if (savedTripPlan) setTripPlan(JSON.parse(savedTripPlan));
-    const savedVisited = localStorage.getItem("my-lombok-visited"); if (savedVisited) setVisited(JSON.parse(savedVisited));
+    const savedTripPlan = localStorage.getItem("my-lombok-trip-plan"); if (savedTripPlan) setTripPlan(safeParse<TripPlan | null>(savedTripPlan, null));
+    const savedVisited = localStorage.getItem("my-lombok-visited"); if (savedVisited) setVisited(safeParse<string[]>(savedVisited, []));
     setLocalReady(true);
     requestPosition();
     const supabase = getSupabaseBrowserClient();
@@ -181,13 +211,16 @@ export default function Home() {
   }
 
   function addRequest(formData: FormData) {
-    const title = String(formData.get("title") || "Nouvelle demande");
+    const title = String(formData.get("title") || "Nouvelle demande").trim().slice(0, 180);
+    const details = String(formData.get("details") || "").trim().slice(0, 1200);
     const next = [{ id: Date.now(), title, detail: "À organiser · Dès que possible", status: "En cours" as const }, ...requests];
     setRequests(next);
     localStorage.setItem("my-lombok-requests", JSON.stringify(next));
     setModal(null);
     setTab("requests");
-    notify("Demande ajoutée — on s’en occupe !");
+    const message = [`Bonjour MyLombok,`, ``, title, details, ``, `Envoyé depuis l’application MyLombok`].filter(Boolean).join("\n");
+    window.open(`https://wa.me/${MYLOMBOK_WHATSAPP}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    notify("WhatsApp MyLombok ouvert — ta demande est prête");
   }
 
   function toggleFavorite(placeId: string) {
@@ -210,20 +243,26 @@ export default function Home() {
         <header className="topbar">
           <button className="brand" onClick={() => setTab("home")} aria-label="Retour à l'accueil">
             <img src="/mylombok-logo.svg" alt="MyLombok"/>
+            <span className="brand-copy"><b>MyLombok</b><small>LOCAL CONCIERGE</small></span>
           </button>
           <select className="destination" aria-label="Destination"><option>Lombok</option><option disabled>Bali · bientôt</option><option disabled>Gili · bientôt</option><option disabled>Sumbawa · bientôt</option><option disabled>Flores · bientôt</option></select>
-          <button className={`avatar ${accountUser ? "signed-in" : ""}`} onClick={() => setTab("profile")} aria-label="Ouvrir mon profil">{accountUser?.user_metadata?.avatar_url ? <img src={accountUser.user_metadata.avatar_url} alt=""/> : (accountUser?.email?.slice(0, 1).toUpperCase() || "○")}</button>
+          <button className={`avatar ${accountUser ? "signed-in" : ""}`} onClick={() => setTab("profile")} aria-label="Ouvrir mon profil">{accountUser?.user_metadata?.avatar_url ? <img src={accountUser.user_metadata.avatar_url} alt="" referrerPolicy="no-referrer"/> : (accountUser?.email?.slice(0, 1).toUpperCase() || "○")}</button>
         </header>
 
         <div className="content">
-          {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} setRequestDraft={setRequestDraft} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} visited={visited} muslimMode={muslimMode} tripPlan={tripPlan} saveTripPlan={(plan) => { setTripPlan(plan); localStorage.setItem("my-lombok-trip-plan", JSON.stringify(plan)); }} />}
-          {tab === "explorer" && <ExplorerView muslimMode={muslimMode} position={position} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} setRequestDraft={setRequestDraft} visited={visited} checkIn={(id) => { const next = Array.from(new Set([...visited, id])); setVisited(next); localStorage.setItem("my-lombok-visited", JSON.stringify(next)); }} />}
-          {tab === "requests" && <RequestsView title={title} requests={requests} setModal={setModal} />}
-          {tab === "profile" && <ProfileView title={title} notify={notify} dark={dark} visited={visited} favoriteCount={favorites.length} requestCount={requests.length} muslimMode={muslimMode} accountUser={accountUser} authLoading={authLoading} openAuth={() => setAuthOpen(true)} signOut={signOut} toggleMuslimMode={() => { const next = !muslimMode; setMuslimMode(next); localStorage.setItem("my-lombok-muslim-mode", String(next)); }} toggleDark={() => { const next = !dark; setDark(next); localStorage.setItem("my-lombok-theme", next ? "dark" : "light"); }} />}
+          <div className="tab-stage" key={tab}>
+            {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} setRequestDraft={setRequestDraft} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} visited={visited} muslimMode={muslimMode} tripPlan={tripPlan} saveTripPlan={(plan) => { setTripPlan(plan); localStorage.setItem("my-lombok-trip-plan", JSON.stringify(plan)); }} />}
+            {tab === "explorer" && <ExplorerView muslimMode={muslimMode} position={position} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} setRequestDraft={setRequestDraft} visited={visited} checkIn={(id) => { const next = Array.from(new Set([...visited, id])); setVisited(next); localStorage.setItem("my-lombok-visited", JSON.stringify(next)); }} />}
+            {tab === "requests" && <RequestsView title={title} requests={requests} setModal={setModal} />}
+            {tab === "profile" && <ProfileView title={title} notify={notify} dark={dark} visited={visited} favoriteCount={favorites.length} requestCount={requests.length} muslimMode={muslimMode} accountUser={accountUser} authLoading={authLoading} openAuth={() => setAuthOpen(true)} signOut={signOut} toggleMuslimMode={() => { const next = !muslimMode; setMuslimMode(next); localStorage.setItem("my-lombok-muslim-mode", String(next)); }} toggleDark={() => { const next = !dark; setDark(next); localStorage.setItem("my-lombok-theme", next ? "dark" : "light"); }} />}
+          </div>
         </div>
 
         <nav className="bottom-nav" aria-label="Navigation principale">
-          {nav.map((item) => <button key={item.id} className={tab === item.id ? "active" : ""} aria-current={tab === item.id ? "page" : undefined} onClick={() => setTab(item.id)}><span><item.Icon strokeWidth={1.8}/></span>{item.label}</button>)}
+          <div className="nav-rail">
+            {nav.map((item) => <button key={item.id} className={tab === item.id ? "active" : ""} aria-current={tab === item.id ? "page" : undefined} aria-label={item.label} onClick={() => setTab(item.id)}><span><item.Icon strokeWidth={1.8}/></span><b>{item.label}</b></button>)}
+          </div>
+          <button className="nav-quick-request" onClick={() => { setRequestDraft(""); setModal("request"); }} aria-label="Nouvelle demande à la conciergerie"><Plus strokeWidth={2}/></button>
         </nav>
       </section>
 
@@ -260,13 +299,13 @@ function HomeView({ title, requests, setTab, setModal, setRequestDraft, notify, 
       <button onClick={() => setTab("explorer")}><span><Compass strokeWidth={1.8}/></span><b>Activités</b><small>Voir la sélection</small></button>
       <button onClick={() => askConcierge("J'ai besoin d'aide pour préparer mon séjour")}><span><MessageCircle strokeWidth={1.8}/></span><b>Conciergerie</b><small>Parler à l'équipe</small></button>
     </section>
-    <div className={`home-widgets ${muslimMode ? "" : "solo"}`}>{muslimMode && <PrayerWidget position={position}/>}<button className="progress-widget" onClick={() => setTab("profile")}><span style={{ "--progress": `${Math.round(visited.length / allPlaces.length * 100)}%` } as React.CSSProperties}><b>{Math.round(visited.length / allPlaces.length * 100)}%</b></span><div><small>TON EXPLORATION</small><strong>{visited.length ? "Continue comme ça" : "L’aventure commence"}</strong><p>{visited.length} lieu{visited.length > 1 ? "x" : ""} visité{visited.length > 1 ? "s" : ""}</p></div></button></div>
+    {muslimMode && <div className="home-widgets solo prayer-only"><PrayerWidget position={position}/></div>}
     <div className="home-section-title"><small>REPÉRER L’ÎLE</small><strong>Explore avant de réserver</strong></div>
-    <div className="map-filters">{["Explorer", "Manger", "Plages", "Services"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); if (item === "Explorer") setTab("explorer"); else notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
+    <div className="map-filters">{["Explorer", "Activités", "Manger", "Plages", "Services"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); if (item === "Explorer" || item === "Activités") setTab("explorer"); else notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
     <article className="map-place-card home-location-card"><div className="spot-thumb"><current.Icon strokeWidth={1.8}/></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { setTab("explorer"); notify(`${current.name} ouvert dans Explorer`); }} aria-label={`Explorer ${current.name}`}><ChevronRight/></button></article>
     <Globe onLombok={() => { setSelected("Kuta Lombok"); notify("Bienvenue à Lombok"); }} position={position} geoStatus={geoStatus} requestPosition={requestPosition} />
     <div className="map-actions"><button className="map-request" onClick={() => setModal("request")}><span className="action-icon"><MessageCircle strokeWidth={1.8}/></span><b><small>CONCIERGERIE</small>Faire une demande</b></button><button className="airport-action" onClick={() => { setTab("requests"); notify("Réservation ouverte"); }}><span className="action-icon"><MapPinned strokeWidth={1.8}/></span><strong><small>PROCHAIN TRAJET</small>{requests[0]?.title || "Mes demandes"}</strong><ChevronRight/></button></div>
-    <CurrencyConverter />
+    <details className="home-currency"><summary>Convertir des roupies <span>Optionnel</span></summary><CurrencyConverter /></details>
   </>;
 }
 
@@ -274,11 +313,12 @@ function TripPlannerCard({ tripPlan, saveTripPlan, explore, concierge, notify }:
   const today = new Date();
   const inDays = (days: number) => { const date = new Date(today); date.setDate(date.getDate() + days); return date.toISOString().slice(0, 10); };
   const [editing, setEditing] = useState(!tripPlan);
+  const [compact, setCompact] = useState(true);
   const [arrival, setArrival] = useState(tripPlan?.arrival || inDays(30));
   const [departure, setDeparture] = useState(tripPlan?.departure || inDays(37));
   const [travelers, setTravelers] = useState(tripPlan?.travelers || "Couple");
   const [interests, setInterests] = useState<string[]>(tripPlan?.interests || ["Plages", "Nature"]);
-  const interestOptions = ["Plages", "Nature", "Surf", "Culture", "Food"];
+  const interestOptions = ["Plages", "Nature", "Activités", "Surf", "Culture", "Food"];
   const arrivalDate = tripPlan ? new Date(`${tripPlan.arrival}T12:00:00`) : null;
   const daysBefore = arrivalDate ? Math.ceil((arrivalDate.getTime() - Date.now()) / 86400000) : null;
   const stayLength = tripPlan ? Math.max(1, Math.ceil((new Date(`${tripPlan.departure}T12:00:00`).getTime() - arrivalDate!.getTime()) / 86400000)) : 0;
@@ -292,6 +332,8 @@ function TripPlannerCard({ tripPlan, saveTripPlan, explore, concierge, notify }:
     notify("Ton séjour est prêt à être organisé");
   }
 
+  if (compact) return <button className="trip-planner trip-planner-collapsed" onClick={() => setCompact(false)}><span><CalendarDays/></span><div><small>MON PROGRAMME</small><strong>Dates et envies de séjour</strong></div><em>Déplier <ChevronRight/></em></button>;
+
   if (tripPlan && !editing) return <section className="trip-planner trip-planner-ready">
     <header><span><CalendarDays strokeWidth={1.8}/></span><div><small>TON VOYAGE À LOMBOK</small><h2>{daysBefore !== null && daysBefore > 0 ? `Départ dans ${daysBefore} jours` : daysBefore === 0 ? "Départ aujourd’hui" : "Séjour en cours"}</h2><p>{dateLabel(tripPlan.arrival)} → {dateLabel(tripPlan.departure)} · {stayLength} nuits · {tripPlan.travelers}</p></div><button onClick={() => setEditing(true)}>Modifier</button></header>
     <div className="trip-plan-preview"><span><b>01</b>Arrivée & transfert</span><span><b>02</b>{tripPlan.interests[0] || "Découverte"}</span><span><b>03</b>{tripPlan.interests[1] || "Temps libre"}</span></div>
@@ -299,7 +341,7 @@ function TripPlannerCard({ tripPlan, saveTripPlan, explore, concierge, notify }:
   </section>;
 
   return <form className="trip-planner" onSubmit={submit}>
-    <header><span><CalendarDays strokeWidth={1.8}/></span><div><small>MON PROGRAMME</small><h2>Quand viens-tu à Lombok ?</h2><p>Commence par les dates, on t’aide pour le reste.</p></div></header>
+    <header><span><CalendarDays strokeWidth={1.8}/></span><div><small>MON PROGRAMME</small><h2>Quand viens-tu à Lombok ?</h2><p>Commence par les dates, on t’aide pour le reste.</p></div><button type="button" onClick={() => setCompact(true)}>Réduire</button></header>
     <div className="trip-dates"><label>ARRIVÉE<input type="date" min={inDays(0)} value={arrival} onChange={(event) => setArrival(event.target.value)}/></label><label>DÉPART<input type="date" min={arrival || inDays(1)} value={departure} onChange={(event) => setDeparture(event.target.value)}/></label></div>
     <div className="trip-choice"><small>JE VOYAGE</small><div>{["Solo", "Couple", "Famille", "Amis"].map((item) => <button type="button" key={item} className={travelers === item ? "selected" : ""} onClick={() => setTravelers(item)}>{item}</button>)}</div></div>
     <div className="trip-choice"><small>MES ENVIES</small><div>{interestOptions.map((item) => <button type="button" key={item} className={interests.includes(item) ? "selected" : ""} onClick={() => setInterests(interests.includes(item) ? interests.filter((interest) => interest !== item) : [...interests, item])}>{item}</button>)}</div></div>
@@ -317,10 +359,18 @@ function PrayerWidget({ position }: { position: UserPosition | null }) {
   let next = schedule.find((prayer) => prayer.date.getTime() > now);
   if (!next) { const tomorrow = new Date(now + 86400000); const nextTimes = new PrayerTimes(new Coordinates(coords.lat, coords.lng), tomorrow, params); next = { name: "Fajr", date: nextTimes.fajr }; }
   const remaining = Math.max(0, next.date.getTime() - now);
-  const hours = Math.floor(remaining / 3600000); const minutes = Math.floor(remaining % 3600000 / 60000);
+  const totalSeconds = Math.floor(remaining / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const previousDate = [...schedule].reverse().find((prayer) => prayer.date.getTime() <= now)?.date.getTime() || now - 6 * 3600000;
+  const cycle = Math.max(1, next.date.getTime() - previousDate);
+  const progress = Math.max(0, Math.min(1, 1 - remaining / cycle));
+  const pad = (value: number) => String(value).padStart(2, "0");
+  const lombokTime = new Intl.DateTimeFormat("fr-FR", { timeZone: "Asia/Makassar", hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date(now));
   const nearest = allPlaces.filter((place) => place.subcategory === "mosquée").sort((a, b) => distanceKm(coords, a) - distanceKm(coords, b))[0];
   useEffect(() => { localStorage.setItem(`my-lombok-prayers-${new Date().toISOString().slice(0, 10)}`, JSON.stringify(schedule.map((item) => ({ name: item.name, time: item.date.toISOString() })))); }, []);
-  return <div className="prayer-widget"><span>◒</span><div><small>PROCHAINE PRIÈRE · CALCUL LOCAL KEMENAG</small><strong>{next.name} · {new Intl.DateTimeFormat("fr-FR", { timeZone: "Asia/Makassar", hour: "2-digit", minute: "2-digit" }).format(next.date)}</strong><p>dans {hours} h {minutes} min · {nearest?.name || "Mosquée locale"}</p></div></div>;
+  return <div className="prayer-widget"><span className="prayer-dial" style={{ "--prayer-progress": `${progress * 360}deg` } as React.CSSProperties}><Timer aria-hidden="true"/></span><div><small>LOMBOK · {lombokTime} WITA</small><strong>{next.name} à {new Intl.DateTimeFormat("fr-FR", { timeZone: "Asia/Makassar", hour: "2-digit", minute: "2-digit" }).format(next.date)}</strong><p><b>{pad(hours)}:{pad(minutes)}:{pad(seconds)}</b> avant la prochaine prière</p><em>{nearest?.name || "Mosquée locale"}</em></div></div>;
 }
 
 function CurrencyConverter() {
@@ -331,7 +381,7 @@ function CurrencyConverter() {
   const [date, setDate] = useState("hors ligne");
   useEffect(() => {
     const cache = localStorage.getItem("my-lombok-rates");
-    const saved = cache ? JSON.parse(cache) : { savedAt: 0, date: "hors ligne", rates: {} };
+    const saved = safeParse<{ savedAt: number; date: string; rates: Record<string, number> }>(cache, { savedAt: 0, date: "hors ligne", rates: {} });
     const cachedRate = Number(saved.rates?.[currency]);
     setRate(cachedRate || fallbackRates[currency]);
     setDate(cachedRate ? saved.date : "indicatif hors ligne");
@@ -347,7 +397,7 @@ function CurrencyConverter() {
 
 function ExplorerView({ position, favorites, toggleFavorite, setModal, setRequestDraft, visited, checkIn, muslimMode }: { position: UserPosition | null; favorites: string[]; toggleFavorite: (id: string) => void; setModal: (type: "request") => void; setRequestDraft: (value: string) => void; visited: string[]; checkIn: (id: string) => void; muslimMode: boolean }) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<PlaceCategory | "all">("all");
+  const [category, setCategory] = useState<ExplorerCategory>("all");
   const [city, setCity] = useState("all");
   const [price, setPrice] = useState(0);
   const [tested, setTested] = useState(false);
@@ -376,7 +426,7 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
       const text = `${place.name} ${place.city} ${place.subcategory} ${place.tags.join(" ")}`.toLowerCase();
       return (!query || text.includes(query.toLowerCase())) &&
         (muslimMode || place.subcategory !== "mosquée") &&
-        (category === "all" || normalizeCategory(place.category) === category) &&
+        (category === "all" || (category === "activite" ? isActivityPlace(place) : normalizeCategory(place.category) === category)) &&
         (city === "all" || place.city === city) &&
         (!price || place.price_level === price) &&
         (!tested || place.tested_by_us) &&
@@ -408,7 +458,7 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
     {distanceOrigin.usingReference && <button className="distance-notice" onClick={() => setRadiusEnabled(false)}><LocateFixed/> Distances depuis Kuta — active ta position sur place</button>}
     <button className={`explorer-favorites ${favoritesOnly ? "on" : ""}`} onClick={() => setFavoritesOnly(!favoritesOnly)}><Heart fill={favoritesOnly ? "currentColor" : "none"}/><span>Mes favoris</span><b>{favorites.length}</b></button>
     <div className="editorial-selections"><button className="couple-selection" onClick={() => { setRomantic(true); setCategory("all"); }}><span>01</span><div><small>SÉLECTION ÉDITORIALE</small><strong>Lombok à deux</strong><p>Dîners avec vue, criques calmes et parenthèses en duo</p></div><em>→</em></button><button className="couple-selection essential" onClick={() => { setTested(true); setRomantic(false); setCategory("all"); }}><span>02</span><div><small>LE CARNET LOCAL</small><strong>Nos essentiels</strong><p>Les adresses que l’on recommande les yeux fermés</p></div><em>→</em></button></div>
-    <div className="category-scroll"><button className={category === "all" ? "active" : ""} onClick={() => setCategory("all")}><span><Grid2X2/></span>Tout</button>{(Object.entries(categoryMeta) as [PlaceCategory, { label: string; icon: string }][]).map(([key, meta]) => <button key={key} className={category === key ? "active" : ""} onClick={() => { setCategory(key); setVisible(14); }}><span><CategoryIcon category={key}/></span>{meta.label}</button>)}</div>
+    <div className="category-scroll"><button className={category === "all" ? "active" : ""} onClick={() => setCategory("all")}><span><Grid2X2/></span>Tout</button><button className={category === "activite" ? "active" : ""} onClick={() => { setCategory("activite"); setVisible(14); }}><span><Activity/></span>Activités</button>{(Object.entries(categoryMeta) as [PlaceCategory, { label: string; icon: string }][]).map(([key, meta]) => <button key={key} className={category === key ? "active" : ""} onClick={() => { setCategory(key); setVisible(14); }}><span><CategoryIcon category={key}/></span>{meta.label}</button>)}</div>
     {showFilters && <section className="filter-panel">
       <label>Zone<select value={city} onChange={(event) => setCity(event.target.value)}><option value="all">Toutes les zones</option>{cities.map((item) => <option key={item}>{item}</option>)}</select></label>
       <label>Prix<select value={price} onChange={(event) => setPrice(Number(event.target.value))}><option value="0">Tous les budgets</option><option value="1">€ · petit prix</option><option value="2">€€ · moyen</option><option value="3">€€€ · premium</option></select></label>
@@ -422,8 +472,15 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
   </div>;
 }
 
+function PlacePhoto({ place, className = "" }: { place: Place; className?: string }) {
+  const [failed, setFailed] = useState(false);
+  const source = place.photos.find((photo) => /^https?:\/\/|^\//.test(photo || ""));
+  if (!source || failed) return <div className={`place-photo-fallback category-${place.category} ${className}`} role="img" aria-label={`Illustration ${categoryMeta[place.category].label}`}><CategoryIcon category={place.category}/><small>{categoryMeta[place.category].label}</small></div>;
+  return <img className={className} src={source} alt={place.name} loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)}/>;
+}
+
 function PlaceResultCard({ place, index, favorite, onFavorite, onOpen }: { place: Place & { distance: number }; index: number; favorite: boolean; onFavorite: () => void; onOpen: () => void }) {
-  return <article className="result-card-place" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}><button className="result-main" onClick={onOpen}><div className={`result-photo category-${place.category}`}><img src={place.photos[0]} alt="" loading="lazy"/><span><CategoryIcon category={place.category}/></span>{place.tested_by_us && <b>Testé</b>}</div><div className="result-copy"><small>{place.city} · {place.subcategory}</small><h2>{place.name}</h2><p>{place.specialty || place.description}</p><div><span>★ {place.rating?.toFixed(1) || "—"}</span><span>{place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div></div></button><button className={`heart ${favorite ? "on" : ""}`} onClick={onFavorite} aria-label="Ajouter aux favoris"><Heart fill={favorite ? "currentColor" : "none"}/></button>{place.category === "restaurant" && <a className="card-map-link" href={place.maps_url} target="_blank" rel="noreferrer"><MapPinned/> Voir sur la carte</a>}</article>;
+  return <article className="result-card-place" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}><button className="result-main" onClick={onOpen}><div className={`result-photo category-${place.category}`}><PlacePhoto place={place}/><span><CategoryIcon category={place.category}/></span>{place.tested_by_us && <b>Testé</b>}</div><div className="result-copy"><small>{place.city} · {place.subcategory}</small><h2>{place.name}</h2><p>{place.specialty || place.description}</p><div><span>★ {place.rating?.toFixed(1) || "—"}</span><span>{place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div></div></button><button className={`heart ${favorite ? "on" : ""}`} onClick={onFavorite} aria-label="Ajouter aux favoris"><Heart fill={favorite ? "currentColor" : "none"}/></button>{place.category === "restaurant" && <a className="card-map-link" href={place.maps_url} target="_blank" rel="noreferrer"><MapPinned/> Voir sur la carte</a>}</article>;
 }
 
 function ExplorerMap({ items, onSelect }: { items: (Place & { distance: number })[]; onSelect: (place: Place) => void }) {
@@ -435,7 +492,7 @@ function ExplorerMap({ items, onSelect }: { items: (Place & { distance: number }
       const L = await import("leaflet");
       if (!node.current || disposed) return;
       map = L.map(node.current, { center: [-8.72, 116.25], zoom: 9, minZoom: 8, maxZoom: 15, maxBounds: [[-9.4, 115.6], [-7.7, 117.2]], maxBoundsViscosity: 1, zoomControl: false });
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { attribution: "© OpenStreetMap · CARTO" }).addTo(map);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { attribution: "© OpenStreetMap · CARTO" }).addTo(map);
       L.control.zoom({ position: "bottomright" }).addTo(map);
       items.slice(0, 120).forEach((place) => {
         const icon = L.divIcon({ className: "explorer-pin-wrap", html: `<span class="explorer-pin category-${place.category}"><i></i></span>`, iconSize: [34, 40], iconAnchor: [17, 36] });
@@ -448,10 +505,10 @@ function ExplorerMap({ items, onSelect }: { items: (Place & { distance: number }
 }
 
 function PlaceDetail({ place, distance, favorite, visited, canCheckIn, close, toggleFavorite, checkIn, concierge, muslimMode }: { place: Place; distance: number; favorite: boolean; visited: boolean; canCheckIn: boolean; close: () => void; toggleFavorite: () => void; checkIn: () => void; concierge: () => void; muslimMode: boolean }) {
-  const whatsApp = place.whatsapp?.replace(/[^0-9]/g, "");
+  const directWhatsAppUrl = providerWhatsAppUrl(place);
   return <div className="detail-backdrop" onMouseDown={close}><article className="place-detail" onMouseDown={(event) => event.stopPropagation()}>
     <button className="detail-close" onClick={close}>×</button>
-    <div className="detail-gallery"><img src={place.photos[0]} alt={place.name}/><span>{categoryMeta[place.category].label}</span></div>
+    <div className="detail-gallery"><PlacePhoto place={place}/><span>{categoryMeta[place.category].label}</span></div>
     <div className="detail-body"><div className="eyebrow">{place.city} · {place.island}</div><h2>{place.name}</h2>
       <div className="detail-stats"><span>★ {place.rating?.toFixed(1) || "—"}</span><span>⌖ {distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div>
       <p>{place.description}</p>
@@ -462,7 +519,7 @@ function PlaceDetail({ place, distance, favorite, visited, canCheckIn, close, to
       <div className="practical"><div><small>Horaires</small><strong>{place.opening_hours || "À confirmer"}</strong></div><div><small>Meilleur moment</small><strong>{place.best_time || "Toute la journée"}</strong></div>{place.level && <div><small>Niveau</small><strong>{place.level}</strong></div>}</div>
       <button className={`checkin ${visited ? "done" : ""}`} disabled={!canCheckIn || visited} onClick={checkIn}>{visited ? "✓ Lieu visité" : canCheckIn ? "⌖ Valider ma visite" : "Check-in disponible à moins de 200 m"}</button>
       <div className="tag-list">{place.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
-      <div className="detail-actions"><a href={place.maps_url} target="_blank" rel="noreferrer">↗ Itinéraire</a>{whatsApp && <a className="whatsapp" href={`https://wa.me/${whatsApp}`} target="_blank" rel="noreferrer">◉ WhatsApp</a>}<button className={favorite ? "favorite" : ""} onClick={toggleFavorite}>♥ {favorite ? "Dans mes favoris" : "Ajouter aux favoris"}</button><button className="concierge" onClick={concierge}>✦ Réserver avec la conciergerie</button></div>
+      <div className="detail-actions"><a href={place.maps_url} target="_blank" rel="noreferrer">↗ Itinéraire</a>{directWhatsAppUrl ? <a className="whatsapp" href={directWhatsAppUrl} target="_blank" rel="noopener noreferrer"><MessageCircle/> WhatsApp du prestataire</a> : <span className="provider-contact-missing"><Phone/> Numéro du prestataire à vérifier</span>}<button className={favorite ? "favorite" : ""} onClick={toggleFavorite}><Heart fill={favorite ? "currentColor" : "none"}/> {favorite ? "Dans mes favoris" : "Ajouter aux favoris"}</button><button className="concierge" onClick={concierge}><MessageCircle/> Demande générale à MyLombok</button></div>
     </div>
   </article></div>;
 }
@@ -565,7 +622,7 @@ function RegionMap({ close, onLombok }: { close: () => void; onLombok: () => voi
       if (disposed || !mapNode.current) return;
       const indonesiaBounds: import("leaflet").LatLngBoundsExpression = [[-12.5, 94], [8, 142]];
       map = L.map(mapNode.current, { center: [-3.2, 118.2], zoom: 5, minZoom: 5, maxZoom: 13, maxBounds: indonesiaBounds, maxBoundsViscosity: 1, zoomControl: false, attributionControl: true });
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 19, attribution: "© OpenStreetMap · CARTO" }).addTo(map);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { maxZoom: 19, attribution: "© OpenStreetMap · CARTO" }).addTo(map);
       L.control.zoom({ position: "bottomright" }).addTo(map);
       const locations = [
         { name: "Lombok", subtitle: "Ton point de départ", lat: -8.58, lon: 116.32, color: "#2E7D8A", featured: true },
@@ -619,7 +676,7 @@ function ProfileView({ title, notify, dark, toggleDark, visited, favoriteCount, 
   const displayName = accountUser?.user_metadata?.full_name || accountUser?.user_metadata?.name || accountUser?.email?.split("@")[0] || "Voyageur";
   return <section className="profile-screen">
     <header className="profile-hero"><div><div className="eyebrow">ESPACE PERSONNEL · PRIVÉ</div><h1>{title}</h1><p>Ton carnet, tes demandes et tes repères à Lombok, réunis au même endroit.</p></div><span><Sparkles/></span></header>
-    {accountUser ? <section className="account-card connected premium-account"><div className="account-photo">{accountUser.user_metadata?.avatar_url ? <img src={accountUser.user_metadata.avatar_url} alt=""/> : String(displayName).slice(0, 1).toUpperCase()}</div><div><small>COMPTE SYNCHRONISÉ</small><h2>{displayName}</h2><p>{accountUser.email}</p><span><BadgeCheck/> Données sauvegardées</span></div><button onClick={signOut}>Se déconnecter</button></section> : <button className="account-card premium-account" onClick={openAuth} disabled={authLoading}><div className="account-photo"><UserRound/></div><div><small>TON COMPTE MYLOMBOK</small><h2>{authLoading ? "Vérification…" : "Créer mon espace"}</h2><p>Retrouve tes favoris, visites et demandes sur tous tes appareils.</p><span><ShieldCheck/> Google · Apple · e-mail</span></div><em><ChevronRight/></em></button>}
+    {accountUser ? <section className="account-card connected premium-account"><div className="account-photo">{accountUser.user_metadata?.avatar_url ? <img src={accountUser.user_metadata.avatar_url} alt="" referrerPolicy="no-referrer"/> : String(displayName).slice(0, 1).toUpperCase()}</div><div><small>COMPTE SYNCHRONISÉ</small><h2>{displayName}</h2><p>{accountUser.email}</p><span><BadgeCheck/> Données sauvegardées</span></div><button onClick={signOut}>Se déconnecter</button></section> : <button className="account-card premium-account" onClick={openAuth} disabled={authLoading}><div className="account-photo"><UserRound/></div><div><small>TON COMPTE MYLOMBOK</small><h2>{authLoading ? "Vérification…" : "Créer mon espace"}</h2><p>Retrouve tes favoris, visites et demandes sur tous tes appareils.</p><span><ShieldCheck/> Google · Apple · e-mail</span></div><em><ChevronRight/></em></button>}
     <div className="profile-stats"><article><strong>{favoriteCount}</strong><span>favoris</span></article><article><strong>{visited.length}</strong><span>visités</span></article><article><strong>{requestCount}</strong><span>demandes</span></article></div>
     <button className="profile-card profile-main premium-guide" onClick={() => setAdminOpen(true)}><div className="profile-avatar"><BookOpen/></div><div><small>GUIDE EXPATRIATION</small><h2>S’installer à Lombok</h2><p>Visa, société, fiscalité, santé et démarches officielles</p></div><em><ChevronRight/></em></button>
     <div className="trip-progress premium-progress"><div><strong>Ton exploration de Lombok</strong><span>{percent}%</span></div><div className="progress"><i style={{ width: `${percent}%` }}/></div><p>{visited.length} lieux visités sur {allPlaces.length}. Tes prochaines découvertes sont prêtes dans Explorer.</p></div>
@@ -660,16 +717,16 @@ function AccountModal({ close, notify }: { close: () => void; notify: (message: 
         })
       : await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (result.error) { setError(result.error.message === "Invalid login credentials" ? "E-mail ou mot de passe incorrect." : result.error.message); return; }
+    if (result.error) { setError(result.error.message === "Invalid login credentials" ? "E-mail ou mot de passe incorrect." : "Connexion impossible. Vérifie tes informations ou réessaie plus tard."); return; }
     if (mode === "signup" && !result.data.session) notify("Compte créé — confirme ton e-mail pour l’activer");
     else notify("Bienvenue dans ton compte MyLombok");
     close();
   }
 
-  return <div className="modal-backdrop account-backdrop" onMouseDown={close}><section className="modal account-modal" onMouseDown={(event) => event.stopPropagation()}><div className="modal-handle"/><button className="close" onClick={close}>×</button><div className="account-brand"><img src="/mylombok-logo.svg" alt="MyLombok"/><small>TON CARNET PERSONNEL À LOMBOK</small></div><h2>{mode === "signup" ? "Emporte tes envies avec toi" : "Heureux de te revoir"}</h2><p>Un compte gratuit pour synchroniser tes favoris, tes visites et tes demandes de conciergerie.</p><div className="social-auth"><button disabled={busy} onClick={() => social("apple")}><b>●</b> Continuer avec Apple</button><button disabled={busy} onClick={() => social("google")}><b>G</b> Continuer avec Google</button></div><div className="auth-divider"><span>ou avec ton e-mail</span></div><form action={emailAuth}>{mode === "signup" && <label>Prénom ou nom<input name="name" required autoComplete="name" placeholder="Dorian"/></label>}<label>Adresse e-mail<input name="email" type="email" required autoComplete="email" placeholder="toi@email.com"/></label><label>Mot de passe<input name="password" type="password" minLength={8} required autoComplete={mode === "signup" ? "new-password" : "current-password"} placeholder="8 caractères minimum"/></label>{error && <div className="auth-error" role="alert">{error}</div>}<button className="primary" disabled={busy} type="submit">{busy ? "Connexion…" : mode === "signup" ? "Créer mon compte gratuit" : "Me connecter"}</button></form><button className="auth-switch" onClick={() => { setMode(mode === "signup" ? "signin" : "signup"); setError(""); }}>{mode === "signup" ? "J’ai déjà un compte · Me connecter" : "Nouveau ici ? · Créer mon compte"}</button><small className="auth-privacy">Tes données restent privées et servent uniquement à personnaliser ton séjour.</small></section></div>;
+  return <div className="modal-backdrop account-backdrop" onMouseDown={close}><section className="modal account-modal" onMouseDown={(event) => event.stopPropagation()}><div className="modal-handle"/><button className="close" onClick={close}>×</button><div className="account-brand"><img src="/mylombok-logo.svg" alt="MyLombok"/><small>TON CARNET PERSONNEL À LOMBOK</small></div><h2>{mode === "signup" ? "Emporte tes envies avec toi" : "Heureux de te revoir"}</h2><p>Un compte gratuit pour synchroniser tes favoris, tes visites et tes demandes de conciergerie.</p><div className="social-auth"><button disabled={busy} onClick={() => social("apple")}><b>●</b> Continuer avec Apple</button><button disabled={busy} onClick={() => social("google")}><b>G</b> Continuer avec Google</button></div><div className="auth-divider"><span>ou avec ton e-mail</span></div><form action={emailAuth}>{mode === "signup" && <label>Prénom ou nom<input name="name" required maxLength={80} autoComplete="name" placeholder="Dorian"/></label>}<label>Adresse e-mail<input name="email" type="email" required maxLength={254} autoComplete="email" placeholder="toi@email.com"/></label><label>Mot de passe<input name="password" type="password" minLength={mode === "signup" ? 10 : 1} maxLength={128} required autoComplete={mode === "signup" ? "new-password" : "current-password"} placeholder={mode === "signup" ? "10 caractères minimum" : "Ton mot de passe"}/></label>{error && <div className="auth-error" role="alert">{error}</div>}<button className="primary" disabled={busy} type="submit">{busy ? "Connexion…" : mode === "signup" ? "Créer mon compte gratuit" : "Me connecter"}</button></form><button className="auth-switch" onClick={() => { setMode(mode === "signup" ? "signin" : "signup"); setError(""); }}>{mode === "signup" ? "J’ai déjà un compte · Me connecter" : "Nouveau ici ? · Créer mon compte"}</button><small className="auth-privacy">Tes données restent privées et servent uniquement à personnaliser ton séjour.</small></section></div>;
 }
 
 function Modal({ type, close, addRequest, notify, draft = "" }: { type: "request" | "place"; close: () => void; addRequest: (d: FormData) => void; notify: (s: string) => void; draft?: string }) {
   return <div className="modal-backdrop" onMouseDown={close}><section className="modal" onMouseDown={e => e.stopPropagation()}><div className="modal-handle"/><button className="close" onClick={close}>×</button><span className="modal-icon">{type === "request" ? "✦" : "♡"}</span><h2>{type === "request" ? "De quoi as-tu besoin ?" : "Nouvelle bonne adresse"}</h2><p>{type === "request" ? "Décris ta demande, même en quelques mots." : "Ajoute un lieu à ton carnet personnel."}</p>
-    <form action={type === "request" ? addRequest : () => { close(); notify("Adresse ajoutée à ton carnet"); }}><label>{type === "request" ? "Ma demande" : "Nom du lieu"}<input name="title" required defaultValue={draft} placeholder={type === "request" ? "Ex. Un scooter pour un mois" : "Ex. Café Mana"}/></label><label>Précisions<textarea placeholder="Lieu, date, budget…" /></label><button className="primary" type="submit">{type === "request" ? "Envoyer ma demande" : "Enregistrer l’adresse"}</button></form></section></div>;
+    <form action={type === "request" ? addRequest : () => { close(); notify("Adresse ajoutée à ton carnet"); }}><label>{type === "request" ? "Ma demande" : "Nom du lieu"}<input name="title" required maxLength={180} defaultValue={draft} placeholder={type === "request" ? "Ex. Un scooter pour un mois" : "Ex. Café Mana"}/></label><label>Précisions<textarea name="details" maxLength={1200} placeholder="Lieu, date, budget…" /></label><button className="primary" type="submit">{type === "request" ? "Ouvrir WhatsApp MyLombok" : "Enregistrer l’adresse"}</button></form></section></div>;
 }
