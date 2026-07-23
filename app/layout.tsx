@@ -5,6 +5,7 @@ import "./premium.css";
 import PwaRegister from "./pwa-register";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://my-lombok.vercel.app"),
   title: "My Lombok — Ta vie à Lombok, simplement",
   description: "Ton carnet personnel et ta conciergerie pour t’installer et profiter de Lombok.",
   openGraph: {
