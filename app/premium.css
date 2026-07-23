@@ -127,3 +127,137 @@
 .app-shell.dark .modal:not(.account-modal) h2,.app-shell.dark .modal:not(.account-modal) label{color:#f5f7f8!important}.app-shell.dark .modal:not(.account-modal)>p{color:#a7b5bd!important}
 .app-shell.dark .modal:not(.account-modal) .modal-icon{background:linear-gradient(145deg,#173848,#28305a);color:#8de4ee}.app-shell.dark .modal:not(.account-modal) .modal-handle{background:#71818c}.app-shell.dark .modal:not(.account-modal) .close{background:#edf1f3;color:#42535d}
 .app-shell.dark .modal input,.app-shell.dark .modal textarea{background:#f8fafb!important;color:#10232f!important;-webkit-text-fill-color:#10232f!important;border-color:#b8c7d0!important}.app-shell.dark .modal input::placeholder,.app-shell.dark .modal textarea::placeholder{color:#667781!important;-webkit-text-fill-color:#667781!important}
+
+/* Navigation v3 : quatre colonnes parfaitement égales et un curseur qui glisse sans déformer le rail. */
+.phone-app .bottom-nav{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 56px!important;
+  align-items:center!important;
+  gap:10px!important;
+  height:66px!important;
+  padding:5px!important;
+}
+.phone-app .nav-rail{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  align-items:center!important;
+  height:56px!important;
+  padding:5px!important;
+  overflow:hidden!important;
+}
+.phone-app .nav-rail::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:5px;
+  left:5px;
+  width:calc((100% - 10px)/4);
+  height:46px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#287e9c,#5f70d7);
+  box-shadow:0 7px 17px #31589b3d,inset 0 1px 0 #ffffff66;
+  transform:translateX(var(--nav-offset,0%));
+  transition:transform .5s cubic-bezier(.22,.75,.18,1);
+  pointer-events:none;
+}
+.phone-app .nav-rail>button{
+  position:relative!important;
+  z-index:1;
+  width:100%!important;
+  min-width:0!important;
+  height:46px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:16px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+  color:#73838d!important;
+}
+.phone-app .nav-rail>button.active{
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  color:#fff!important;
+}
+.phone-app .nav-rail>button span{
+  width:23px!important;
+  height:23px!important;
+  flex:0 0 23px!important;
+  transform:translateY(0)!important;
+  transition:transform .42s cubic-bezier(.22,.75,.18,1),color .3s ease!important;
+}
+.phone-app .nav-rail>button.active span{transform:translateY(-6px)!important;color:#fff!important}
+.phone-app .nav-rail>button b{
+  position:absolute;
+  bottom:5px;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  opacity:0;
+  transform:translateY(3px)!important;
+  font-size:7px!important;
+  line-height:1;
+  transition:opacity .25s ease .12s,transform .38s ease!important;
+}
+.phone-app .nav-rail>button.active b{opacity:1;transform:translateY(0)!important}
+.phone-app .bottom-nav .nav-quick-request{
+  width:56px!important;
+  min-width:56px!important;
+  height:56px!important;
+  align-self:center!important;
+  border-radius:19px!important;
+  border:1px solid #8fdce87a!important;
+  box-shadow:0 12px 25px #315da64d,inset 0 1px 1px #ffffff7a!important;
+}
+
+/* Nuit homogène : aucune plaque ivoire ne subsiste sur l'accueil. */
+.app-shell.dark .tab-home .pretrip-services{
+  background:linear-gradient(145deg,#101f2a,#111a29)!important;
+  border-color:#263947!important;
+  box-shadow:inset 0 1px 0 #ffffff0a,0 10px 25px #0004!important;
+}
+.app-shell.dark .tab-home .pretrip-services button{
+  background:transparent!important;
+  border-color:transparent!important;
+  color:#dce7ec!important;
+}
+.app-shell.dark .tab-home .map-filters button:not(.active){
+  background:#101f2a!important;
+  color:#aebdc5!important;
+  border-color:#263947!important;
+  box-shadow:inset 0 1px 0 #ffffff09,0 5px 14px #0003!important;
+}
+.app-shell.dark .phone-app .nav-rail{
+  background:linear-gradient(145deg,#152a36ed,#101c28ed)!important;
+  border-color:#4057657a!important;
+  box-shadow:0 18px 42px #0009,inset 0 1px 0 #ffffff1a!important;
+}
+.app-shell.dark .phone-app .nav-rail::before{
+  background:linear-gradient(135deg,#267c98,#5868cb);
+  box-shadow:0 8px 20px #071b43a8,inset 0 1px 0 #ffffff32;
+}
+.app-shell.dark .phone-app .bottom-nav .nav-quick-request{
+  border-color:#5cb8c777!important;
+  box-shadow:0 12px 27px #102d705e,inset 0 1px 1px #ffffff55!important;
+}
+
+@media(max-width:520px){
+  .phone-app .bottom-nav{
+    left:14px!important;
+    right:14px!important;
+    height:66px!important;
+    bottom:calc(10px + env(safe-area-inset-bottom))!important;
+  }
+  .phone-app .bottom-nav .nav-quick-request{
+    width:56px!important;
+    min-width:56px!important;
+    height:56px!important;
+  }
+}

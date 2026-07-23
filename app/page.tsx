@@ -259,7 +259,10 @@ export default function Home() {
         </div>
 
         <nav className="bottom-nav" aria-label="Navigation principale">
-          <div className="nav-rail">
+          <div
+            className="nav-rail"
+            style={{ "--nav-offset": `${Math.max(0, nav.findIndex((item) => item.id === tab)) * 100}%` } as React.CSSProperties}
+          >
             {nav.map((item) => <button key={item.id} className={tab === item.id ? "active" : ""} aria-current={tab === item.id ? "page" : undefined} aria-label={item.label} onClick={() => setTab(item.id)}><span><item.Icon strokeWidth={1.8}/></span><b>{item.label}</b></button>)}
           </div>
           <button className="nav-quick-request" onClick={() => { setRequestDraft(""); setModal("request"); }} aria-label="Nouvelle demande à la conciergerie"><Plus strokeWidth={2}/></button>
