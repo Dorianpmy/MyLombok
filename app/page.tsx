@@ -345,7 +345,7 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
   }
 
   return <div className="explorer-view">
-    <div className="eyebrow">Guide vérifié · {allPlaces.length} adresses</div>
+    <div className="eyebrow">Carnet local · {allPlaces.length} lieux</div>
     <div className="explorer-title"><div><h1>Explorer Lombok</h1><p>Les meilleures adresses, testées ou à découvrir.</p></div><span>🇮🇩</span></div>
     <label className="search-box"><span><Search/></span><input value={query} onChange={(event) => { setQuery(event.target.value); setVisible(14); }} placeholder="Rechercher un lieu, une zone, une envie…"/><button onClick={() => setShowFilters(!showFilters)} className={showFilters ? "active" : ""} aria-label="Afficher les filtres"><SlidersHorizontal/></button></label>
     {distanceOrigin.usingReference && <button className="distance-notice" onClick={() => setRadiusEnabled(false)}><LocateFixed/> Distances depuis Kuta — active ta position sur place</button>}
