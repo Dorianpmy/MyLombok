@@ -10,6 +10,8 @@ import { CalculationMethod, Coordinates, PrayerTimes } from "adhan";
 import {
   BadgeCheck,
   BookOpen,
+  CalendarDays,
+  Car,
   ChevronRight,
   CloudDownload,
   Compass,
@@ -27,6 +29,7 @@ import {
   MoonStar,
   Mountain,
   Phone,
+  Plane,
   Sailboat,
   Search,
   ShieldCheck,
@@ -46,7 +49,8 @@ import { getSupabaseBrowserClient } from "./lib/supabase";
 type Tab = "home" | "explorer" | "requests" | "profile";
 type Request = { id: number; title: string; detail: string; status: "En cours" | "Confirmé" };
 type UserPosition = { lat: number; lng: number };
-type UserPreferences = { dark: boolean; muslimMode: boolean };
+type TripPlan = { arrival: string; departure: string; travelers: string; interests: string[]; createdAt: string };
+type UserPreferences = { dark: boolean; muslimMode: boolean; tripPlan?: TripPlan | null };
 
 const places = [
   { icon: "☕", name: "Bush Radio", area: "Kuta", type: "Café & coworking", color: "peach" },
@@ -91,6 +95,7 @@ export default function Home() {
   const [requestDraft, setRequestDraft] = useState("");
   const [dark, setDark] = useState(false);
   const [muslimMode, setMuslimMode] = useState(false);
+  const [tripPlan, setTripPlan] = useState<TripPlan | null>(null);
   const [visited, setVisited] = useState<string[]>([]);
   const [accountUser, setAccountUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -105,6 +110,7 @@ export default function Home() {
     if (cachedFavorites) setFavorites(JSON.parse(cachedFavorites));
     setDark(localStorage.getItem("my-lombok-theme") === "dark");
     setMuslimMode(localStorage.getItem("my-lombok-muslim-mode") === "true");
+    const savedTripPlan = localStorage.getItem("my-lombok-trip-plan"); if (savedTripPlan) setTripPlan(JSON.parse(savedTripPlan));
     const savedVisited = localStorage.getItem("my-lombok-visited"); if (savedVisited) setVisited(JSON.parse(savedVisited));
     setLocalReady(true);
     requestPosition();
@@ -133,6 +139,7 @@ export default function Home() {
         const preferences = data.preferences as Partial<UserPreferences> | null;
         if (typeof preferences?.dark === "boolean") setDark(preferences.dark);
         if (typeof preferences?.muslimMode === "boolean") setMuslimMode(preferences.muslimMode);
+        if (preferences?.tripPlan) setTripPlan(preferences.tripPlan);
       }
       setCloudReady(true);
     });
@@ -149,14 +156,14 @@ export default function Home() {
         favorites,
         visited,
         requests,
-        preferences: { dark, muslimMode },
+        preferences: { dark, muslimMode, tripPlan },
         updated_at: new Date().toISOString(),
       }).then(({ error }) => { if (error) console.warn("Synchronisation MyLombok indisponible", error.message); });
     }, 450);
     return () => window.clearTimeout(timer);
-  }, [accountUser, cloudReady, dark, favorites, muslimMode, requests, visited]);
+  }, [accountUser, cloudReady, dark, favorites, muslimMode, requests, tripPlan, visited]);
 
-  const title = useMemo(() => ({ home: "Où veux-tu aller aujourd’hui ?", explorer: "Explorer Lombok", requests: "Ma conciergerie", profile: "Mon séjour" }[tab]), [tab]);
+  const title = useMemo(() => ({ home: "Prépare ton séjour à Lombok", explorer: "Explorer Lombok", requests: "Ma conciergerie", profile: "Mon séjour" }[tab]), [tab]);
 
   function requestPosition() {
     if (!navigator.geolocation) { setGeoStatus("denied"); return; }
@@ -209,7 +216,7 @@ export default function Home() {
         </header>
 
         <div className="content">
-          {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} visited={visited} muslimMode={muslimMode} />}
+          {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} setRequestDraft={setRequestDraft} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} visited={visited} muslimMode={muslimMode} tripPlan={tripPlan} saveTripPlan={(plan) => { setTripPlan(plan); localStorage.setItem("my-lombok-trip-plan", JSON.stringify(plan)); }} />}
           {tab === "explorer" && <ExplorerView muslimMode={muslimMode} position={position} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} setRequestDraft={setRequestDraft} visited={visited} checkIn={(id) => { const next = Array.from(new Set([...visited, id])); setVisited(next); localStorage.setItem("my-lombok-visited", JSON.stringify(next)); }} />}
           {tab === "requests" && <RequestsView title={title} requests={requests} setModal={setModal} />}
           {tab === "profile" && <ProfileView title={title} notify={notify} dark={dark} visited={visited} favoriteCount={favorites.length} requestCount={requests.length} muslimMode={muslimMode} accountUser={accountUser} authLoading={authLoading} openAuth={() => setAuthOpen(true)} signOut={signOut} toggleMuslimMode={() => { const next = !muslimMode; setMuslimMode(next); localStorage.setItem("my-lombok-muslim-mode", String(next)); }} toggleDark={() => { const next = !dark; setDark(next); localStorage.setItem("my-lombok-theme", next ? "dark" : "light"); }} />}
@@ -227,7 +234,7 @@ export default function Home() {
   );
 }
 
-function HomeView({ title, requests, setTab, setModal, notify, position, geoStatus, requestPosition, visited, muslimMode }: { title: string; requests: Request[]; setTab: (t: Tab) => void; setModal: (m: "request" | "place") => void; notify: (s: string) => void; position: UserPosition | null; geoStatus: "loading" | "ready" | "denied"; requestPosition: () => void; visited: string[]; muslimMode: boolean }) {
+function HomeView({ title, requests, setTab, setModal, setRequestDraft, notify, position, geoStatus, requestPosition, visited, muslimMode, tripPlan, saveTripPlan }: { title: string; requests: Request[]; setTab: (t: Tab) => void; setModal: (m: "request" | "place") => void; setRequestDraft: (value: string) => void; notify: (s: string) => void; position: UserPosition | null; geoStatus: "loading" | "ready" | "denied"; requestPosition: () => void; visited: string[]; muslimMode: boolean; tripPlan: TripPlan | null; saveTripPlan: (plan: TripPlan) => void }) {
   const [selected, setSelected] = useState("Kuta Lombok");
   const [category, setCategory] = useState("Explorer");
   const mapSpots = [
@@ -238,16 +245,66 @@ function HomeView({ title, requests, setTab, setModal, notify, position, geoStat
     { name: "Senggigi", kind: "Coucher de soleil", Icon: Sunset, x: 25, y: 48, note: "1 h 30 · Route panoramique" },
   ];
   const current = mapSpots.find((spot) => spot.name === selected) || mapSpots[0];
+  const askConcierge = (subject: string) => {
+    const dates = tripPlan ? ` du ${tripPlan.arrival} au ${tripPlan.departure}` : "";
+    setRequestDraft(`${subject}${dates}`);
+    setModal("request");
+  };
   return <>
-    <div className="map-head"><div><div className="eyebrow">Mercredi 22 juillet · Kuta</div><h1>{title}</h1></div><button className="weather" onClick={() => notify("Grand soleil · 29 °C")}>☀ <b>29°</b></button></div>
-    <p className="lead">Une sélection locale pour vivre l’île à ton rythme.</p>
+    <div className="map-head pretrip-head"><div><div className="eyebrow">CONCIERGERIE AVANT DÉPART</div><h1>{title}</h1></div><button className="weather" onClick={() => notify("Grand soleil · 29 °C")}>☀ <b>29°</b></button></div>
+    <p className="lead">Dates, envies et transport : construis ton programme avec une équipe qui vit sur place.</p>
+    <TripPlannerCard tripPlan={tripPlan} saveTripPlan={saveTripPlan} explore={() => setTab("explorer")} concierge={() => askConcierge("Je souhaite faire valider mon programme à Lombok")} notify={notify}/>
+    <section className="pretrip-services" aria-label="Services à organiser avant le départ">
+      <button onClick={() => askConcierge("Je souhaite réserver un transfert depuis l'aéroport")}><span><Plane strokeWidth={1.8}/></span><b>Transfert</b><small>Aéroport → logement</small></button>
+      <button onClick={() => askConcierge("Je souhaite réserver un scooter")}><span><Car strokeWidth={1.8}/></span><b>Scooter</b><small>Livré à ton arrivée</small></button>
+      <button onClick={() => setTab("explorer")}><span><Compass strokeWidth={1.8}/></span><b>Activités</b><small>Voir la sélection</small></button>
+      <button onClick={() => askConcierge("J'ai besoin d'aide pour préparer mon séjour")}><span><MessageCircle strokeWidth={1.8}/></span><b>Conciergerie</b><small>Parler à l'équipe</small></button>
+    </section>
     <div className={`home-widgets ${muslimMode ? "" : "solo"}`}>{muslimMode && <PrayerWidget position={position}/>}<button className="progress-widget" onClick={() => setTab("profile")}><span style={{ "--progress": `${Math.round(visited.length / allPlaces.length * 100)}%` } as React.CSSProperties}><b>{Math.round(visited.length / allPlaces.length * 100)}%</b></span><div><small>TON EXPLORATION</small><strong>{visited.length ? "Continue comme ça" : "L’aventure commence"}</strong><p>{visited.length} lieu{visited.length > 1 ? "x" : ""} visité{visited.length > 1 ? "s" : ""}</p></div></button></div>
+    <div className="home-section-title"><small>REPÉRER L’ÎLE</small><strong>Explore avant de réserver</strong></div>
     <div className="map-filters">{["Explorer", "Manger", "Plages", "Services"].map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); if (item === "Explorer") setTab("explorer"); else notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
     <article className="map-place-card home-location-card"><div className="spot-thumb"><current.Icon strokeWidth={1.8}/></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { setTab("explorer"); notify(`${current.name} ouvert dans Explorer`); }} aria-label={`Explorer ${current.name}`}><ChevronRight/></button></article>
     <Globe onLombok={() => { setSelected("Kuta Lombok"); notify("Bienvenue à Lombok"); }} position={position} geoStatus={geoStatus} requestPosition={requestPosition} />
     <div className="map-actions"><button className="map-request" onClick={() => setModal("request")}><span className="action-icon"><MessageCircle strokeWidth={1.8}/></span><b><small>CONCIERGERIE</small>Faire une demande</b></button><button className="airport-action" onClick={() => { setTab("requests"); notify("Réservation ouverte"); }}><span className="action-icon"><MapPinned strokeWidth={1.8}/></span><strong><small>PROCHAIN TRAJET</small>{requests[0]?.title || "Mes demandes"}</strong><ChevronRight/></button></div>
     <CurrencyConverter />
   </>;
+}
+
+function TripPlannerCard({ tripPlan, saveTripPlan, explore, concierge, notify }: { tripPlan: TripPlan | null; saveTripPlan: (plan: TripPlan) => void; explore: () => void; concierge: () => void; notify: (message: string) => void }) {
+  const today = new Date();
+  const inDays = (days: number) => { const date = new Date(today); date.setDate(date.getDate() + days); return date.toISOString().slice(0, 10); };
+  const [editing, setEditing] = useState(!tripPlan);
+  const [arrival, setArrival] = useState(tripPlan?.arrival || inDays(30));
+  const [departure, setDeparture] = useState(tripPlan?.departure || inDays(37));
+  const [travelers, setTravelers] = useState(tripPlan?.travelers || "Couple");
+  const [interests, setInterests] = useState<string[]>(tripPlan?.interests || ["Plages", "Nature"]);
+  const interestOptions = ["Plages", "Nature", "Surf", "Culture", "Food"];
+  const arrivalDate = tripPlan ? new Date(`${tripPlan.arrival}T12:00:00`) : null;
+  const daysBefore = arrivalDate ? Math.ceil((arrivalDate.getTime() - Date.now()) / 86400000) : null;
+  const stayLength = tripPlan ? Math.max(1, Math.ceil((new Date(`${tripPlan.departure}T12:00:00`).getTime() - arrivalDate!.getTime()) / 86400000)) : 0;
+  const dateLabel = (value: string) => new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(`${value}T12:00:00`));
+
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!arrival || !departure || departure <= arrival) { notify("Choisis une date de retour après ton arrivée"); return; }
+    saveTripPlan({ arrival, departure, travelers, interests, createdAt: new Date().toISOString() });
+    setEditing(false);
+    notify("Ton séjour est prêt à être organisé");
+  }
+
+  if (tripPlan && !editing) return <section className="trip-planner trip-planner-ready">
+    <header><span><CalendarDays strokeWidth={1.8}/></span><div><small>TON VOYAGE À LOMBOK</small><h2>{daysBefore !== null && daysBefore > 0 ? `Départ dans ${daysBefore} jours` : daysBefore === 0 ? "Départ aujourd’hui" : "Séjour en cours"}</h2><p>{dateLabel(tripPlan.arrival)} → {dateLabel(tripPlan.departure)} · {stayLength} nuits · {tripPlan.travelers}</p></div><button onClick={() => setEditing(true)}>Modifier</button></header>
+    <div className="trip-plan-preview"><span><b>01</b>Arrivée & transfert</span><span><b>02</b>{tripPlan.interests[0] || "Découverte"}</span><span><b>03</b>{tripPlan.interests[1] || "Temps libre"}</span></div>
+    <div className="trip-planner-actions"><button onClick={explore}>Choisir mes étapes <ChevronRight/></button><button className="validate-plan" onClick={concierge}><MessageCircle/> Faire valider</button></div>
+  </section>;
+
+  return <form className="trip-planner" onSubmit={submit}>
+    <header><span><CalendarDays strokeWidth={1.8}/></span><div><small>MON PROGRAMME</small><h2>Quand viens-tu à Lombok ?</h2><p>Commence par les dates, on t’aide pour le reste.</p></div></header>
+    <div className="trip-dates"><label>ARRIVÉE<input type="date" min={inDays(0)} value={arrival} onChange={(event) => setArrival(event.target.value)}/></label><label>DÉPART<input type="date" min={arrival || inDays(1)} value={departure} onChange={(event) => setDeparture(event.target.value)}/></label></div>
+    <div className="trip-choice"><small>JE VOYAGE</small><div>{["Solo", "Couple", "Famille", "Amis"].map((item) => <button type="button" key={item} className={travelers === item ? "selected" : ""} onClick={() => setTravelers(item)}>{item}</button>)}</div></div>
+    <div className="trip-choice"><small>MES ENVIES</small><div>{interestOptions.map((item) => <button type="button" key={item} className={interests.includes(item) ? "selected" : ""} onClick={() => setInterests(interests.includes(item) ? interests.filter((interest) => interest !== item) : [...interests, item])}>{item}</button>)}</div></div>
+    <button className="trip-submit" type="submit"><Sparkles strokeWidth={1.8}/> Créer mon programme</button>
+  </form>;
 }
 
 function PrayerWidget({ position }: { position: UserPosition | null }) {
