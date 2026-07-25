@@ -132,6 +132,7 @@ export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
   const [localReady, setLocalReady] = useState(false);
   const [cloudReady, setCloudReady] = useState(false);
+  const [explorerStartCategory, setExplorerStartCategory] = useState<ExplorerCategory>("all");
 
   useEffect(() => {
     const saved = localStorage.getItem("my-lombok-requests");
@@ -251,8 +252,8 @@ export default function Home() {
 
         <div className="content">
           <div className="tab-stage" key={tab}>
-            {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} setRequestDraft={setRequestDraft} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} visited={visited} muslimMode={muslimMode} tripPlan={tripPlan} saveTripPlan={(plan) => { setTripPlan(plan); localStorage.setItem("my-lombok-trip-plan", JSON.stringify(plan)); }} />}
-            {tab === "explorer" && <ExplorerView muslimMode={muslimMode} position={position} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} setRequestDraft={setRequestDraft} visited={visited} checkIn={(id) => { const next = Array.from(new Set([...visited, id])); setVisited(next); localStorage.setItem("my-lombok-visited", JSON.stringify(next)); }} />}
+            {tab === "home" && <HomeView title={title} requests={requests} setTab={setTab} setModal={setModal} setRequestDraft={setRequestDraft} notify={notify} position={position} geoStatus={geoStatus} requestPosition={requestPosition} visited={visited} muslimMode={muslimMode} tripPlan={tripPlan} saveTripPlan={(plan) => { setTripPlan(plan); localStorage.setItem("my-lombok-trip-plan", JSON.stringify(plan)); }} openExplorerCategory={(category) => { setExplorerStartCategory(category); setTab("explorer"); }} />}
+            {tab === "explorer" && <ExplorerView initialCategory={explorerStartCategory} muslimMode={muslimMode} position={position} favorites={favorites} toggleFavorite={toggleFavorite} setModal={setModal} setRequestDraft={setRequestDraft} visited={visited} checkIn={(id) => { const next = Array.from(new Set([...visited, id])); setVisited(next); localStorage.setItem("my-lombok-visited", JSON.stringify(next)); }} />}
             {tab === "requests" && <RequestsView title={title} requests={requests} setModal={setModal} />}
             {tab === "profile" && <ProfileView title={title} notify={notify} dark={dark} visited={visited} favoriteCount={favorites.length} requestCount={requests.length} muslimMode={muslimMode} accountUser={accountUser} authLoading={authLoading} openAuth={() => setAuthOpen(true)} signOut={signOut} toggleMuslimMode={() => { const next = !muslimMode; setMuslimMode(next); localStorage.setItem("my-lombok-muslim-mode", String(next)); }} toggleDark={() => { const next = !dark; setDark(next); localStorage.setItem("my-lombok-theme", next ? "dark" : "light"); }} />}
           </div>
@@ -276,7 +277,7 @@ export default function Home() {
   );
 }
 
-function HomeView({ title, requests, setTab, setModal, setRequestDraft, notify, position, geoStatus, requestPosition, visited, muslimMode, tripPlan, saveTripPlan }: { title: string; requests: Request[]; setTab: (t: Tab) => void; setModal: (m: "request" | "place") => void; setRequestDraft: (value: string) => void; notify: (s: string) => void; position: UserPosition | null; geoStatus: "loading" | "ready" | "denied"; requestPosition: () => void; visited: string[]; muslimMode: boolean; tripPlan: TripPlan | null; saveTripPlan: (plan: TripPlan) => void }) {
+function HomeView({ title, requests, setTab, setModal, setRequestDraft, notify, position, geoStatus, requestPosition, visited, muslimMode, tripPlan, saveTripPlan, openExplorerCategory }: { title: string; requests: Request[]; setTab: (t: Tab) => void; setModal: (m: "request" | "place") => void; setRequestDraft: (value: string) => void; notify: (s: string) => void; position: UserPosition | null; geoStatus: "loading" | "ready" | "denied"; requestPosition: () => void; visited: string[]; muslimMode: boolean; tripPlan: TripPlan | null; saveTripPlan: (plan: TripPlan) => void; openExplorerCategory: (category: ExplorerCategory) => void }) {
   const [selected, setSelected] = useState("Kuta Lombok");
   const [category, setCategory] = useState("Explorer");
   const mapSpots = [
@@ -295,17 +296,20 @@ function HomeView({ title, requests, setTab, setModal, setRequestDraft, notify, 
   return <>
     <div className="map-head pretrip-head"><div><div className="eyebrow">CONCIERGERIE AVANT DÉPART</div><h1>{title}</h1></div><button className="weather" onClick={() => notify("Grand soleil · 29 °C")}>☀ <b>29°</b></button></div>
     <p className="lead">Dates, envies et transport : construis ton programme avec une équipe qui vit sur place.</p>
-    <TripPlannerCard tripPlan={tripPlan} saveTripPlan={saveTripPlan} explore={() => setTab("explorer")} concierge={() => askConcierge("Je souhaite faire valider mon programme à Lombok")} notify={notify}/>
+    <TripPlannerCard tripPlan={tripPlan} saveTripPlan={saveTripPlan} explore={() => openExplorerCategory("all")} concierge={() => askConcierge("Je souhaite faire valider mon programme à Lombok")} notify={notify}/>
     <section className="pretrip-services" aria-label="Services à organiser avant le départ">
       <button onClick={() => askConcierge("Je souhaite réserver un transfert depuis l'aéroport")}><span><Plane strokeWidth={1.8}/></span><b>Transfert</b><small>Aéroport → logement</small></button>
       <button onClick={() => askConcierge("Je souhaite réserver un scooter")}><span><Car strokeWidth={1.8}/></span><b>Scooter</b><small>Livré à ton arrivée</small></button>
-      <button onClick={() => setTab("explorer")}><span><Compass strokeWidth={1.8}/></span><b>Activités</b><small>Voir la sélection</small></button>
+      <button onClick={() => openExplorerCategory("activite")}><span><Compass strokeWidth={1.8}/></span><b>Activités</b><small>Voir la sélection</small></button>
       <button onClick={() => askConcierge("J'ai besoin d'aide pour préparer mon séjour")}><span><MessageCircle strokeWidth={1.8}/></span><b>Conciergerie</b><small>Parler à l'équipe</small></button>
     </section>
     {muslimMode && <div className="home-widgets solo prayer-only"><PrayerWidget position={position}/></div>}
     <div className="home-section-title"><small>REPÉRER L’ÎLE</small><strong>Explore avant de réserver</strong></div>
-    <div className="map-filters" aria-label="Catégories à explorer">{["Explorer", "Activités", "Manger", "Plages", "Services"].map((item) => <button key={item} aria-pressed={category === item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); if (item === "Explorer" || item === "Activités") setTab("explorer"); else notify(`${item} affiché sur la carte`); }}>{item}</button>)}</div>
-    <article className="map-place-card home-location-card"><div className="spot-thumb"><current.Icon strokeWidth={1.8}/></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { setTab("explorer"); notify(`${current.name} ouvert dans Explorer`); }} aria-label={`Explorer ${current.name}`}><ChevronRight/></button></article>
+    <div className="map-filters" aria-label="Catégories à explorer">{["Explorer", "Activités", "Manger", "Plages", "Services"].map((item) => {
+      const target: ExplorerCategory = item === "Activités" ? "activite" : item === "Manger" ? "restaurant" : item === "Plages" ? "plage" : item === "Services" ? "service" : "all";
+      return <button key={item} aria-pressed={category === item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); openExplorerCategory(target); }}>{item}</button>;
+    })}</div>
+    <article className="map-place-card home-location-card"><div className="spot-thumb"><current.Icon strokeWidth={1.8}/></div><div><small>{current.kind}</small><h2>{current.name}</h2><p>{current.note}</p></div><button onClick={() => { openExplorerCategory("all"); notify(`${current.name} ouvert dans Explorer`); }} aria-label={`Explorer ${current.name}`}><ChevronRight/></button></article>
     <Globe onLombok={() => { setSelected("Kuta Lombok"); notify("Bienvenue à Lombok"); }} position={position} geoStatus={geoStatus} requestPosition={requestPosition} />
     <div className="map-actions"><button className="map-request" onClick={() => setModal("request")}><span className="action-icon"><MessageCircle strokeWidth={1.8}/></span><b><small>CONCIERGERIE</small>Faire une demande</b></button><button className="airport-action" onClick={() => { setTab("requests"); notify("Réservation ouverte"); }}><span className="action-icon"><MapPinned strokeWidth={1.8}/></span><strong><small>PROCHAIN TRAJET</small>{requests[0]?.title || "Mes demandes"}</strong><ChevronRight/></button></div>
     <details className="home-currency"><summary>Convertir des roupies <span>Optionnel</span></summary><CurrencyConverter /></details>
@@ -398,7 +402,7 @@ function CurrencyConverter() {
   return <section className="converter"><div><small>CONVERTISSEUR HORS LIGNE</small><strong>{new Intl.NumberFormat("id-ID").format(amount)} Rp</strong><input aria-label="Montant en roupies" type="number" value={amount} onChange={(event) => setAmount(Number(event.target.value))}/></div><span>⇄</span><div><select value={currency} onChange={(event) => setCurrency(event.target.value)}>{["EUR","USD","GBP","CHF","AUD","SGD","MYR","SAR","AED"].map((code) => <option key={code}>{code}</option>)}</select><strong>{new Intl.NumberFormat("fr-FR", { style: "currency", currency }).format(amount * rate)}</strong><small>Taux du {date}</small></div><footer>Repères : warung ≈ 35k · plein scooter ≈ 45k · scooter-taxi ≈ 25k</footer></section>;
 }
 
-function ExplorerView({ position, favorites, toggleFavorite, setModal, setRequestDraft, visited, checkIn, muslimMode }: { position: UserPosition | null; favorites: string[]; toggleFavorite: (id: string) => void; setModal: (type: "request") => void; setRequestDraft: (value: string) => void; visited: string[]; checkIn: (id: string) => void; muslimMode: boolean }) {
+function ExplorerView({ initialCategory, position, favorites, toggleFavorite, setModal, setRequestDraft, visited, checkIn, muslimMode }: { initialCategory: ExplorerCategory; position: UserPosition | null; favorites: string[]; toggleFavorite: (id: string) => void; setModal: (type: "request") => void; setRequestDraft: (value: string) => void; visited: string[]; checkIn: (id: string) => void; muslimMode: boolean }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<ExplorerCategory>("all");
   const [city, setCity] = useState("all");
@@ -419,6 +423,7 @@ function ExplorerView({ position, favorites, toggleFavorite, setModal, setReques
   const [detail, setDetail] = useState<Place | null>(null);
   const [visible, setVisible] = useState(14);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  useEffect(() => { setCategory(initialCategory); setVisible(14); }, [initialCategory]);
   const distanceOrigin = getDistanceOrigin(position);
   const user = distanceOrigin.position;
   const cities = Array.from(new Set(allPlaces.map((place) => place.city))).sort();

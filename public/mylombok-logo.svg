@@ -1,16 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 96" role="img" aria-labelledby="title desc">
   <title id="title">MyLombok</title>
-  <desc id="desc">Monogramme inspiré du relief du Rinjani et des vagues de Lombok</desc>
-  <defs>
-    <linearGradient id="island" x1="13" y1="10" x2="82" y2="88" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#5CCBDD"/><stop offset="1" stop-color="#586BE5"/>
-    </linearGradient>
-  </defs>
-  <rect x="4" y="4" width="88" height="88" rx="28" fill="#0C2230"/>
-  <circle cx="70" cy="25" r="7" fill="#E8DDFF"/>
-  <path d="M23 63c11-1 15-19 26-19 12 0 14 17 27 18" fill="none" stroke="url(#island)" stroke-width="8" stroke-linecap="round"/>
-  <path d="M21 72c12 7 22 7 34 0 10-6 18-6 25-2" fill="none" stroke="#EAFBFF" stroke-width="5" stroke-linecap="round"/>
-  <path d="M31 62 48 34l18 28" fill="none" stroke="#EAFBFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="112" y="60" fill="#102733" font-family="Optima, Avenir Next, sans-serif" font-size="45" font-weight="600" letter-spacing="-2">MyLombok</text>
-  <text x="115" y="80" fill="#687D88" font-family="Avenir Next, sans-serif" font-size="10" font-weight="600" letter-spacing="3.2">LOCAL CONCIERGE</text>
+  <desc id="desc">Logo MyLombok avec symbole Ombak, une courbe de vague formant un M</desc>
+  <rect x="4" y="4" width="88" height="88" rx="22" fill="#06121A"/>
+  <path d="M21 70C21 44 33 27 43 27c8 0 10 11 10 25 0-14 2-25 10-25 10 0 26 17 26 43" fill="none" stroke="#C08A4A" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="112" y="55" fill="#F2F1ED" font-family="Newsreader, Georgia, serif" font-size="38" font-weight="300" letter-spacing="-1.1">MyLombok</text>
+  <text x="115" y="75" fill="#C08A4A" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="9" font-weight="500" letter-spacing="3.4">LOCAL CONCIERGE</text>
 </svg>

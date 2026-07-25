@@ -2028,3 +2028,473 @@ a:active {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================
+   MYLOMBOK — BRANDBOOK OVERRIDE
+   A full DA reset toward Ombak / Basalte / Lagon / Laiton.
+   Placed last intentionally: it replaces older green/SaaS remnants.
+   ============================================================ */
+
+:root,
+.app-shell,
+.app-shell.dark {
+  color-scheme: dark;
+  --color-background: #06121a;
+  --color-surface: #0a1c24;
+  --color-surface-elevated: #0c1f27;
+  --color-surface-subtle: #10262e;
+  --color-border: #1b303a;
+  --color-border-strong: #27424d;
+  --color-text-primary: #f2f1ed;
+  --color-text-secondary: #a7b4b7;
+  --color-text-tertiary: #6e8085;
+  --color-primary: #0e4c52;
+  --color-primary-hover: #15676d;
+  --color-primary-soft: rgba(14, 76, 82, 0.28);
+  --color-accent: #c08a4a;
+  --color-accent-soft: rgba(192, 138, 74, 0.16);
+  --color-on-primary: #f2f1ed;
+  --state-success: #4c9296;
+  --shadow-2: 0 18px 44px -30px rgba(0, 0, 0, 0.86);
+  --shadow-3: 0 30px 70px -34px rgba(0, 0, 0, 0.92);
+}
+
+.app-shell.app-shell,
+.app-shell.dark.app-shell {
+  background:
+    radial-gradient(circle at 74% 0%, rgba(76, 146, 150, 0.16), transparent 35%),
+    radial-gradient(circle at 9% 20%, rgba(192, 138, 74, 0.08), transparent 27%),
+    repeating-radial-gradient(ellipse at 20% 12%, transparent 0 48px, rgba(127, 179, 178, 0.04) 49px 50px, transparent 51px 70px),
+    #06121a !important;
+}
+
+.phone-app {
+  background:
+    linear-gradient(180deg, rgba(6, 18, 26, 0.96), rgba(6, 18, 26, 0.985)),
+    #06121a !important;
+  border-color: rgba(127, 179, 178, 0.16) !important;
+  color: #f2f1ed !important;
+}
+
+.phone-app * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.topbar {
+  background: linear-gradient(180deg, rgba(6, 18, 26, 0.92), rgba(6, 18, 26, 0.62), transparent) !important;
+}
+
+.phone-app .brand {
+  min-width: 148px !important;
+  gap: 10px !important;
+}
+
+.phone-app .brand img {
+  width: 136px !important;
+  height: 38px !important;
+  flex: 0 0 136px !important;
+  object-fit: contain !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.brand-copy {
+  display: none !important;
+}
+
+.destination,
+.avatar,
+.weather {
+  border-color: rgba(127, 179, 178, 0.28) !important;
+  background: rgba(12, 31, 39, 0.76) !important;
+  color: #f2f1ed !important;
+  box-shadow: none !important;
+}
+
+.weather {
+  background: rgba(192, 138, 74, 0.16) !important;
+  color: #f6eadb !important;
+}
+
+.eyebrow,
+.home-section-title small,
+.result-copy small,
+.detail-body .eyebrow,
+.filter-panel label,
+.trip-planner small,
+.pretrip-services small,
+.map-actions small {
+  color: #c08a4a !important;
+  font-family: var(--font-mono) !important;
+  letter-spacing: 0.16em !important;
+}
+
+.content h1,
+.content h2,
+.trip-planner h2,
+.place-detail h2,
+.install-hero h1 {
+  font-family: var(--font-serif) !important;
+  font-weight: 300 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.lead,
+.explorer-title p,
+.result-copy p,
+.trip-planner p,
+.modal p,
+.account-modal p,
+.profile-card p {
+  color: #a7b4b7 !important;
+}
+
+.trip-planner,
+.trip-planner-collapsed,
+.pretrip-services button,
+.home-widgets > *,
+.map-place-card,
+.globe-stage,
+.map-actions > button,
+.home-currency,
+.converter,
+.explorer-favorites,
+.editorial-selections button,
+.category-scroll button,
+.filter-panel,
+.result-card-place,
+.profile-card,
+.settings,
+.requests-list article,
+.concierge-promise,
+.account-card,
+.admin-list a,
+.restaurant-menu {
+  border-color: rgba(127, 179, 178, 0.18) !important;
+  background: linear-gradient(145deg, rgba(16, 38, 46, 0.88), rgba(10, 28, 36, 0.94)) !important;
+  color: #f2f1ed !important;
+  box-shadow: none !important;
+}
+
+.pretrip-services {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.pretrip-services button {
+  min-height: 112px !important;
+  padding: 16px 12px !important;
+  border-radius: 22px !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  text-align: left !important;
+}
+
+.pretrip-services button > span,
+.action-icon,
+.spot-thumb,
+.modal-icon,
+.account-photo,
+.install-note > span,
+.category-scroll button > span {
+  display: grid !important;
+  place-items: center !important;
+  background: rgba(14, 76, 82, 0.48) !important;
+  color: #7fb3b2 !important;
+  border: 1px solid rgba(127, 179, 178, 0.22) !important;
+  box-shadow: none !important;
+}
+
+.map-filters {
+  gap: 10px !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+}
+
+.map-filters::-webkit-scrollbar,
+.category-scroll::-webkit-scrollbar {
+  display: none !important;
+}
+
+.map-filters button,
+.trip-choice button,
+.filter-panel button,
+.check-row button,
+.primary,
+.trip-submit,
+.load-more,
+.empty-state button,
+.detail-actions a,
+.detail-actions button {
+  min-height: 46px !important;
+  border: 1px solid rgba(127, 179, 178, 0.22) !important;
+  border-radius: 999px !important;
+  background: rgba(16, 38, 46, 0.92) !important;
+  color: #f2f1ed !important;
+  box-shadow: none !important;
+  transition: transform 180ms var(--ease-out), background 180ms var(--ease-out), color 180ms var(--ease-out), border-color 180ms var(--ease-out) !important;
+}
+
+.map-filters button.active,
+.trip-choice button.selected,
+.category-scroll button.active,
+.filter-panel button.radius-on,
+.check-row button.on,
+.results-bar button.active,
+.primary,
+.trip-submit {
+  border-color: rgba(192, 138, 74, 0.56) !important;
+  background: #0e4c52 !important;
+  color: #f2f1ed !important;
+}
+
+.map-filters button:hover,
+.trip-choice button:hover,
+.filter-panel button:hover,
+.detail-actions a:hover,
+.detail-actions button:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(192, 138, 74, 0.42) !important;
+}
+
+.home-location-card {
+  margin-bottom: 14px !important;
+}
+
+.globe-stage {
+  margin-top: 10px !important;
+  max-height: 290px !important;
+  overflow: hidden !important;
+}
+
+.lombok-label {
+  background: rgba(12, 31, 39, 0.88) !important;
+  border-color: rgba(192, 138, 74, 0.52) !important;
+  color: #f2f1ed !important;
+}
+
+.lombok-label span,
+.editorial-selections span {
+  color: #c08a4a !important;
+}
+
+.globe-reset,
+.geo-enable {
+  background: #0e4c52 !important;
+  color: #f2f1ed !important;
+  border-color: rgba(127, 179, 178, 0.42) !important;
+}
+
+.converter input,
+.converter select,
+.search-box,
+.search-box input,
+.filter-panel select,
+.trip-dates input,
+.modal input,
+.modal textarea,
+.account-modal input,
+.destination {
+  background: #10262e !important;
+  border-color: rgba(127, 179, 178, 0.22) !important;
+  color: #f2f1ed !important;
+  caret-color: #c08a4a !important;
+}
+
+.converter input::placeholder,
+.search-box input::placeholder,
+.trip-dates input::placeholder,
+.modal input::placeholder,
+.modal textarea::placeholder,
+.account-modal input::placeholder {
+  color: rgba(167, 180, 183, 0.78) !important;
+}
+
+.modal-backdrop,
+.detail-backdrop,
+.account-backdrop {
+  background: rgba(2, 9, 13, 0.72) !important;
+  backdrop-filter: blur(18px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(120%) !important;
+}
+
+.modal,
+.place-detail,
+.account-modal {
+  background: #0a1c24 !important;
+  border-color: rgba(127, 179, 178, 0.2) !important;
+  color: #f2f1ed !important;
+  box-shadow: 0 -30px 70px -28px rgba(0, 0, 0, 0.95) !important;
+}
+
+.close,
+.detail-close {
+  background: #f3efe9 !important;
+  color: #06121a !important;
+}
+
+.auth-error {
+  background: rgba(194, 56, 44, 0.13) !important;
+  border-color: rgba(194, 56, 44, 0.38) !important;
+  color: #f1aaa3 !important;
+}
+
+.result-card-place .heart,
+.heart {
+  display: grid !important;
+  place-items: center !important;
+  width: 42px !important;
+  height: 42px !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  background: #f3efe9 !important;
+  color: #6e8085 !important;
+}
+
+.result-card-place .heart.on,
+.heart.on {
+  color: #c08a4a !important;
+}
+
+.card-map-link,
+.whatsapp,
+.concierge {
+  background: rgba(14, 76, 82, 0.48) !important;
+  color: #f2f1ed !important;
+}
+
+.explorer-map,
+.region-map-stage {
+  border-color: rgba(127, 179, 178, 0.18) !important;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(127, 179, 178, 0.18), transparent 28%),
+    #07141b !important;
+  filter: saturate(0.82) contrast(1.08) brightness(0.78) !important;
+}
+
+.leaflet-container {
+  background: #07141b !important;
+}
+
+.explorer-pin,
+.island-marker,
+.home-map-pin {
+  background: #0e4c52 !important;
+  border-color: #f2f1ed !important;
+}
+
+.explorer-pin.category-restaurant,
+.island-marker:not(.featured) {
+  background: #c08a4a !important;
+}
+
+.explorer-pin.category-plage {
+  background: #4c9296 !important;
+}
+
+.explorer-pin.category-service {
+  background: #d0c9be !important;
+}
+
+.phone-app .bottom-nav {
+  grid-template-columns: minmax(0, 1fr) 56px !important;
+  gap: 12px !important;
+  height: 68px !important;
+  left: 20px !important;
+  right: 20px !important;
+  bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+}
+
+.phone-app .nav-rail {
+  height: 58px !important;
+  padding: 5px !important;
+  border-radius: 999px !important;
+  background: rgba(12, 31, 39, 0.76) !important;
+  border-color: rgba(127, 179, 178, 0.22) !important;
+  box-shadow: inset 0 1px 0 rgba(242, 241, 237, 0.08), 0 18px 44px -28px rgba(0, 0, 0, 0.94) !important;
+}
+
+.phone-app .nav-rail::before {
+  height: 48px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #0e4c52, #15676d) !important;
+  border-color: rgba(127, 179, 178, 0.38) !important;
+  transform: translateX(var(--nav-offset)) !important;
+  transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.phone-app .nav-rail > button {
+  height: 48px !important;
+  color: #a7b4b7 !important;
+}
+
+.phone-app .nav-rail > button span {
+  display: grid !important;
+  place-items: center !important;
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.phone-app .nav-rail > button.active,
+.app-shell.dark .phone-app .nav-rail > button.active {
+  color: #f2f1ed !important;
+}
+
+.phone-app .nav-rail > button.active span {
+  transform: translateY(-4px) !important;
+}
+
+.phone-app .nav-rail > button b {
+  bottom: 5px !important;
+  font-size: 7.5px !important;
+}
+
+.phone-app .bottom-nav .nav-quick-request,
+.app-shell.dark .phone-app .bottom-nav .nav-quick-request {
+  width: 56px !important;
+  min-width: 56px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  border-radius: 20px !important;
+  background: #c08a4a !important;
+  color: #06121a !important;
+  border-color: rgba(224, 188, 140, 0.7) !important;
+}
+
+.phone-app .bottom-nav .nav-quick-request svg {
+  stroke: #06121a !important;
+}
+
+@media (max-width: 520px) {
+  .phone-app .brand img {
+    width: 126px !important;
+    height: 36px !important;
+    flex-basis: 126px !important;
+  }
+
+  .pretrip-services {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .content {
+    padding-bottom: calc(116px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .phone-app .brand img {
+    width: 112px !important;
+    flex-basis: 112px !important;
+  }
+
+  .phone-app .bottom-nav {
+    left: 12px !important;
+    right: 12px !important;
+  }
+}
