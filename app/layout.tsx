@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./theme.css";
 import "./premium.css";
+import "./design-system.css";
 import PwaRegister from "./pwa-register";
 
 export const metadata: Metadata = {
@@ -39,8 +40,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFFAF2" },
-    { media: "(prefers-color-scheme: dark)", color: "#09131B" },
+    { media: "(prefers-color-scheme: light)", color: "#F3EFE9" },
+    { media: "(prefers-color-scheme: dark)", color: "#06121A" },
   ],
 };
 
