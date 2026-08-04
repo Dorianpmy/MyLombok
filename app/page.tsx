@@ -140,7 +140,7 @@ export default function HomePage() {
           <div className="why-points">
             <article><Sparkles aria-hidden="true" /><div><h3>Des choix lisibles</h3><p>Les informations inconnues sont signalées comme telles, sans promesse ajoutée pour embellir une fiche.</p></div></article>
             <article><MessageCircle aria-hidden="true" /><div><h3>Un point de contact clair</h3><p>Les demandes générales arrivent chez MyLombok ; les contacts directs restent ceux des prestataires lorsqu’ils sont disponibles.</p></div></article>
-            <article><ShieldCheck aria-hidden="true" /><div><h3>Vos données sous votre contrôle</h3><p>Les préférences restent sur votre appareil. La synchronisation ne sera proposée qu’après activation du service de comptes.</p></div></article>
+            <article><ShieldCheck aria-hidden="true" /><div><h3>Vos données sous votre contrôle</h3><p>Sans compte, votre carnet reste sur cet appareil. Avec un compte gratuit, favoris et demandes se synchronisent entre vos appareils.</p></div></article>
           </div>
         </div>
       </section>

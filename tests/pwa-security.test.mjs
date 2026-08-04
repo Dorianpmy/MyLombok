@@ -71,8 +71,9 @@ test("la CSP autorise uniquement les services nécessaires à MyLombok", async (
 
   assert.match(csp, /object-src 'none'/);
   assert.match(csp, /frame-ancestors 'none'/);
-  assert.match(csp, /https:\/\/\*\.supabase\.co/);
-  assert.match(csp, /wss:\/\/\*\.supabase\.co/);
+  assert.match(csp, /https:\/\/byyudzhpcatcdqtxxqxl\.supabase\.co/);
+  assert.match(csp, /wss:\/\/byyudzhpcatcdqtxxqxl\.supabase\.co/);
+  assert.doesNotMatch(csp, /https:\/\/\*\.supabase\.co/);
   assert.match(csp, /https:\/\/api\.open-meteo\.com/);
   assert.match(csp, /https:\/\/api\.frankfurter\.dev/);
   assert.match(csp, /https:\/\/\*\.basemaps\.cartocdn\.com/);

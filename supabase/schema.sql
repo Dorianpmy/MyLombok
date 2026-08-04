@@ -9,7 +9,9 @@ create table if not exists public.user_state (
 
 alter table public.user_state enable row level security;
 
+revoke all on table public.user_state from public;
 revoke all on table public.user_state from anon;
+grant usage on schema public to authenticated;
 grant select, insert, update, delete on table public.user_state to authenticated;
 
 drop policy if exists "Users can read their own MyLombok state" on public.user_state;

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CalendarDays, Check, MessageCircle, UsersRound } from "lucide-react";
-import { activeLocalUserId, readPersonalArray, writePersonalArray } from "../lib/local-state";
+import { readPersonalArray, writePersonalArray } from "../lib/local-state";
 import { getSupabaseBrowserClient } from "../lib/supabase";
 
 const WHATSAPP_NUMBER = "33763664857";
@@ -19,6 +19,41 @@ const serviceOptions = [
 
 type FormErrors = Partial<Record<"name" | "contact" | "dates" | "message" | "consent", string>>;
 type FormDraft = Partial<Record<"service" | "arrival" | "departure" | "travelers" | "name" | "email" | "phone" | "message", string>>;
+type StoredRequest = { id: number; title: string; detail: string; status: string };
+
+async function storeRequestForVerifiedUser(request: StoredRequest) {
+  const supabase = getSupabaseBrowserClient();
+  let userId: string | null = null;
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (!error) userId = data.user?.id || null;
+    } catch {
+      // En cas de panne réseau, la demande rejoint le carnet invité plutôt qu’un ancien compte.
+    }
+  }
+
+  const localHistory = readPersonalArray<StoredRequest>("my-lombok-requests", userId);
+  const nextLocalHistory = [request, ...localHistory]
+    .filter((item, index, all) => all.findIndex((candidate) => candidate.id === item.id) === index)
+    .slice(0, 30);
+  writePersonalArray("my-lombok-requests", nextLocalHistory, userId);
+
+  if (!supabase || !userId) return;
+  try {
+    const { data, error } = await supabase.from("user_state").select("requests").eq("user_id", userId).maybeSingle();
+    if (error) return;
+    const cloudHistory = Array.isArray(data?.requests) ? data.requests as StoredRequest[] : [];
+    const mergedHistory = [request, ...localHistory, ...cloudHistory]
+      .filter((item, index, all) => all.findIndex((candidate) => candidate.id === item.id) === index)
+      .slice(0, 30);
+    writePersonalArray("my-lombok-requests", mergedHistory, userId);
+    await supabase.from("user_state").upsert({ user_id: userId, requests: mergedHistory, updated_at: new Date().toISOString() });
+  } catch {
+    // La copie locale vérifiée sera resynchronisée lors de la prochaine ouverture du profil.
+  }
+}
 
 function localDateInputValue(date = new Date()) {
   const year = date.getFullYear();
@@ -148,10 +183,8 @@ export function ConciergeForm({ initialService = "sejour", initialPlace = "" }: 
     setIsOpening(true);
     const opened = window.open(url, "_blank");
     if (opened) opened.opener = null;
-    const localUserId = getSupabaseBrowserClient() ? activeLocalUserId() : null;
-    const history = readPersonalArray<unknown>("my-lombok-requests", localUserId);
     try {
-      writePersonalArray("my-lombok-requests", [{ id: Date.now(), title: serviceLabel, detail: `${name} · ${arrival || "Dates à préciser"}`, status: opened ? "WhatsApp ouvert" : "Message préparé" }, ...history].slice(0, 30), localUserId);
+      void storeRequestForVerifiedUser({ id: Date.now(), title: serviceLabel, detail: `${name} · ${arrival || "Dates à préciser"}`, status: opened ? "WhatsApp ouvert" : "Message préparé" });
       sessionStorage.removeItem(DRAFT_KEY);
     } catch {
       // Le blocage du stockage local ne doit pas empêcher l’utilisateur de contacter MyLombok.

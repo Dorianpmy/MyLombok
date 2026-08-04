@@ -3,13 +3,28 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { Apple, BookOpen, ChevronRight, CloudDownload, Eye, EyeOff, LogOut, Mail, MoonStar, ShieldCheck, Sun, Trash2, UserRound, X } from "lucide-react";
-import { getSupabaseBrowserClient } from "../lib/supabase";
+import { getSupabaseBrowserClient, isSupabaseOAuthProviderEnabled, type SupabaseOAuthProvider } from "../lib/supabase";
 import { clearPersonalState, readPersonalArray, setActiveLocalUserId, writePersonalArray } from "../lib/local-state";
 import { useDialogA11y } from "./use-dialog-a11y";
 import { PrayerCard } from "./prayer-card";
 import { CurrencyConverter } from "./currency-converter";
 
 type StoredRequest = { id: number; title: string; detail: string; status: string };
+
+function isMissingAuthSession(error: unknown) {
+  return error instanceof Error && (error.name === "AuthSessionMissingError" || error.message === "Auth session missing!");
+}
+
+function getAuthErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("invalid login credentials")) return "E-mail ou mot de passe incorrect.";
+  if (normalized.includes("email not confirmed")) return "Confirmez d’abord votre adresse grâce à l’e-mail envoyé par MyLombok.";
+  if (normalized.includes("user already registered")) return "Un compte existe déjà avec cette adresse. Essayez de vous connecter.";
+  if (normalized.includes("signup") && normalized.includes("disabled")) return "Les nouvelles inscriptions sont temporairement indisponibles.";
+  if (normalized.includes("rate limit")) return "Trop de tentatives ont été effectuées. Attendez quelques minutes avant de réessayer.";
+  if (normalized.includes("password")) return "Choisissez un mot de passe d’au moins 10 caractères.";
+  return "Connexion impossible. Vérifiez vos informations ou réessayez plus tard.";
+}
 
 const officialGuides = [
   { title: "Visa et titres de séjour", summary: "Portail officiel des visas électroniques et informations d’immigration.", href: "https://evisa.imigrasi.go.id/", source: "Immigration indonésienne" },
@@ -31,6 +46,9 @@ export function ProfileClient() {
   const [notice, setNotice] = useState("");
   const [syncReady, setSyncReady] = useState(false);
   const skipNextCloudSync = useRef(false);
+  const activeUserId = useRef<string | null>(null);
+  const identityReady = useRef(false);
+  const authGeneration = useRef(0);
   const supabaseAvailable = Boolean(getSupabaseBrowserClient());
 
   useEffect(() => {
@@ -38,10 +56,24 @@ export function ProfileClient() {
     const hydratePersonalState = (nextUser: User | null) => {
       if (!active) return;
       const userId = nextUser?.id || null;
+      activeUserId.current = userId;
       setActiveLocalUserId(userId);
       setFavorites(readPersonalArray<string>("my-lombok-favorites", userId));
       setVisited(readPersonalArray<string>("my-lombok-visited", userId));
       setRequests(readPersonalArray<StoredRequest>("my-lombok-requests", userId));
+    };
+    const applyIdentity = (nextUser: User | null) => {
+      if (!active) return;
+      const nextUserId = nextUser?.id || null;
+      if (identityReady.current && activeUserId.current === nextUserId) {
+        setLoading(false);
+        return;
+      }
+      identityReady.current = true;
+      setSyncReady(false);
+      setUser(nextUser);
+      hydratePersonalState(nextUser);
+      setLoading(false);
     };
     const timer = window.setTimeout(() => {
       if (!active) return;
@@ -53,16 +85,40 @@ export function ProfileClient() {
       const loadingTimer = window.setTimeout(() => { hydratePersonalState(null); if (active) setLoading(false); }, 0);
       return () => { active = false; window.clearTimeout(timer); window.clearTimeout(loadingTimer); };
     }
-    supabase.auth.getSession().then(({ data }) => { if (active) { const nextUser = data.session?.user ?? null; setSyncReady(false); setUser(nextUser); hydratePersonalState(nextUser); setLoading(false); } });
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    const verifyIdentity = async (generation: number) => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!active || generation !== authGeneration.current) return;
+        applyIdentity(error ? null : data.user);
+        if (error && !isMissingAuthSession(error)) setNotice("Votre session n’a pas pu être vérifiée. Reconnectez-vous pour accéder à votre carnet synchronisé.");
+      } catch (error) {
+        if (!active || generation !== authGeneration.current) return;
+        applyIdentity(null);
+        if (!isMissingAuthSession(error)) setNotice("Votre session n’a pas pu être vérifiée. Reconnectez-vous pour accéder à votre carnet synchronisé.");
+      }
+    };
+    const pendingVerifications = new Set<number>();
+    void verifyIdentity(++authGeneration.current);
+    const { data } = supabase.auth.onAuthStateChange((event) => {
       if (!active) return;
-      const nextUser = session?.user ?? null;
-      setSyncReady(false);
-      setUser(nextUser);
-      hydratePersonalState(nextUser);
+      const generation = ++authGeneration.current;
+      if (event === "SIGNED_OUT") applyIdentity(null);
+      else {
+        const verificationTimer = window.setTimeout(() => {
+          pendingVerifications.delete(verificationTimer);
+          void verifyIdentity(generation);
+        }, 0);
+        pendingVerifications.add(verificationTimer);
+      }
       if (event === "PASSWORD_RECOVERY") { setPasswordRecovery(true); setAuthOpen(true); }
     });
-    return () => { active = false; window.clearTimeout(timer); data.subscription.unsubscribe(); };
+    return () => {
+      active = false;
+      authGeneration.current += 1;
+      window.clearTimeout(timer);
+      pendingVerifications.forEach((verificationTimer) => window.clearTimeout(verificationTimer));
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -70,27 +126,39 @@ export function ProfileClient() {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     let active = true;
-    supabase.from("user_state").select("favorites, visited, requests, preferences").eq("user_id", user.id).maybeSingle().then(({ data, error }) => {
-      if (!active) return;
-      if (error) {
-        setNotice("La synchronisation est momentanément indisponible. Vos données locales ne seront pas écrasées.");
-        return;
-      }
-      if (data) {
-        if (Array.isArray(data.favorites)) { setFavorites(data.favorites); writePersonalArray("my-lombok-favorites", data.favorites, user.id); }
-        if (Array.isArray(data.visited)) { setVisited(data.visited); writePersonalArray("my-lombok-visited", data.visited, user.id); }
-        if (Array.isArray(data.requests)) { setRequests(data.requests as StoredRequest[]); writePersonalArray("my-lombok-requests", data.requests as StoredRequest[], user.id); }
-        const prefs = data.preferences as { dark?: boolean; muslimMode?: boolean } | null;
-        if (typeof prefs?.muslimMode === "boolean") { setMuslimMode(prefs.muslimMode); localStorage.setItem("my-lombok-muslim-mode", String(prefs.muslimMode)); }
-        if (typeof prefs?.dark === "boolean") {
-          setDark(prefs.dark);
-          localStorage.setItem("my-lombok-theme", prefs.dark ? "dark" : "light");
-          if (prefs.dark) document.documentElement.dataset.theme = "dark";
-          else delete document.documentElement.dataset.theme;
+    void (async () => {
+      try {
+        const { data, error } = await supabase.from("user_state").select("favorites, visited, requests, preferences").eq("user_id", user.id).maybeSingle();
+        if (!active || activeUserId.current !== user.id) return;
+        if (error) {
+          setNotice("La synchronisation est momentanément indisponible. Vos données locales ne seront pas écrasées.");
+          return;
         }
+        if (data) {
+          if (Array.isArray(data.favorites)) { setFavorites(data.favorites); writePersonalArray("my-lombok-favorites", data.favorites, user.id); }
+          if (Array.isArray(data.visited)) { setVisited(data.visited); writePersonalArray("my-lombok-visited", data.visited, user.id); }
+          if (Array.isArray(data.requests)) {
+            const localRequests = readPersonalArray<StoredRequest>("my-lombok-requests", user.id);
+            const mergedRequests = [...localRequests, ...(data.requests as StoredRequest[])]
+              .filter((request, index, all) => all.findIndex((candidate) => candidate.id === request.id) === index)
+              .slice(0, 30);
+            setRequests(mergedRequests);
+            writePersonalArray("my-lombok-requests", mergedRequests, user.id);
+          }
+          const prefs = data.preferences as { dark?: boolean; muslimMode?: boolean } | null;
+          if (typeof prefs?.muslimMode === "boolean") { setMuslimMode(prefs.muslimMode); localStorage.setItem("my-lombok-muslim-mode", String(prefs.muslimMode)); }
+          if (typeof prefs?.dark === "boolean") {
+            setDark(prefs.dark);
+            localStorage.setItem("my-lombok-theme", prefs.dark ? "dark" : "light");
+            if (prefs.dark) document.documentElement.dataset.theme = "dark";
+            else delete document.documentElement.dataset.theme;
+          }
+        }
+        setSyncReady(true);
+      } catch {
+        if (active && activeUserId.current === user.id) setNotice("La synchronisation est momentanément indisponible. Vos données locales ne seront pas écrasées.");
       }
-      setSyncReady(true);
-    });
+    })();
     return () => { active = false; };
   }, [user]);
 
@@ -99,10 +167,16 @@ export function ProfileClient() {
     if (skipNextCloudSync.current) { skipNextCloudSync.current = false; return; }
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
-    const timer = window.setTimeout(() => {
-      supabase.from("user_state").upsert({ user_id: user.id, favorites, visited, requests, preferences: { dark, muslimMode }, updated_at: new Date().toISOString() }).then(({ error }) => {
-        if (error) setNotice("La synchronisation est momentanément indisponible. Vos données restent sur cet appareil.");
-      });
+    const expectedUserId = user.id;
+    const timer = window.setTimeout(async () => {
+      try {
+        const { data: identity, error: identityError } = await supabase.auth.getUser();
+        if (identityError || identity.user?.id !== expectedUserId || activeUserId.current !== expectedUserId) return;
+        const { error } = await supabase.from("user_state").upsert({ user_id: expectedUserId, favorites, visited, requests, preferences: { dark, muslimMode }, updated_at: new Date().toISOString() });
+        if (error && activeUserId.current === expectedUserId) setNotice("La synchronisation est momentanément indisponible. Vos données restent sur cet appareil.");
+      } catch {
+        if (activeUserId.current === expectedUserId) setNotice("La synchronisation est momentanément indisponible. Vos données restent sur cet appareil.");
+      }
     }, 500);
     return () => window.clearTimeout(timer);
   }, [dark, favorites, muslimMode, requests, syncReady, user, visited]);
@@ -140,14 +214,20 @@ export function ProfileClient() {
   }
 
   async function signOut() {
-    await getSupabaseBrowserClient()?.auth.signOut();
-    setActiveLocalUserId(null);
-    setFavorites(readPersonalArray<string>("my-lombok-favorites", null));
-    setVisited(readPersonalArray<string>("my-lombok-visited", null));
-    setRequests(readPersonalArray<StoredRequest>("my-lombok-requests", null));
-    setSyncReady(false);
-    setUser(null);
-    setNotice("Vous êtes déconnecté.");
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (!error) {
+        setNotice("Vous êtes déconnecté.");
+        return;
+      }
+    } catch {
+      // Le message ci-dessous couvre aussi une panne réseau pendant la déconnexion.
+    }
+    if (activeUserId.current) {
+      setNotice("La déconnexion n’a pas abouti. Réessayez avant de quitter cet appareil.");
+    }
   }
 
   return (
@@ -210,14 +290,23 @@ function AuthDialog({ open, recovery, close, onNotice }: { open: boolean; recove
   if (!open) return null;
 
   const supabaseAvailable = Boolean(getSupabaseBrowserClient());
+  const appleEnabled = isSupabaseOAuthProviderEnabled("apple");
+  const googleEnabled = isSupabaseOAuthProviderEnabled("google");
+  const hasSocialAuth = appleEnabled || googleEnabled;
   const activeMode = recovery ? "recovery" : mode;
 
-  async function social(provider: "google" | "apple") {
+  async function social(provider: SupabaseOAuthProvider) {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) { setError("Le service de comptes n’est pas configuré sur ce déploiement."); return; }
+    if (!isSupabaseOAuthProviderEnabled(provider)) { setError("Ce mode de connexion n’est pas encore disponible."); return; }
     setBusy(true); setError("");
-    const { error: authError } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: `${window.location.origin}/profil` } });
-    if (authError) { setError("Ce mode de connexion n’est pas disponible pour le moment."); setBusy(false); }
+    try {
+      const { error: authError } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: `${window.location.origin}/profil` } });
+      if (authError) { setError("Ce mode de connexion n’est pas disponible pour le moment."); setBusy(false); }
+    } catch {
+      setError("Ce mode de connexion n’est pas disponible pour le moment.");
+      setBusy(false);
+    }
   }
 
   async function emailAuth(event: React.FormEvent<HTMLFormElement>) {
@@ -229,25 +318,34 @@ function AuthDialog({ open, recovery, close, onNotice }: { open: boolean; recove
     const password = String(form.get("password") || "");
     const name = String(form.get("name") || "").trim();
     setBusy(true); setError("");
-    const result = activeMode === "recovery"
-      ? await supabase.auth.updateUser({ password })
-      : activeMode === "signup"
-        ? await supabase.auth.signUp({ email, password, options: { data: { full_name: name }, emailRedirectTo: `${window.location.origin}/profil` } })
-        : await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (result.error) { setError(result.error.message === "Invalid login credentials" ? "E-mail ou mot de passe incorrect." : "Connexion impossible. Vérifiez vos informations ou réessayez plus tard."); return; }
-    const needsConfirmation = activeMode === "signup" && "session" in result.data && !result.data.session;
-    onNotice(activeMode === "recovery" ? "Votre nouveau mot de passe est enregistré." : needsConfirmation ? "Compte créé. Consultez votre e-mail pour le confirmer." : "Votre compte est connecté.");
-    close();
+    try {
+      const result = activeMode === "recovery"
+        ? await supabase.auth.updateUser({ password })
+        : activeMode === "signup"
+          ? await supabase.auth.signUp({ email, password, options: { data: { full_name: name }, emailRedirectTo: `${window.location.origin}/profil` } })
+          : await supabase.auth.signInWithPassword({ email, password });
+      if (result.error) { setError(getAuthErrorMessage(result.error.message)); return; }
+      const needsConfirmation = activeMode === "signup" && "session" in result.data && !result.data.session;
+      onNotice(activeMode === "recovery" ? "Votre nouveau mot de passe est enregistré." : needsConfirmation ? "Compte créé. Consultez votre e-mail pour le confirmer." : "Votre compte est connecté.");
+      close();
+    } catch {
+      setError("Connexion impossible. Vérifiez votre réseau puis réessayez.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function resetPassword() {
     const email = window.prompt("Adresse e-mail de votre compte MyLombok :")?.trim();
     const supabase = getSupabaseBrowserClient();
     if (!email || !supabase) return;
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/profil` });
-    if (resetError) setError("Impossible d’envoyer l’e-mail de réinitialisation.");
-    else onNotice("Un e-mail de réinitialisation vient d’être envoyé.");
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/profil` });
+      if (resetError) setError("Impossible d’envoyer l’e-mail de réinitialisation.");
+      else onNotice("Un e-mail de réinitialisation vient d’être envoyé.");
+    } catch {
+      setError("Impossible d’envoyer l’e-mail de réinitialisation.");
+    }
   }
 
   return (
@@ -258,11 +356,11 @@ function AuthDialog({ open, recovery, close, onNotice }: { open: boolean; recove
         <h2 id="auth-title">{activeMode === "recovery" ? "Choisir un nouveau mot de passe" : activeMode === "signup" ? "Créer votre espace MyLombok" : "Heureux de vous revoir"}</h2>
         <p>{activeMode === "recovery" ? "Saisissez un nouveau mot de passe pour sécuriser votre carnet." : "Synchronisez vos favoris, visites et demandes entre vos appareils."}</p>
         {!supabaseAvailable && <div className="auth-warning" role="alert">La création de compte est prête dans l’application, mais aucun projet Supabase MyLombok n’est configuré sur ce déploiement.</div>}
-        {activeMode !== "recovery" && <div className="social-auth">
-          <button disabled={busy || !supabaseAvailable} onClick={() => social("apple")}><Apple aria-hidden="true" /> Continuer avec Apple</button>
-          <button disabled={busy || !supabaseAvailable} onClick={() => social("google")}><b aria-hidden="true">G</b> Continuer avec Google</button>
+        {activeMode !== "recovery" && hasSocialAuth && <div className="social-auth">
+          {appleEnabled && <button type="button" disabled={busy || !supabaseAvailable} onClick={() => social("apple")}><Apple aria-hidden="true" /> Continuer avec Apple</button>}
+          {googleEnabled && <button type="button" disabled={busy || !supabaseAvailable} onClick={() => social("google")}><b aria-hidden="true">G</b> Continuer avec Google</button>}
         </div>}
-        {activeMode !== "recovery" && <div className="auth-divider"><span>ou avec votre e-mail</span></div>}
+        {activeMode !== "recovery" && hasSocialAuth && <div className="auth-divider"><span>ou avec votre e-mail</span></div>}
         <form onSubmit={emailAuth}>
           {activeMode === "signup" && <label>Prénom ou nom<input name="name" required maxLength={80} autoComplete="name" /></label>}
           {activeMode !== "recovery" && <label>Adresse e-mail<input name="email" type="email" required maxLength={254} autoComplete="email" /></label>}
@@ -270,8 +368,8 @@ function AuthDialog({ open, recovery, close, onNotice }: { open: boolean; recove
           {error && <div className="auth-error" role="alert">{error}</div>}
           <button className="button button--primary button--large" disabled={busy || !supabaseAvailable} type="submit">{busy ? "Validation…" : activeMode === "recovery" ? "Enregistrer le mot de passe" : activeMode === "signup" ? "Créer mon compte" : "Me connecter"}</button>
         </form>
-        {activeMode === "signin" && <button className="auth-text-action" onClick={resetPassword}>Mot de passe oublié ?</button>}
-        {activeMode !== "recovery" && <button className="auth-text-action" onClick={() => { setMode(mode === "signup" ? "signin" : "signup"); setError(""); }}>{mode === "signup" ? "J’ai déjà un compte" : "Créer un nouveau compte"}</button>}
+        {activeMode === "signin" && <button type="button" className="auth-text-action" onClick={resetPassword}>Mot de passe oublié ?</button>}
+        {activeMode !== "recovery" && <button type="button" className="auth-text-action" onClick={() => { setMode(mode === "signup" ? "signin" : "signup"); setError(""); }}>{mode === "signup" ? "J’ai déjà un compte" : "Créer un nouveau compte"}</button>}
         <small>En continuant, vous acceptez que les données de votre carnet soient synchronisées. Consultez notre <a href="/confidentialite">politique de confidentialité</a>.</small>
       </section>
     </div>

@@ -66,7 +66,11 @@ test("Explorer conserve recherche, filtres, carte et fiches accessibles", async 
     "GlobeExplorer",
     "place.maps_url",
     "Prix à confirmer",
+    "onAuthStateChange",
+    "identityVerificationPending.current",
+    "data.user?.id !== expectedUserId",
   ], "Explorer");
+  assert.doesNotMatch(explorer, /auth\.getSession\(/, "Explorer doit vérifier l’identité distante avant d’ouvrir un carnet local");
   assert.match(explorer, /aria-label=\{favorite \? `Retirer .* des favoris` : `Ajouter .* aux favoris`\}/);
   assert.match(map, /L\.map|leaflet/i);
   includesEvery(dialog, ["Escape", "const previous = document.activeElement", "focusable", 'event.key !== "Tab"', "previous?.focus()"], "la gestion des dialogues");
@@ -114,8 +118,12 @@ test("les demandes générales vont à MyLombok et les contacts directs restent 
     "window.open(url",
     'status: opened ? "WhatsApp ouvert" : "Message préparé"',
     "MyLombok ne le considère pas comme envoyé",
+    "storeRequestForVerifiedUser",
+    "supabase.auth.getUser()",
+    'from("user_state")',
   ], "le formulaire de conciergerie");
   assert.doesNotMatch(form, /status:\s*["'](?:Envoyé|Confirmé)["']/);
+  assert.doesNotMatch(form, /activeLocalUserId\(/, "une demande ne doit jamais faire confiance à un ancien identifiant local");
   includesEvery(route, ["Sans engagement automatique", "ne déclenche ni paiement ni réservation", "validation dans WhatsApp"], "la page conciergerie");
 
   includesEvery(explorer, ["normalizeWhatsAppNumber(place.whatsapp)", "WhatsApp du prestataire", "Contact direct non renseigné", "Demande générale à MyLombok", 'href={`/conciergerie?service=${', "noopener noreferrer"], "les fiches prestataires");
@@ -140,9 +148,14 @@ test("le profil propose une authentification réelle et des contrôles de donné
     "Effacer sur cet appareil",
     'href="/confidentialite"',
     "aucun projet Supabase MyLombok n’est configuré",
+    "activeUserId.current !== expectedUserId",
+    "authGeneration.current",
+    "setSyncReady(false)",
   ], "le profil");
-  includesEvery(supabase, ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"], "le client Supabase");
+  assert.doesNotMatch(profile, /auth\.getSession\(/, "le profil doit valider l’utilisateur avec getUser");
+  includesEvery(supabase, ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "NEXT_PUBLIC_SUPABASE_GOOGLE_ENABLED", "NEXT_PUBLIC_SUPABASE_APPLE_ENABLED"], "le client Supabase");
   assert.doesNotMatch(supabase, /SERVICE_ROLE|SUPABASE_SECRET|service_role/i, "aucune clé serveur privilégiée ne doit être utilisée côté navigateur");
+  assert.match(profile, /hasSocialAuth/, "les fournisseurs OAuth non configurés ne doivent pas apparaître dans le formulaire");
   includesEvery(schema, ["enable row level security", "revoke all", "to authenticated", "(select auth.uid()) = user_id", "with check"], "les politiques Supabase");
 });
 

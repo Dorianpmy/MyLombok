@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Activity, ArrowRight, Clock3, Compass, ExternalLink, Grid2X2, Heart, Info, Landmark, List, LocateFixed, Map as MapIcon, MapPin, MessageCircle, Phone, Sailboat, Search, SlidersHorizontal, Sparkles, Trees, UtensilsCrossed, Waves, X, type LucideIcon } from "lucide-react";
 import { categoryMeta, distanceKm, places as allPlaces, type Place, type PlaceCategory } from "../data/places";
 import { getDistanceOrigin, isOpenAtLombokTime, withinOptionalRadius } from "../lib/explorer-filters";
@@ -66,7 +66,11 @@ export function ExplorerClient({ initialCategory = "all" }: { initialCategory?: 
   const [position, setPosition] = useState<UserPosition | null>(null);
   const [geoStatus, setGeoStatus] = useState<"loading" | "ready" | "denied">("loading");
   const [showGlobe, setShowGlobe] = useState(true);
-  const [storageUserId, setStorageUserId] = useState<string | null>(null);
+  const storageUserId = useRef<string | null>(null);
+  const identityReady = useRef(false);
+  const identityVerificationPending = useRef(false);
+  const authGeneration = useRef(0);
+  const cloudLoadedUserId = useRef<string | null>(null);
 
   const requestPosition = useCallback(() => {
     if (!navigator.geolocation) { setGeoStatus("denied"); return; }
@@ -75,50 +79,117 @@ export function ExplorerClient({ initialCategory = "all" }: { initialCategory?: 
   }, []);
 
   useEffect(() => {
+    const positionTimer = window.setTimeout(requestPosition, 0);
+    return () => window.clearTimeout(positionTimer);
+  }, [requestPosition]);
+
+  useEffect(() => {
     let active = true;
+    const supabase = getSupabaseBrowserClient();
     const hydrate = (userId: string | null) => {
       if (!active) return;
-      setStorageUserId(userId);
+      storageUserId.current = userId;
+      cloudLoadedUserId.current = null;
       setActiveLocalUserId(userId);
       setFavorites(readPersonalArray<string>("my-lombok-favorites", userId).filter((item) => typeof item === "string"));
       setVisited(readPersonalArray<string>("my-lombok-visited", userId).filter((item) => typeof item === "string"));
       setMuslimMode(localStorage.getItem("my-lombok-muslim-mode") === "true");
-      requestPosition();
     };
-    const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      const timer = window.setTimeout(() => hydrate(null), 0);
+      const timer = window.setTimeout(() => {
+        identityReady.current = true;
+        hydrate(null);
+      }, 0);
       return () => { active = false; window.clearTimeout(timer); };
     }
-    supabase.auth.getSession().then(({ data }) => {
+    const loadCloudState = async (userId: string, generation: number) => {
+      try {
+        const { data: state, error } = await supabase.from("user_state").select("favorites, visited, preferences").eq("user_id", userId).maybeSingle();
+        if (!active || error || generation !== authGeneration.current || storageUserId.current !== userId) return;
+        cloudLoadedUserId.current = userId;
+        if (state) {
+          if (Array.isArray(state.favorites)) { setFavorites(state.favorites); writePersonalArray("my-lombok-favorites", state.favorites, userId); }
+          if (Array.isArray(state.visited)) { setVisited(state.visited); writePersonalArray("my-lombok-visited", state.visited, userId); }
+          const prefs = state.preferences as { muslimMode?: boolean } | null;
+          if (typeof prefs?.muslimMode === "boolean") setMuslimMode(prefs.muslimMode);
+        }
+      } catch {
+        // Le carnet local vérifié reste affiché si le réseau ou la synchronisation échoue.
+      }
+    };
+    const applyIdentity = (userId: string | null, generation: number) => {
+      if (!active || generation !== authGeneration.current) return;
+      identityVerificationPending.current = false;
+      if (identityReady.current && storageUserId.current === userId) {
+        if (userId && cloudLoadedUserId.current !== userId) void loadCloudState(userId, generation);
+        return;
+      }
+      identityReady.current = true;
+      hydrate(userId);
+      if (userId) void loadCloudState(userId, generation);
+    };
+    const verifyIdentity = async (generation: number) => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!active || generation !== authGeneration.current) return;
+        applyIdentity(error ? null : data.user?.id || null, generation);
+      } catch {
+        if (!active || generation !== authGeneration.current) return;
+        applyIdentity(null, generation);
+      }
+    };
+    const pendingVerifications = new Set<number>();
+    identityVerificationPending.current = true;
+    void verifyIdentity(++authGeneration.current);
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
       if (!active) return;
-      const user = data.session?.user;
-      hydrate(user?.id || null);
-      if (!user) return;
-      supabase.from("user_state").select("favorites, visited, preferences").eq("user_id", user.id).maybeSingle().then(({ data: state }) => {
-        if (!active || !state) return;
-        if (Array.isArray(state.favorites)) { setFavorites(state.favorites); writePersonalArray("my-lombok-favorites", state.favorites, user.id); }
-        if (Array.isArray(state.visited)) { setVisited(state.visited); writePersonalArray("my-lombok-visited", state.visited, user.id); }
-        const prefs = state.preferences as { muslimMode?: boolean } | null;
-        if (typeof prefs?.muslimMode === "boolean") setMuslimMode(prefs.muslimMode);
-      });
+      const generation = ++authGeneration.current;
+      if (event === "SIGNED_OUT") applyIdentity(null, generation);
+      else {
+        identityVerificationPending.current = true;
+        const verificationTimer = window.setTimeout(() => {
+          pendingVerifications.delete(verificationTimer);
+          void verifyIdentity(generation);
+        }, 0);
+        pendingVerifications.add(verificationTimer);
+      }
     });
-    return () => { active = false; };
-  }, [requestPosition]);
+    return () => {
+      active = false;
+      authGeneration.current += 1;
+      identityVerificationPending.current = false;
+      pendingVerifications.forEach((verificationTimer) => window.clearTimeout(verificationTimer));
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
-  function persistList(key: "my-lombok-favorites" | "my-lombok-visited", value: string[]) {
-    writePersonalArray(key, value, storageUserId);
+  async function persistList(key: "my-lombok-favorites" | "my-lombok-visited", value: string[]) {
+    if (!identityReady.current || identityVerificationPending.current) return;
+    const expectedUserId = storageUserId.current;
+    writePersonalArray(key, value, expectedUserId);
     const supabase = getSupabaseBrowserClient();
-    supabase?.auth.getUser().then(({ data }) => {
-      if (!data.user) return;
+    if (!supabase || !expectedUserId) return;
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || data.user?.id !== expectedUserId || storageUserId.current !== expectedUserId || identityVerificationPending.current) return;
       const field = key === "my-lombok-favorites" ? { favorites: value } : { visited: value };
-      supabase.from("user_state").upsert({ user_id: data.user.id, ...field, updated_at: new Date().toISOString() }).then(() => undefined);
-    });
+      await supabase.from("user_state").upsert({ user_id: expectedUserId, ...field, updated_at: new Date().toISOString() });
+    } catch {
+      // L’écriture locale reste disponible ; aucune identité de repli n’est utilisée.
+    }
   }
 
   function toggleFavorite(id: string) {
+    if (!identityReady.current || identityVerificationPending.current) return;
     const next = favorites.includes(id) ? favorites.filter((item) => item !== id) : [...favorites, id];
-    setFavorites(next); persistList("my-lombok-favorites", next);
+    setFavorites(next); void persistList("my-lombok-favorites", next);
+  }
+
+  function markVisited(id: string) {
+    if (!identityReady.current || identityVerificationPending.current) return;
+    const next = [...new Set([...visited, id])];
+    setVisited(next);
+    void persistList("my-lombok-visited", next);
   }
 
   const origin = getDistanceOrigin(position);
@@ -175,7 +246,7 @@ export function ExplorerClient({ initialCategory = "all" }: { initialCategory?: 
         {view === "list" && visible < results.length && <button className="button button--outline load-more" onClick={() => setVisible((count) => count + 18)}>Afficher plus de lieux</button>}
       </section>
 
-      {detail && <PlaceDetail place={detail} favorite={favorites.includes(detail.id)} visited={visited.includes(detail.id)} close={() => setDetail(null)} toggleFavorite={() => toggleFavorite(detail.id)} checkIn={() => { const next = [...new Set([...visited, detail.id])]; setVisited(next); persistList("my-lombok-visited", next); }} canCheckIn={geoStatus === "ready" && distanceKm(position!, detail) <= 0.2} muslimMode={muslimMode} />}
+      {detail && <PlaceDetail place={detail} favorite={favorites.includes(detail.id)} visited={visited.includes(detail.id)} close={() => setDetail(null)} toggleFavorite={() => toggleFavorite(detail.id)} checkIn={() => markVisited(detail.id)} canCheckIn={geoStatus === "ready" && distanceKm(position!, detail) <= 0.2} muslimMode={muslimMode} />}
     </div>
   );
 }
