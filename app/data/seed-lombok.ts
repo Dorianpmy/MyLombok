@@ -1,6 +1,8 @@
 /**
  * SEED — my lombok
- * Données réelles zone Kuta / Mandalika (Lombok Central), récupérées via Google Places.
+ * Répertoire initial zone Kuta / Mandalika (Lombok Central).
+ * Les fiches munies d'un `google_place_id` reprennent des informations Google Places ;
+ * les autres sont des repères éditoriaux dont les détails restent à confirmer.
  * ⚠️ À vérifier sur place avant de passer en "tested_by_us: true" :
  *    prix, horaires, numéros WhatsApp. Les notes Google sont un indicateur, pas ta validation.
  * Le champ `vigilance` signale les lieux avec des plaintes récurrentes dans les avis.
@@ -48,7 +50,7 @@ export const places: Place[] = [
     id: "kenza-cafe", island: "lombok", region: "central-lombok", city: "Kuta",
     category: "restaurant", subcategory: "brunch", name: "Kenza Cafe & Restaurant",
     slug: "kenza-cafe-kuta", specialty: "Shakshuka libanaise, falafel, café de spécialité",
-    tags: ["halal", "végétarien", "brunch", "wifi", "coworking-friendly"],
+    tags: ["végétarien", "brunch", "wifi", "coworking-friendly"],
     price_level: 2, price_range: null, lat: -8.8912168, lng: 116.2768818,
     google_place_id: "ChIJjUIwWCuozS0RYMQ5nRsAdjg", google_rating: 4.6, google_rating_count: 3664,
     opening_hours: "07:00–23:00 (7j/7)", whatsapp: "+62 821-4736-8006", photos: [],
@@ -69,7 +71,7 @@ export const places: Place[] = [
     id: "cantina-mexicana", island: "lombok", region: "central-lombok", city: "Kuta",
     category: "restaurant", subcategory: "mexicain", name: "Cantina Mexicana",
     slug: "cantina-mexicana-kuta", specialty: "Tacos birria, nachos maison, margaritas",
-    tags: ["halal", "ambiance", "groupe"],
+    tags: ["ambiance", "groupe"],
     price_level: 2, price_range: null, lat: -8.8905272, lng: 116.2769952,
     google_place_id: "ChIJd-2KmUipzS0RON9tQzCIvnY", google_rating: 4.8, google_rating_count: 4541,
     opening_hours: "12:00–23:00 (7j/7)", whatsapp: "+62 853-3761-5945", photos: [],
@@ -90,7 +92,7 @@ export const places: Place[] = [
     id: "the-shack", island: "lombok", region: "central-lombok", city: "Kuta",
     category: "restaurant", subcategory: "italien", name: "The Shack Lombok",
     slug: "the-shack-lombok", specialty: "Pizzas, pâtes, cave à vin — livraison via WhatsApp",
-    tags: ["halal", "pizza", "livraison", "cocktails"],
+    tags: ["pizza", "livraison", "cocktails"],
     price_level: 2, price_range: null, lat: -8.8912777, lng: 116.2770096,
     google_place_id: "ChIJ6YYMl6GpzS0RNQkepHQLdho", google_rating: 4.9, google_rating_count: 5171,
     opening_hours: "12:00–00:00 (7j/7)", whatsapp: "+62 821-4736-8006", photos: [],
@@ -672,9 +674,9 @@ export const places: Place[] = [
     slug: "desa-sade-lombok", specialty: "Maisons traditionnelles, tissage et histoire Sasak avec un guide du village",
     tags: ["sasak", "village", "tissage", "histoire", "famille"],
     price_level: 1, price_range: "Donation 50–100k Rp", lat: -8.8396, lng: 116.2918,
-    google_place_id: "", google_rating: 4.5, google_rating_count: 5200,
-    opening_hours: "08:00–18:00", whatsapp: null, photos: [], tested_by_us: true,
-    rating: 4.7, best_time: "09:00 avant les groupes", level: null,
+    google_place_id: "", google_rating: null, google_rating_count: null,
+    opening_hours: "08:00–18:00", whatsapp: null, photos: [], tested_by_us: false,
+    rating: null, best_time: "09:00 avant les groupes", level: null,
     vigilance: "La visite guidée et les achats de textile restent facultatifs ; confirmer le prix avant.",
   },
   {
@@ -683,9 +685,9 @@ export const places: Place[] = [
     slug: "desa-ende-lombok", specialty: "Petit village vivant, architecture en bambou et démonstration de musique locale",
     tags: ["sasak", "architecture", "musique", "authentique"],
     price_level: 1, price_range: "Donation conseillée", lat: -8.8291, lng: 116.2932,
-    google_place_id: "", google_rating: 4.6, google_rating_count: 1100,
+    google_place_id: "", google_rating: null, google_rating_count: null,
     opening_hours: "08:00–17:30", whatsapp: null, photos: [], tested_by_us: false,
-    rating: 4.6, best_time: "matin", level: null, vigilance: null,
+    rating: null, best_time: "matin", level: null, vigilance: null,
   },
   {
     id: "sukarara-weaving", island: "lombok", region: "central-lombok", city: "Sukarara",
@@ -693,9 +695,9 @@ export const places: Place[] = [
     slug: "tissage-sukarara", specialty: "Songket tissé à la main et initiation auprès des artisanes",
     tags: ["songket", "tissage", "artisanat", "atelier", "cadeaux"],
     price_level: 1, price_range: "Visite libre · ateliers selon durée", lat: -8.7048, lng: 116.2708,
-    google_place_id: "", google_rating: 4.4, google_rating_count: 2400,
+    google_place_id: "", google_rating: null, google_rating_count: null,
     opening_hours: "08:00–17:00", whatsapp: null, photos: [], tested_by_us: false,
-    rating: 4.6, best_time: "10:00", level: null,
+    rating: null, best_time: "10:00", level: null,
     vigilance: "Comparer la qualité et convenir du prix avant l'achat d'une pièce importante.",
   },
   {
@@ -704,9 +706,9 @@ export const places: Place[] = [
     slug: "poterie-penujak", specialty: "Ateliers familiaux et céramiques façonnées selon le savoir-faire Sasak",
     tags: ["poterie", "céramique", "atelier", "artisanat"],
     price_level: 1, price_range: "Entrée libre · pièces dès 30k Rp", lat: -8.7538, lng: 116.2239,
-    google_place_id: "", google_rating: 4.5, google_rating_count: 260,
+    google_place_id: "", google_rating: null, google_rating_count: null,
     opening_hours: "08:00–17:00", whatsapp: null, photos: [], tested_by_us: false,
-    rating: 4.5, best_time: "matin", level: null, vigilance: null,
+    rating: null, best_time: "matin", level: null, vigilance: null,
   },
   {
     id: "pasar-seni-kuta", island: "lombok", region: "central-lombok", city: "Kuta",
@@ -714,9 +716,9 @@ export const places: Place[] = [
     slug: "marche-artisanal-kuta", specialty: "Textiles, paniers, bijoux et petits créateurs de Lombok",
     tags: ["marché", "artisanat", "shopping", "local"],
     price_level: 1, price_range: "Selon achat", lat: -8.8925, lng: 116.2774,
-    google_place_id: "", google_rating: 4.3, google_rating_count: 380,
+    google_place_id: "", google_rating: null, google_rating_count: null,
     opening_hours: "09:00–21:00", whatsapp: null, photos: [], tested_by_us: false,
-    rating: 4.4, best_time: "fin d'après-midi", level: null,
+    rating: null, best_time: "fin d'après-midi", level: null,
     vigilance: "Négocier avec courtoisie et vérifier les finitions avant l'achat.",
   },
   {
@@ -727,7 +729,7 @@ export const places: Place[] = [
     price_level: 1, price_range: "Gratuit", lat: -8.9091, lng: 116.3215,
     google_place_id: "", google_rating: null, google_rating_count: null,
     opening_hours: "Événement annuel · dates lunaires", whatsapp: null, photos: [], tested_by_us: false,
-    rating: 4.8, best_time: "selon le calendrier annuel", level: null,
+    rating: null, best_time: "selon le calendrier annuel", level: null,
     vigilance: "Vérifier la date officielle et anticiper la circulation très dense autour des plages.",
   },
 ];

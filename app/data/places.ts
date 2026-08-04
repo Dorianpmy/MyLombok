@@ -65,7 +65,7 @@ const travelPhotoIds = [
   "photo-1521292270410-a8c4d716d518", "photo-1472396961693-142e6e269027", "photo-1510414842594-a61c69b5ae57", "photo-1544551763-46a013bb70d5",
   "photo-1526772662000-3f88f10405ff", "photo-1493558103817-58b2924bce98", "photo-1539635278303-d4002c07eae3", "photo-1527631746610-bca00a040d60",
   "photo-1516483638261-f4dbaf036963", "photo-1500534314209-a25ddb2bd429", "photo-1511497584788-876760111969", "photo-1461696114087-397271a7aedc",
-  "photo-1470214304380-aadaedcfff1b", "photo-1465146344425-f00d5f5c8f07", "photo-1500534623283-312aade485b7", "photo-1497436072909-f5e4be1713c0",
+  "photo-1470214304380-aadaedcfff1b", "photo-1465146344425-f00d5f5c8f07", "photo-1500534623283-312aade485b7", "photo-1433086966358-54859d0ed716",
   "photo-1473445361085-b9a07f55608b", "photo-1497250681960-ef046c08a56e", "photo-1533669955142-6a73332af4db", "photo-1528181304800-259b08848526",
   "photo-1528127269322-539801943592", "photo-1540202404-a2f29016b523", "photo-1540206395-68808572332f", "photo-1530789253388-582c481c54b0",
 ];
@@ -127,16 +127,20 @@ export const importedPlaces: Place[] = seedPlaces.map((item, index) => {
       verified_at: menuSource?.verified_at || "22 juillet 2026",
       status: menuSource?.status || "à confirmer",
     } : null,
-    tested_by_us: item.tested_by_us,
-    rating: item.rating || item.google_rating,
+    tested_by_us: false,
+    rating: item.google_rating,
     best_time: item.best_time,
     level: item.level,
     vigilance: item.vigilance,
     zone: item.city,
-    halal: item.tags.some((tag) => tag.toLowerCase().includes("halal")) ? "sans porc ni alcool" : "inconnu",
+    // Le statut halal exige une déclaration explicite ou une certification à jour.
+    // Les tags éditoriaux ne constituent pas une preuve suffisante.
+    halal: "inconnu",
     alcool_servi: item.tags.some((tag) => /cocktail|bar|vin/i.test(tag)) ? true : null,
     ambiance: [item.tags.some((tag) => /calme|travailler/i.test(tag)) ? "calme" : "animé"],
-    mosquee_proche: { nom: "Masjid Nurul Bilad Mandalika", distance_m: Math.round(Math.hypot(item.lat + 8.8937, item.lng - 116.2965) * 111000), mawaqit_slug: "nurul-bilad-mandalika" },
+    // Ne pas présenter une proximité calculée à vol d'oiseau comme une information
+    // vérifiée : l'accès réel dépend du réseau routier et des entrées du lieu.
+    mosquee_proche: null,
     prive: item.tags.some((tag) => /cabana|privé|date/i.test(tag)),
     created_at: "2026-07-22T00:00:00.000Z",
   };
@@ -147,39 +151,27 @@ const extraPlacesBase: Omit<Place, "zone" | "halal" | "alcool_servi" | "ambiance
     id: "rinjani-trek", region: "north-lombok", island: "lombok", city: "Senaru", category: "nature", subcategory: "trek",
     name: "Trek du Mont Rinjani", slug: "trek-rinjani", description: "Ascension guidée du volcan et nuit face au lac Segara Anak. Réservation avec guide agréé indispensable.",
     specialty: "Trek 2 jours / 1 nuit", tags: ["trek", "volcan", "sunrise", "guide"], price_level: 3, price_range: "2,5–4,5 M Rp · 145–260 €", lat: -8.4112, lng: 116.4573,
-    opening_hours: "Départs 05:00–07:00", whatsapp: "+62 812-3900-1122", maps_url: "https://maps.google.com/?q=-8.4112,116.4573", photos: [categoryPhotos.nature], menu: null, tested_by_us: true, rating: 4.9, best_time: "avril à novembre", level: "difficile", vigilance: "Trek exigeant : vérifier l’état des sentiers et la météo avant le départ.", created_at: "2026-07-22T00:00:00.000Z"
+    opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.4112,116.4573", photos: [categoryPhotos.nature], menu: null, tested_by_us: false, rating: null, best_time: "avril à novembre", level: "difficile", vigilance: "Trek exigeant : vérifier l’état des sentiers, la météo, les permis et l’agrément de l’opérateur avant le départ.", created_at: "2026-07-22T00:00:00.000Z"
   },
   {
     id: "gili-air-day", region: "north-lombok", island: "gili-air", city: "Gili Air", category: "excursion", subcategory: "snorkeling",
     name: "Journée snorkeling aux Gili", slug: "snorkeling-gili", description: "Bateau en petit groupe vers Gili Air, Meno et Trawangan, avec spots de tortues et statues sous-marines.",
     specialty: "3 îles & tortues", tags: ["bateau", "snorkeling", "tortues", "famille"], price_level: 2, price_range: "350–650k Rp · 21–39 €", lat: -8.349, lng: 116.082,
-    opening_hours: "Départs 08:30 et 10:00", whatsapp: "+62 878-6401-2020", maps_url: "https://maps.google.com/?q=-8.349,116.082", photos: [categoryPhotos.excursion], menu: null, tested_by_us: true, rating: 4.8, best_time: "matin, mer calme", level: "facile", vigilance: "Privilégier les opérateurs qui ne nourrissent pas les tortues.", created_at: "2026-07-22T00:00:00.000Z"
-  },
-  {
-    id: "sade-village", region: "central-lombok", island: "lombok", city: "Sengkol", category: "culture", subcategory: "village sasak",
-    name: "Village traditionnel de Sade", slug: "village-sade", description: "Village Sasak vivant, maisons en terre, tissage traditionnel et découverte des usages locaux avec un guide du village.",
-    specialty: "Culture et tissage Sasak", tags: ["sasak", "artisanat", "famille", "histoire"], price_level: 1, price_range: "Donation conseillée 50–100k Rp · 3–6 €", lat: -8.8396, lng: 116.2918,
-    opening_hours: "08:00–18:00", whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8396,116.2918", photos: [categoryPhotos.culture], menu: null, tested_by_us: true, rating: 4.5, best_time: "09:00 avant les groupes", level: null, vigilance: "Les achats de textile sont facultatifs : convenir du prix avant toute démonstration.", created_at: "2026-07-22T00:00:00.000Z"
+    opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.349,116.082", photos: [categoryPhotos.excursion], menu: null, tested_by_us: false, rating: null, best_time: "matin, mer calme", level: "facile", vigilance: "Horaires, tarif et opérateur à confirmer. Privilégier ceux qui ne nourrissent pas les tortues.", created_at: "2026-07-22T00:00:00.000Z"
   },
   {
     id: "selong-belanak", region: "south-lombok", island: "lombok", city: "Selong Belanak", category: "plage", subcategory: "baignade & surf débutant",
     name: "Selong Belanak Beach", slug: "selong-belanak", description: "Grande baie de sable clair, idéale pour apprendre le surf et se baigner lorsque la mer est calme.",
     specialty: "Surf débutant", tags: ["plage", "surf", "baignade", "sunset", "warung"], price_level: 1, price_range: "Parking 10k Rp · <1 €", lat: -8.8739, lng: 116.1624,
-    opening_hours: "06:00–19:00", whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8739,116.1624", photos: [categoryPhotos.plage], menu: null, tested_by_us: true, rating: 4.7, best_time: "matin ou coucher du soleil", level: "débutant · mi-marée", vigilance: "Rester dans la zone surveillée ; vagues plus fortes à marée haute.", created_at: "2026-07-22T00:00:00.000Z"
-  },
-  {
-    id: "lombok-airport-driver", region: "central-lombok", island: "lombok", city: "Praya", category: "service", subcategory: "chauffeur & transfert",
-    name: "My Lombok Driver", slug: "chauffeur-aeroport", description: "Chauffeur vérifié, accueil nominatif à l’aéroport et prix confirmé avant le trajet.",
-    specialty: "Aéroport LOP ↔ Kuta", tags: ["chauffeur", "aéroport", "24h/24", "fiable"], price_level: 2, price_range: "180–250k Rp · 11–15 €", lat: -8.7573, lng: 116.2767,
-    opening_hours: "24h/24 sur réservation", whatsapp: "+62 812-1111-2026", maps_url: "https://maps.google.com/?q=-8.7573,116.2767", photos: [categoryPhotos.service], menu: null, tested_by_us: true, rating: 5, best_time: "réserver 24 h avant", level: null, vigilance: null, created_at: "2026-07-22T00:00:00.000Z"
+    opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8739,116.1624", photos: [categoryPhotos.plage], menu: null, tested_by_us: false, rating: null, best_time: "matin ou coucher du soleil", level: "débutant · mi-marée", vigilance: "Conditions de baignade et de surf à confirmer sur place ; rester prudent lorsque la houle augmente.", created_at: "2026-07-22T00:00:00.000Z"
   },
 ];
 
-const extraPlaces: Place[] = extraPlacesBase.map((place, index) => ({ ...place, photos: [editorialPhoto(place.category, importedPlaces.length + index)], zone: place.city, halal: "inconnu", alcool_servi: null, ambiance: place.category === "culture" ? ["calme", "familial"] : place.category === "nature" || place.category === "plage" ? ["vue", "romantique"] : ["calme"], mosquee_proche: { nom: "Masjid Nurul Bilad Mandalika", distance_m: Math.round(Math.hypot(place.lat + 8.8937, place.lng - 116.2965) * 111000), mawaqit_slug: "nurul-bilad-mandalika" }, prive: false }));
+const extraPlaces: Place[] = extraPlacesBase.map((place, index) => ({ ...place, photos: [editorialPhoto(place.category, importedPlaces.length + index)], zone: place.city, halal: "inconnu", alcool_servi: null, ambiance: place.category === "culture" ? ["calme", "familial"] : place.category === "nature" || place.category === "plage" ? ["vue", "romantique"] : ["calme"], mosquee_proche: null, prive: false }));
 
 const mosques: Place[] = [
-  { id: "masjid-nurul-bilad", region: "central-lombok", island: "lombok", city: "Kuta", category: "service", subcategory: "mosquée", name: "Masjid Nurul Bilad Mandalika", slug: "masjid-nurul-bilad", description: "Grande mosquée de Mandalika, facilement accessible depuis Kuta.", specialty: "Salle de prière et ablutions", tags: ["mosquée", "prière", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.8937, lng: 116.2965, opening_hours: "04:30–21:00", whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8937,116.2965", photos: [categoryPhotos.culture], menu: null, tested_by_us: true, rating: 4.8, best_time: "hors grande affluence du vendredi", level: null, vigilance: null, zone: "Kuta/Mandalika", halal: "certifié", alcool_servi: false, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
-  { id: "masjid-hubbul-wathan", region: "west-lombok", island: "lombok", city: "Mataram", category: "service", subcategory: "mosquée", name: "Islamic Center Hubbul Wathan", slug: "islamic-center-lombok", description: "Mosquée emblématique de Mataram et centre culturel islamique de Lombok.", specialty: "Architecture et grande salle de prière", tags: ["mosquée", "culture", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.5831, lng: 116.1036, opening_hours: "04:30–21:30", whatsapp: null, maps_url: "https://maps.google.com/?q=-8.5831,116.1036", photos: [categoryPhotos.culture], menu: null, tested_by_us: false, rating: 4.8, best_time: "avant le coucher du soleil", level: null, vigilance: null, zone: "Mataram", halal: "certifié", alcool_servi: false, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
+  { id: "masjid-nurul-bilad", region: "central-lombok", island: "lombok", city: "Kuta", category: "service", subcategory: "mosquée", name: "Masjid Nurul Bilad Mandalika", slug: "masjid-nurul-bilad", description: "Grande mosquée de Mandalika, facilement accessible depuis Kuta.", specialty: "Salle de prière et ablutions", tags: ["mosquée", "prière", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.8937, lng: 116.2965, opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8937,116.2965", photos: [categoryPhotos.culture], menu: null, tested_by_us: false, rating: null, best_time: "hors grande affluence du vendredi", level: null, vigilance: "Les horaires d'accès peuvent varier autour des prières et des événements.", zone: "Kuta/Mandalika", halal: "inconnu", alcool_servi: null, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
+  { id: "masjid-hubbul-wathan", region: "west-lombok", island: "lombok", city: "Mataram", category: "service", subcategory: "mosquée", name: "Islamic Center Hubbul Wathan", slug: "islamic-center-lombok", description: "Mosquée emblématique de Mataram et centre culturel islamique de Lombok.", specialty: "Architecture et grande salle de prière", tags: ["mosquée", "culture", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.5831, lng: 116.1036, opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.5831,116.1036", photos: [categoryPhotos.culture], menu: null, tested_by_us: false, rating: null, best_time: "avant le coucher du soleil", level: null, vigilance: "Les horaires d'accès peuvent varier autour des prières et des événements.", zone: "Mataram", halal: "inconnu", alcool_servi: null, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
 ];
 
 type CuratedPlaceInput = {
@@ -245,8 +237,6 @@ const curatedCatalog: CuratedPlaceInput[] = [
   { id: "ampuan-old-town", name: "Vieille ville d’Ampenan", city: "Ampenan", category: "culture", subcategory: "quartier historique", lat: -8.5752, lng: 116.0745, specialty: "Façades anciennes, marché et front de mer", tags: ["architecture", "marché", "photo"], priceLevel: 1, bestTime: "fin d’après-midi" },
   { id: "cakranegara-market", name: "Marché de Cakranegara", city: "Mataram", category: "culture", subcategory: "marché local", lat: -8.5905, lng: 116.1327, specialty: "Marché vivant pour produits locaux et textiles", tags: ["marché", "local", "artisanat"], priceLevel: 1, bestTime: "07:00–11:00" },
   { id: "bayan-beleq-mosque", name: "Mosquée ancienne Bayan Beleq", city: "Bayan", category: "culture", subcategory: "patrimoine", lat: -8.2774, lng: 116.4243, specialty: "Site historique lié aux traditions Wetu Telu", tags: ["patrimoine", "histoire", "religion"], priceLevel: 1 },
-  { id: "sukarara-weaving", name: "Ateliers de tissage de Sukarara", city: "Sukarara", category: "culture", subcategory: "tissage", lat: -8.7053, lng: 116.2705, specialty: "Tissage songket et démonstrations artisanales", tags: ["tissage", "artisanat", "sasak"], priceLevel: 1 },
-
   { id: "gili-nanggu", name: "Gili Nanggu", city: "Sekotong", category: "excursion", subcategory: "île & snorkeling", lat: -8.7632, lng: 115.9905, specialty: "Petite île calme au sud-ouest de Lombok", tags: ["snorkeling", "île", "plage"], priceLevel: 2, bestTime: "matin" },
   { id: "gili-kedis", name: "Gili Kedis", city: "Sekotong", category: "excursion", subcategory: "îlot", lat: -8.7299, lng: 116.0247, specialty: "Minuscule îlot de sable pour une courte escale", tags: ["île", "snorkeling", "photo"], priceLevel: 2 },
   { id: "gili-sudak", name: "Gili Sudak", city: "Sekotong", category: "excursion", subcategory: "île & déjeuner", lat: -8.7257, lng: 116.019, specialty: "Escale snorkeling et warungs de poisson", tags: ["île", "poisson", "snorkeling"], priceLevel: 2 },

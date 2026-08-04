@@ -1,24 +1,27 @@
 {
-  "name": "MyLombok — Guide & conciergerie",
+  "name": "MyLombok — Conciergerie locale",
   "short_name": "MyLombok",
-  "description": "Ton guide local et ta conciergerie à Lombok.",
+  "description": "Préparez et simplifiez votre séjour à Lombok avec un guide local et une conciergerie attentionnée.",
   "id": "/",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait-primary",
-  "background_color": "#09131B",
-  "theme_color": "#09131B",
+  "background_color": "#F6F2E9",
+  "theme_color": "#193229",
   "lang": "fr",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "categories": ["travel", "lifestyle", "navigation"],
   "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Explorer Lombok", "short_name": "Explorer", "url": "/?tab=explorer", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Conciergerie", "short_name": "Conciergerie", "url": "/?tab=requests", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Explorer Lombok", "short_name": "Explorer", "description": "Ouvrir le carnet local de Lombok", "url": "/explorer", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Contacter la conciergerie", "short_name": "Conciergerie", "description": "Préparer une demande à la conciergerie", "url": "/conciergerie", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] }
   ]
 }

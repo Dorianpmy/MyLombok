@@ -1,1 +1,53 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#09131B"><title>MyLombok — Hors connexion</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:28px;background:radial-gradient(circle at 50% 18%,#17394b,#09131b 55%);color:#f6f2ea;font-family:-apple-system,BlinkMacSystemFont,"Avenir Next",sans-serif}.card{max-width:390px;padding:32px;border:1px solid #ffffff24;border-radius:32px;background:#10202bd9;box-shadow:0 28px 70px #0008;text-align:center}.icon{width:88px;height:88px;margin:auto;border-radius:25px;box-shadow:0 15px 35px #0005}h1{margin:22px 0 8px;font-family:Optima,serif;font-size:30px}p{color:#aebbc1;line-height:1.55}button{margin-top:14px;padding:13px 20px;border:0;border-radius:15px;background:#5a72e8;color:white;font-weight:700}</style></head><body><main class="card"><img class="icon" src="/icons/icon-192.png" alt=""><h1>Lombok reste avec toi</h1><p>Tu es hors connexion. Les écrans déjà consultés restent disponibles ; reconnecte-toi pour actualiser les cartes et les demandes.</p><button onclick="location.reload()">Réessayer</button></main></body></html>
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f6f2e9">
+    <meta name="color-scheme" content="light dark">
+    <title>MyLombok — Hors connexion</title>
+    <style>
+      @font-face { font-family: "Cormorant Garamond"; src: url("/fonts/cormorant-garamond-600.ttf") format("truetype"); font-weight: 600; font-display: swap; }
+      @font-face { font-family: "Manrope"; src: url("/fonts/manrope-400.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+      @font-face { font-family: "Manrope"; src: url("/fonts/manrope-700.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+      :root { color-scheme: light; --background: #f6f2e9; --surface: #fcfaf6; --ink: #1b1d1a; --muted: #67675f; --forest: #193229; --bronze: #b28a52; --line: rgba(42, 33, 28, 0.16); }
+      * { box-sizing: border-box; }
+      body { min-width: 320px; min-height: 100svh; margin: 0; display: grid; place-items: center; padding: max(28px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom)); overflow: hidden; background: var(--background); color: var(--ink); font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      body::before { content: ""; position: fixed; width: min(82vw, 630px); aspect-ratio: 1; top: -40%; right: -23%; border: 1px solid color-mix(in srgb, var(--bronze) 42%, transparent); border-radius: 50%; box-shadow: 0 0 0 68px color-mix(in srgb, var(--bronze) 5%, transparent), 0 0 0 136px color-mix(in srgb, var(--bronze) 3%, transparent); pointer-events: none; }
+      main { position: relative; width: min(100%, 560px); padding: clamp(34px, 8vw, 64px); border: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 94%, transparent); box-shadow: 0 26px 80px rgba(42, 33, 28, 0.1); }
+      .brand { display: inline-flex; align-items: center; gap: 12px; color: var(--ink); }
+      .mark { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: var(--forest); color: #f8f4ec; }
+      .mark svg { width: 31px; height: 31px; }
+      .brand strong { display: block; font-family: "Cormorant Garamond", Georgia, serif; font-size: 26px; letter-spacing: -0.03em; line-height: 0.9; }
+      .brand small { display: block; margin-top: 6px; color: var(--bronze); font-size: 8px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+      .eyebrow { display: flex; align-items: center; gap: 11px; margin: 54px 0 17px; color: var(--bronze); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+      .eyebrow::before { content: ""; width: 30px; height: 1px; background: currentColor; }
+      h1 { max-width: 440px; margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(46px, 12vw, 68px); font-weight: 600; letter-spacing: -0.04em; line-height: 0.94; }
+      p { max-width: 430px; margin: 22px 0 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
+      .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 34px; }
+      .button { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; padding: 14px 22px; border: 1px solid var(--forest); border-radius: 8px; background: var(--forest); color: #fffaf1; font-size: 14px; font-weight: 700; text-decoration: none; }
+      .hint { color: var(--muted); font-size: 11px; }
+      .button:focus-visible { outline: 2px solid var(--bronze); outline-offset: 3px; }
+      @media (prefers-color-scheme: dark) {
+        :root { color-scheme: dark; --background: #191a17; --surface: #24241f; --ink: #f5f0e7; --muted: #bbb8af; --forest: #294b3e; --bronze: #c7a36d; --line: rgba(246, 242, 233, 0.15); }
+        body::before { opacity: 0.72; }
+        main { box-shadow: 0 26px 80px rgba(0, 0, 0, 0.3); }
+      }
+      @media (max-width: 520px) { main { padding: 34px 28px; } .eyebrow { margin-top: 42px; } .actions { align-items: flex-start; flex-direction: column; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="brand">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none"><path d="M8 31.5c7-2.5 9.5-14.5 16-14.5s7 9 16 14.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 34.5c9 4 21 4 30 0" stroke="#c7a36d" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </span>
+        <span><strong>MyLombok</strong><small>Conciergerie locale</small></span>
+      </div>
+      <div class="eyebrow">Connexion interrompue</div>
+      <h1>Lombok vous attend.</h1>
+      <p>La connexion est nécessaire pour actualiser les cartes, votre compte et les demandes de conciergerie. Vos données privées ne sont pas conservées dans le cache hors ligne.</p>
+      <div class="actions"><a class="button" href="/">Réessayer</a><span class="hint">Vérifiez votre réseau puis rechargez l’application.</span></div>
+    </main>
+  </body>
+</html>
