@@ -45,22 +45,35 @@ export function GlobeExplorer({ onOpenMap }: { onOpenMap: () => void }) {
     scene.add(new THREE.HemisphereLight(0xf6f2e9, 0x0e1915, 2.2));
     const light = new THREE.DirectionalLight(0xfff4df, 2.8); light.position.set(-3, 2, 4); scene.add(light);
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; controls.dampingFactor = 0.055; controls.enablePan = false; controls.minDistance = 1.7; controls.maxDistance = 4.6; controls.rotateSpeed = 0.48; controls.zoomSpeed = 0.65;
+    controls.enableDamping = !reduceMotion; controls.dampingFactor = 0.055; controls.enablePan = false; controls.minDistance = 1.7; controls.maxDistance = 4.6; controls.rotateSpeed = 0.48; controls.zoomSpeed = 0.65;
     const focus = () => { world.rotation.set(-lat * 0.3, Math.atan2(-markerPosition.x, markerPosition.z), 0); camera.position.set(0, 0.08, 3.05); controls.update(); };
     reset.current = focus; focus();
-    let frame = 0; let dragging = false;
+    let frame = 0; let dragging = false; let inViewport = true;
     controls.addEventListener("start", () => { dragging = true; });
     controls.addEventListener("end", () => { dragging = false; });
+    const render = () => renderer.render(scene, camera);
     const animate = () => {
       frame = requestAnimationFrame(animate);
-      if (!reduceMotion && !dragging) world.rotation.y += 0.00035;
-      if (!reduceMotion) pulse.scale.setScalar(1 + Math.sin(performance.now() * 0.0035) * 0.16);
-      controls.update(); renderer.render(scene, camera);
+      if (!dragging) world.rotation.y += 0.00035;
+      pulse.scale.setScalar(1 + Math.sin(performance.now() * 0.0035) * 0.16);
+      controls.update();
+      render();
     };
-    animate();
-    const resize = () => { camera.aspect = element.clientWidth / Math.max(1, element.clientHeight); camera.updateProjectionMatrix(); renderer.setSize(element.clientWidth, element.clientHeight); };
+    const stop = () => { if (frame) cancelAnimationFrame(frame); frame = 0; };
+    const start = () => {
+      if (!reduceMotion && inViewport && document.visibilityState === "visible" && !frame) frame = requestAnimationFrame(animate);
+      else render();
+    };
+    const observer = new IntersectionObserver(([entry]) => { inViewport = entry.isIntersecting; if (inViewport) start(); else stop(); }, { rootMargin: "120px" });
+    observer.observe(element);
+    const visibility = () => { if (document.visibilityState === "visible") start(); else stop(); };
+    document.addEventListener("visibilitychange", visibility);
+    controls.addEventListener("change", render);
+    render();
+    start();
+    const resize = () => { camera.aspect = element.clientWidth / Math.max(1, element.clientHeight); camera.updateProjectionMatrix(); renderer.setSize(element.clientWidth, element.clientHeight); render(); };
     window.addEventListener("resize", resize);
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("resize", resize); controls.dispose(); texture.dispose(); renderer.dispose(); element.replaceChildren(); };
+    return () => { stop(); observer.disconnect(); document.removeEventListener("visibilitychange", visibility); window.removeEventListener("resize", resize); controls.removeEventListener("change", render); controls.dispose(); texture.dispose(); renderer.dispose(); element.replaceChildren(); };
   }, []);
 
   return (

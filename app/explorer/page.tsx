@@ -5,6 +5,7 @@ import { ExplorerClient } from "../components/explorer-client";
 export const metadata: Metadata = {
   title: "Explorer Lombok",
   description: "Recherchez plages, restaurants, activités, services, nature et culture à Lombok dans un carnet cartographique centré sur l’île.",
+  alternates: { canonical: "/explorer" },
 };
 
 export default async function ExplorerPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {

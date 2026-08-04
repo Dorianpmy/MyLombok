@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, ArrowRight, Clock3, Compass, ExternalLink, Grid2X2, Heart, Info, Landmark, List, LocateFixed, Map as MapIcon, MapPin, MessageCircle, Phone, Sailboat, Search, SlidersHorizontal, Sparkles, Trees, UtensilsCrossed, Waves, X, type LucideIcon } from "lucide-react";
 import { categoryMeta, distanceKm, places as allPlaces, type Place, type PlaceCategory } from "../data/places";
 import { getDistanceOrigin, isOpenAtLombokTime, withinOptionalRadius } from "../lib/explorer-filters";
+import { readPersonalArray, setActiveLocalUserId, writePersonalArray } from "../lib/local-state";
 import { getSupabaseBrowserClient } from "../lib/supabase";
 import { useDialogA11y } from "./use-dialog-a11y";
 import type { PlaceWithDistance } from "./explorer-map";
@@ -23,10 +24,6 @@ const activityTerms = ["activité", "surf", "snorkeling", "plongée", "trek", "r
 function isActivityPlace(place: Place) {
   const text = `${place.subcategory} ${place.specialty || ""} ${place.tags.join(" ")}`.toLocaleLowerCase("fr");
   return activityTerms.some((term) => text.includes(term));
-}
-
-function safeStringArray(key: string) {
-  try { const value = JSON.parse(localStorage.getItem(key) || "[]"); return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : []; } catch { return []; }
 }
 
 function normalizeWhatsAppNumber(value: string | null) {
@@ -69,6 +66,7 @@ export function ExplorerClient({ initialCategory = "all" }: { initialCategory?: 
   const [position, setPosition] = useState<UserPosition | null>(null);
   const [geoStatus, setGeoStatus] = useState<"loading" | "ready" | "denied">("loading");
   const [showGlobe, setShowGlobe] = useState(true);
+  const [storageUserId, setStorageUserId] = useState<string | null>(null);
 
   const requestPosition = useCallback(() => {
     if (!navigator.geolocation) { setGeoStatus("denied"); return; }
@@ -78,31 +76,38 @@ export function ExplorerClient({ initialCategory = "all" }: { initialCategory?: 
 
   useEffect(() => {
     let active = true;
-    const timer = window.setTimeout(() => {
+    const hydrate = (userId: string | null) => {
       if (!active) return;
-      setFavorites(safeStringArray("my-lombok-favorites"));
-      setVisited(safeStringArray("my-lombok-visited"));
+      setStorageUserId(userId);
+      setActiveLocalUserId(userId);
+      setFavorites(readPersonalArray<string>("my-lombok-favorites", userId).filter((item) => typeof item === "string"));
+      setVisited(readPersonalArray<string>("my-lombok-visited", userId).filter((item) => typeof item === "string"));
       setMuslimMode(localStorage.getItem("my-lombok-muslim-mode") === "true");
       requestPosition();
-    }, 0);
+    };
     const supabase = getSupabaseBrowserClient();
-    supabase?.auth.getSession().then(({ data }) => {
+    if (!supabase) {
+      const timer = window.setTimeout(() => hydrate(null), 0);
+      return () => { active = false; window.clearTimeout(timer); };
+    }
+    supabase.auth.getSession().then(({ data }) => {
       if (!active) return;
       const user = data.session?.user;
+      hydrate(user?.id || null);
       if (!user) return;
       supabase.from("user_state").select("favorites, visited, preferences").eq("user_id", user.id).maybeSingle().then(({ data: state }) => {
         if (!active || !state) return;
-        if (Array.isArray(state.favorites)) setFavorites(state.favorites);
-        if (Array.isArray(state.visited)) setVisited(state.visited);
+        if (Array.isArray(state.favorites)) { setFavorites(state.favorites); writePersonalArray("my-lombok-favorites", state.favorites, user.id); }
+        if (Array.isArray(state.visited)) { setVisited(state.visited); writePersonalArray("my-lombok-visited", state.visited, user.id); }
         const prefs = state.preferences as { muslimMode?: boolean } | null;
         if (typeof prefs?.muslimMode === "boolean") setMuslimMode(prefs.muslimMode);
       });
     });
-    return () => { active = false; window.clearTimeout(timer); };
+    return () => { active = false; };
   }, [requestPosition]);
 
   function persistList(key: "my-lombok-favorites" | "my-lombok-visited", value: string[]) {
-    localStorage.setItem(key, JSON.stringify(value));
+    writePersonalArray(key, value, storageUserId);
     const supabase = getSupabaseBrowserClient();
     supabase?.auth.getUser().then(({ data }) => {
       if (!data.user) return;
@@ -118,6 +123,7 @@ export function ExplorerClient({ initialCategory = "all" }: { initialCategory?: 
 
   const origin = getDistanceOrigin(position);
   const cities = useMemo(() => Array.from(new Set(allPlaces.map((place) => place.city))).sort((a, b) => a.localeCompare(b, "fr")), []);
+  const hasVerifiedHalalData = useMemo(() => allPlaces.some((place) => place.halal !== "inconnu"), []);
   const results = useMemo(() => allPlaces.map((place) => ({ ...place, distance: distanceKm(origin.position, place) })).filter((place) => {
     const text = `${place.name} ${place.city} ${place.subcategory} ${place.tags.join(" ")}`.toLocaleLowerCase("fr");
     return (!query || text.includes(query.toLocaleLowerCase("fr"))) &&
@@ -158,7 +164,7 @@ export function ExplorerClient({ initialCategory = "all" }: { initialCategory?: 
         <label>Budget<select value={price} onChange={(event) => setPrice(Number(event.target.value))}><option value="0">Tous les budgets</option><option value="1">Petit prix</option><option value="2">Intermédiaire</option><option value="3">Plus élevé</option></select></label>
         <label>Note disponible<select value={minRating} onChange={(event) => setMinRating(Number(event.target.value))}><option value="0">Toutes</option><option value="4">4,0+</option><option value="4.5">4,5+</option></select></label>
         <label className="range-field"><span>Rayon depuis {origin.usingReference ? "Kuta" : "ma position"}<button type="button" className={radiusEnabled ? "is-on" : ""} onClick={() => setRadiusEnabled(!radiusEnabled)}>{radiusEnabled ? "activé" : "désactivé"}</button></span><input type="range" min="2" max="100" value={radius} disabled={!radiusEnabled} onChange={(event) => setRadius(Number(event.target.value))} /><small>{radius} km</small></label>
-        <div className="filter-toggles"><button aria-pressed={openNow} className={openNow ? "is-on" : ""} onClick={() => setOpenNow(!openNow)}><Clock3 aria-hidden="true" /> Ouvert maintenant</button>{muslimMode && <button aria-pressed={halal} className={halal ? "is-on" : ""} onClick={() => setHalal(!halal)}>Halal déclaré</button>}<button onClick={resetFilters}>Réinitialiser</button></div>
+        <div className="filter-toggles"><button aria-pressed={openNow} className={openNow ? "is-on" : ""} onClick={() => setOpenNow(!openNow)}><Clock3 aria-hidden="true" /> Ouvert maintenant · horaires connus</button>{muslimMode && hasVerifiedHalalData && <button aria-pressed={halal} className={halal ? "is-on" : ""} onClick={() => setHalal(!halal)}>Halal déclaré</button>}<button onClick={resetFilters}>Réinitialiser</button></div>
       </section>}
 
       <div className="explorer-context"><Info aria-hidden="true" /><p>Ce carnet sert au repérage. Les horaires, prix et disponibilités indiqués « à confirmer » doivent être vérifiés directement auprès du lieu.</p>{origin.usingReference && <button onClick={requestPosition}><LocateFixed aria-hidden="true" /> {geoStatus === "loading" ? "Localisation…" : "Utiliser ma position"}</button>}</div>
@@ -176,7 +182,7 @@ export function ExplorerClient({ initialCategory = "all" }: { initialCategory?: 
 
 function PlaceCard({ place, favorite, onFavorite, onOpen }: { place: PlaceWithDistance; favorite: boolean; onFavorite: () => void; onOpen: () => void }) {
   const Icon = categoryIcons[place.category];
-  return <article className="place-card"><button className="place-card__image" onClick={onOpen} aria-label={`Voir la fiche de ${place.name}`}><PlaceImage src={place.photos[0]} alt={`Illustration éditoriale pour ${place.name}`} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw" /><span><Icon aria-hidden="true" /> {categoryMeta[place.category].label}</span></button><button className="place-card__favorite" aria-pressed={favorite} aria-label={favorite ? `Retirer ${place.name} des favoris` : `Ajouter ${place.name} aux favoris`} onClick={onFavorite}><Heart aria-hidden="true" fill={favorite ? "currentColor" : "none"} /></button><button className="place-card__body" onClick={onOpen}><span className="place-card__meta">{place.city} · {place.subcategory}</span><h2>{place.name}</h2><p>{place.specialty || place.description}</p><div>{place.rating && <span>★ {place.rating.toFixed(1)}</span>}<span><MapPin aria-hidden="true" /> {place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div></button></article>;
+  return <article className="place-card"><div className="place-card__image"><PlaceImage src={place.photos[0]} alt={`Ambiance représentative de la catégorie ${categoryMeta[place.category].label.toLowerCase()} à Lombok ; image éditoriale, pas nécessairement prise dans ce lieu`} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw" /><span><Icon aria-hidden="true" /> {categoryMeta[place.category].label}</span></div><button className="place-card__favorite" aria-pressed={favorite} aria-label={favorite ? `Retirer ${place.name} des favoris` : `Ajouter ${place.name} aux favoris`} onClick={onFavorite}><Heart aria-hidden="true" fill={favorite ? "currentColor" : "none"} /></button><div className="place-card__body"><span className="place-card__meta">{place.city} · {place.subcategory}</span><h2>{place.name}</h2><p>{place.specialty || place.description}</p><div>{place.rating && <span title="Note Google indicative, à vérifier">Google · {place.rating.toFixed(1)}</span>}<span><MapPin aria-hidden="true" /> {place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div></div><button className="place-card__open" onClick={onOpen}><span className="sr-only">Voir la fiche de {place.name}</span></button></article>;
 }
 
 function PlaceDetail({ place, favorite, visited, canCheckIn, close, toggleFavorite, checkIn, muslimMode }: { place: PlaceWithDistance; favorite: boolean; visited: boolean; canCheckIn: boolean; close: () => void; toggleFavorite: () => void; checkIn: () => void; muslimMode: boolean }) {
@@ -184,5 +190,5 @@ function PlaceDetail({ place, favorite, visited, canCheckIn, close, toggleFavori
   const ref = useDialogA11y(true, closeDialog);
   const directWhatsApp = providerWhatsAppUrl(place);
   const Icon = categoryIcons[place.category];
-  return <div className="dialog-backdrop place-dialog-backdrop" onMouseDown={close}><article className="place-detail" ref={ref} role="dialog" aria-modal="true" aria-labelledby="place-title" onMouseDown={(event) => event.stopPropagation()}><button className="dialog-close" onClick={close} aria-label="Fermer la fiche"><X aria-hidden="true" /></button><div className="place-detail__image"><PlaceImage src={place.photos[0]} alt={`Vue associée à ${place.name}`} sizes="(max-width: 760px) 100vw, 720px" /><span><Icon aria-hidden="true" /> {categoryMeta[place.category].label}</span></div><div className="place-detail__body"><span className="eyebrow">{place.city} · {place.island.replaceAll("-", " ")}</span><h2 id="place-title">{place.name}</h2><div className="place-detail__stats">{place.rating && <span>★ {place.rating.toFixed(1)}</span>}<span><MapPin aria-hidden="true" /> {place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div><p className="place-detail__description">{place.description}</p>{place.vigilance && <div className="vigilance"><Info aria-hidden="true" /><div><strong>À savoir avant d’y aller</strong><p>{place.vigilance}</p></div></div>}{place.menu && <section className="place-menu"><span className="eyebrow">La carte</span><h3>{place.menu.highlights.length ? "Quelques repères" : "Informations du restaurant"}</h3>{place.menu.highlights.length > 0 && <div>{place.menu.highlights.map((item) => <span key={item}>{item}</span>)}</div>}<a href={place.menu.source_url} target="_blank" rel="noopener noreferrer">Voir la carte complète <ExternalLink aria-hidden="true" /></a><small>{place.menu.status === "officiel" ? `Source indiquée par le restaurant : ${place.menu.source_label}.` : "Carte, prix et disponibilité à confirmer auprès du restaurant."}</small></section>}<dl className="practical-info"><div><dt>Horaires</dt><dd>{place.opening_hours || "À confirmer"}</dd></div><div><dt>Meilleur moment</dt><dd>{place.best_time || "Selon vos envies"}</dd></div>{place.level && <div><dt>Niveau</dt><dd>{place.level}</dd></div>}{muslimMode && place.halal !== "inconnu" && <div><dt>Information halal</dt><dd>{place.halal}</dd></div>}</dl><div className="tag-list">{place.tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button className={`check-in${visited ? " is-done" : ""}`} disabled={!canCheckIn || visited} onClick={checkIn}>{visited ? "Lieu ajouté à mes visites" : canCheckIn ? "Valider ma visite" : "Visite validable à moins de 200 m"}</button><div className="place-detail__actions"><a className="button button--primary" href={place.maps_url} target="_blank" rel="noopener noreferrer"><ExternalLink aria-hidden="true" /> Itinéraire</a>{directWhatsApp ? <a className="button button--outline" href={directWhatsApp} target="_blank" rel="noopener noreferrer"><MessageCircle aria-hidden="true" /> WhatsApp du prestataire</a> : <span className="contact-unavailable"><Phone aria-hidden="true" /> Contact direct non renseigné</span>}<button className="button button--outline" aria-pressed={favorite} onClick={toggleFavorite}><Heart aria-hidden="true" fill={favorite ? "currentColor" : "none"} /> {favorite ? "Retirer des favoris" : "Ajouter aux favoris"}</button><Link className="editorial-link" href={`/conciergerie?service=${place.category === "restaurant" ? "restaurant" : place.category === "excursion" || isActivityPlace(place) ? "activite" : "autre"}`}>Demande générale à MyLombok <ArrowRight aria-hidden="true" /></Link></div></div></article></div>;
+  return <div className="dialog-backdrop place-dialog-backdrop" onMouseDown={close}><article className="place-detail" ref={ref} role="dialog" aria-modal="true" aria-labelledby="place-title" onMouseDown={(event) => event.stopPropagation()}><button className="dialog-close" onClick={close} aria-label="Fermer la fiche"><X aria-hidden="true" /></button><div className="place-detail__image"><PlaceImage src={place.photos[0]} alt={`Ambiance représentative de la catégorie ${categoryMeta[place.category].label.toLowerCase()} à Lombok ; image éditoriale, pas nécessairement prise dans ce lieu`} sizes="(max-width: 760px) 100vw, 720px" /><span><Icon aria-hidden="true" /> {categoryMeta[place.category].label}</span></div><div className="place-detail__body"><span className="eyebrow">{place.city} · {place.island.replaceAll("-", " ")}</span><h2 id="place-title">{place.name}</h2><div className="place-detail__stats">{place.rating && <span title="Note Google indicative, à vérifier">Note Google indicative · {place.rating.toFixed(1)}</span>}<span><MapPin aria-hidden="true" /> {place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`}</span><span>{place.price_range || "Prix à confirmer"}</span></div><p className="place-detail__description">{place.description}</p>{place.vigilance && <div className="vigilance"><Info aria-hidden="true" /><div><strong>À savoir avant d’y aller</strong><p>{place.vigilance}</p></div></div>}{place.menu && <section className="place-menu"><span className="eyebrow">La carte</span><h3>{place.menu.highlights.length ? "Quelques repères" : "Informations du restaurant"}</h3>{place.menu.highlights.length > 0 && <div>{place.menu.highlights.map((item) => <span key={item}>{item}</span>)}</div>}<a href={place.menu.source_url} target="_blank" rel="noopener noreferrer">Voir la carte complète <ExternalLink aria-hidden="true" /></a><small>{place.menu.status === "officiel" ? `Source indiquée par le restaurant : ${place.menu.source_label}.` : "Carte, prix et disponibilité à confirmer auprès du restaurant."}</small></section>}<dl className="practical-info"><div><dt>Horaires</dt><dd>{place.opening_hours || "À confirmer"}</dd></div><div><dt>Meilleur moment</dt><dd>{place.best_time || "Selon vos envies"}</dd></div>{place.level && <div><dt>Niveau</dt><dd>{place.level}</dd></div>}{muslimMode && place.halal !== "inconnu" && <div><dt>Information halal</dt><dd>{place.halal}</dd></div>}</dl><div className="tag-list">{place.tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button className={`check-in${visited ? " is-done" : ""}`} disabled={!canCheckIn || visited} onClick={checkIn}>{visited ? "Lieu ajouté à mes visites" : canCheckIn ? "Valider ma visite" : "Visite validable à moins de 200 m"}</button><div className="place-detail__actions"><a className="button button--primary" href={place.maps_url} target="_blank" rel="noopener noreferrer"><ExternalLink aria-hidden="true" /> Itinéraire</a>{directWhatsApp ? <a className="button button--outline" href={directWhatsApp} target="_blank" rel="noopener noreferrer"><MessageCircle aria-hidden="true" /> WhatsApp du prestataire</a> : <span className="contact-unavailable"><Phone aria-hidden="true" /> Contact direct non renseigné</span>}<button className="button button--outline" aria-pressed={favorite} onClick={toggleFavorite}><Heart aria-hidden="true" fill={favorite ? "currentColor" : "none"} /> {favorite ? "Retirer des favoris" : "Ajouter aux favoris"}</button><Link className="editorial-link" href={`/conciergerie?service=${place.category === "restaurant" ? "restaurant" : place.category === "excursion" || isActivityPlace(place) ? "activite" : "autre"}&place=${encodeURIComponent(place.name)}`}>Demande générale à MyLombok <ArrowRight aria-hidden="true" /></Link></div></div></article></div>;
 }

@@ -8,6 +8,7 @@ import { HomePreferences } from "./components/home-preferences";
 export const metadata: Metadata = {
   title: "Conciergerie locale à Lombok",
   description: "Préparez votre séjour à Lombok avec un interlocuteur local : transferts, mobilité, activités et recommandations adaptées à vos envies.",
+  alternates: { canonical: "/" },
 };
 
 const services = [
@@ -16,7 +17,7 @@ const services = [
     number: "01",
     title: "Arriver sereinement",
     text: "Transfert depuis l’aéroport, horaires d’arrivée et première installation : les détails pratiques sont préparés avant votre départ.",
-    href: "/conciergerie?service=transfert",
+    href: "/services/transferts-arrivee",
     action: "Préparer mon arrivée",
   },
   {
@@ -24,7 +25,7 @@ const services = [
     number: "02",
     title: "Se déplacer simplement",
     text: "Scooter, chauffeur ou trajet ponctuel : nous clarifions votre besoin et vous orientons vers la solution adaptée.",
-    href: "/conciergerie?service=mobilite",
+    href: "/services/mobilite-ile",
     action: "Organiser mes déplacements",
   },
   {
@@ -32,7 +33,7 @@ const services = [
     number: "03",
     title: "Vivre Lombok à votre rythme",
     text: "Plages, nature, culture et activités : composez une sélection cohérente sans surcharger vos journées.",
-    href: "/explorer?category=activite",
+    href: "/services/activites-excursions",
     action: "Explorer les expériences",
   },
 ];
@@ -139,7 +140,7 @@ export default function HomePage() {
           <div className="why-points">
             <article><Sparkles aria-hidden="true" /><div><h3>Des choix lisibles</h3><p>Les informations inconnues sont signalées comme telles, sans promesse ajoutée pour embellir une fiche.</p></div></article>
             <article><MessageCircle aria-hidden="true" /><div><h3>Un point de contact clair</h3><p>Les demandes générales arrivent chez MyLombok ; les contacts directs restent ceux des prestataires lorsqu’ils sont disponibles.</p></div></article>
-            <article><ShieldCheck aria-hidden="true" /><div><h3>Vos données sous votre contrôle</h3><p>Les préférences locales restent sur votre appareil et la synchronisation n’est activée que si vous créez un compte.</p></div></article>
+            <article><ShieldCheck aria-hidden="true" /><div><h3>Vos données sous votre contrôle</h3><p>Les préférences restent sur votre appareil. La synchronisation ne sera proposée qu’après activation du service de comptes.</p></div></article>
           </div>
         </div>
       </section>

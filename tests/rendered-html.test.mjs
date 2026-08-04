@@ -112,7 +112,7 @@ test("les demandes générales vont à MyLombok et les contacts directs restent 
     'form.get("consent") === "on"',
     "departure < arrival",
     "window.open(url",
-    'status: "WhatsApp ouvert"',
+    'status: opened ? "WhatsApp ouvert" : "Message préparé"',
     "MyLombok ne le considère pas comme envoyé",
   ], "le formulaire de conciergerie");
   assert.doesNotMatch(form, /status:\s*["'](?:Envoyé|Confirmé)["']/);

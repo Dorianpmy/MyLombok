@@ -5,10 +5,12 @@ import { ConciergeForm } from "../components/concierge-form";
 export const metadata: Metadata = {
   title: "Parler à la conciergerie",
   description: "Préparez une demande à MyLombok pour votre transfert, vos déplacements, vos activités ou l’organisation de votre séjour.",
+  alternates: { canonical: "/conciergerie" },
 };
 
-export default async function ConciergePage({ searchParams }: { searchParams: Promise<{ service?: string }> }) {
-  const { service = "sejour" } = await searchParams;
+export default async function ConciergePage({ searchParams }: { searchParams: Promise<{ service?: string; place?: string }> }) {
+  const { service = "sejour", place = "" } = await searchParams;
+  const initialPlace = place.trim().slice(0, 120);
   return (
     <main className="inner-page concierge-page">
       <header className="inner-hero inner-hero--forest">
@@ -21,7 +23,7 @@ export default async function ConciergePage({ searchParams }: { searchParams: Pr
           </div>
         </div>
       </header>
-      <div className="site-container concierge-page__form"><ConciergeForm initialService={service} /></div>
+      <div className="site-container concierge-page__form"><ConciergeForm key={`${service}:${initialPlace}`} initialService={service} initialPlace={initialPlace} /></div>
     </main>
   );
 }

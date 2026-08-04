@@ -102,6 +102,8 @@ img { max-width: 100%; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.skip-link { position: fixed; z-index: 200; top: max(10px, env(safe-area-inset-top)); left: 12px; padding: 11px 15px; border-radius: var(--radius-small); background: var(--surface); color: var(--ink); font-weight: 700; text-decoration: none; box-shadow: var(--shadow-dialog); transform: translateY(-160%); transition: transform 160ms ease; }
+.skip-link:focus { transform: translateY(0); }
 .site-main { min-height: 70vh; overflow: clip; }
 .site-container { width: min(100% - 48px, 1280px); margin-inline: auto; }
 .site-section { padding: clamp(88px, 10vw, 144px) 0; }

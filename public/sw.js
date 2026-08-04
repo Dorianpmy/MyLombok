@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "mylombok-static-";
-const CACHE = `${CACHE_PREFIX}v3`;
+const CACHE = `${CACHE_PREFIX}v4`;
 const OFFLINE_PAGE = "/offline.html";
 const PRECACHE = [
   OFFLINE_PAGE,

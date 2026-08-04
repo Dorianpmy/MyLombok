@@ -25,10 +25,10 @@ export function withinOptionalRadius(distance: number, radiusEnabled: boolean, r
 }
 
 export function isOpenAtLombokTime(openingHours: string | null, date = new Date()) {
-  if (!openingHours) return true;
+  if (!openingHours) return false;
   if (openingHours.toLowerCase().includes("24h")) return true;
   const match = openingHours.match(/(\d{1,2}):(\d{2})\s*[–-]\s*(\d{1,2}):(\d{2})/);
-  if (!match) return true;
+  if (!match) return false;
   const parts = new Intl.DateTimeFormat("fr-FR", { timeZone: "Asia/Makassar", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(date);
   const nowMinutes = Number(parts.find((part) => part.type === "hour")?.value) * 60 + Number(parts.find((part) => part.type === "minute")?.value);
   const opens = Number(match[1]) * 60 + Number(match[2]);

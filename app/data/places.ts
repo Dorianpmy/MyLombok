@@ -75,12 +75,6 @@ function editorialPhoto(category: PlaceCategory, index: number) {
   return `https://images.unsplash.com/${collection[index % collection.length]}?auto=format&fit=crop&w=900&q=78`;
 }
 
-const priceDefaults: Record<number, string> = {
-  1: "20–60k Rp · 1–4 €",
-  2: "60–150k Rp · 4–9 €",
-  3: "150–350k Rp · 9–21 €",
-};
-
 const restaurantMenuSources: Record<string, Omit<RestaurantMenu, "highlights">> = {
   "kenza-cafe": { source_url: "https://kenzalombok.com/wp-content/uploads/2025/08/MENU-NEW-Kenza-09082025.pdf", source_label: "Menu Kenza", verified_at: "22 juillet 2026", status: "officiel" },
   elamu: { source_url: "https://elamulombok.com/assets/menu/elamu-lunch-dinner-sep25.pdf", source_label: "Menu Elamu", verified_at: "22 juillet 2026", status: "officiel" },
@@ -113,7 +107,7 @@ export const importedPlaces: Place[] = seedPlaces.map((item, index) => {
     specialty: item.specialty,
     tags: item.tags,
     price_level: item.price_level,
-    price_range: item.price_range || (item.price_level ? priceDefaults[item.price_level] : null),
+    price_range: item.price_range,
     lat: item.lat,
     lng: item.lng,
     opening_hours: item.opening_hours,
@@ -150,19 +144,19 @@ const extraPlacesBase: Omit<Place, "zone" | "halal" | "alcool_servi" | "ambiance
   {
     id: "rinjani-trek", region: "north-lombok", island: "lombok", city: "Senaru", category: "nature", subcategory: "trek",
     name: "Trek du Mont Rinjani", slug: "trek-rinjani", description: "Ascension guidée du volcan et nuit face au lac Segara Anak. Réservation avec guide agréé indispensable.",
-    specialty: "Trek 2 jours / 1 nuit", tags: ["trek", "volcan", "sunrise", "guide"], price_level: 3, price_range: "2,5–4,5 M Rp · 145–260 €", lat: -8.4112, lng: 116.4573,
+    specialty: "Trek 2 jours / 1 nuit", tags: ["trek", "volcan", "sunrise", "guide"], price_level: 3, price_range: "2,5–4,5 M Rp · à confirmer", lat: -8.4112, lng: 116.4573,
     opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.4112,116.4573", photos: [categoryPhotos.nature], menu: null, tested_by_us: false, rating: null, best_time: "avril à novembre", level: "difficile", vigilance: "Trek exigeant : vérifier l’état des sentiers, la météo, les permis et l’agrément de l’opérateur avant le départ.", created_at: "2026-07-22T00:00:00.000Z"
   },
   {
     id: "gili-air-day", region: "north-lombok", island: "gili-air", city: "Gili Air", category: "excursion", subcategory: "snorkeling",
     name: "Journée snorkeling aux Gili", slug: "snorkeling-gili", description: "Bateau en petit groupe vers Gili Air, Meno et Trawangan, avec spots de tortues et statues sous-marines.",
-    specialty: "3 îles & tortues", tags: ["bateau", "snorkeling", "tortues", "famille"], price_level: 2, price_range: "350–650k Rp · 21–39 €", lat: -8.349, lng: 116.082,
+    specialty: "3 îles & tortues", tags: ["bateau", "snorkeling", "tortues", "famille"], price_level: 2, price_range: "350–650k Rp · à confirmer", lat: -8.349, lng: 116.082,
     opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.349,116.082", photos: [categoryPhotos.excursion], menu: null, tested_by_us: false, rating: null, best_time: "matin, mer calme", level: "facile", vigilance: "Horaires, tarif et opérateur à confirmer. Privilégier ceux qui ne nourrissent pas les tortues.", created_at: "2026-07-22T00:00:00.000Z"
   },
   {
     id: "selong-belanak", region: "south-lombok", island: "lombok", city: "Selong Belanak", category: "plage", subcategory: "baignade & surf débutant",
     name: "Selong Belanak Beach", slug: "selong-belanak", description: "Grande baie de sable clair, idéale pour apprendre le surf et se baigner lorsque la mer est calme.",
-    specialty: "Surf débutant", tags: ["plage", "surf", "baignade", "sunset", "warung"], price_level: 1, price_range: "Parking 10k Rp · <1 €", lat: -8.8739, lng: 116.1624,
+    specialty: "Surf débutant", tags: ["plage", "surf", "baignade", "sunset", "warung"], price_level: 1, price_range: "Parking 10k Rp · à confirmer", lat: -8.8739, lng: 116.1624,
     opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8739,116.1624", photos: [categoryPhotos.plage], menu: null, tested_by_us: false, rating: null, best_time: "matin ou coucher du soleil", level: "débutant · mi-marée", vigilance: "Conditions de baignade et de surf à confirmer sur place ; rester prudent lorsque la houle augmente.", created_at: "2026-07-22T00:00:00.000Z"
   },
 ];
@@ -268,7 +262,7 @@ const curatedPlaces: Place[] = curatedCatalog.map((place, index) => {
     slug: place.id,
     description: `${place.specialty}. Une fiche de repérage MyLombok à vérifier auprès du lieu avant le départ.`,
     price_level: priceLevel,
-    price_range: priceDefaults[priceLevel],
+    price_range: null,
     opening_hours: null,
     whatsapp: null,
     maps_url: mapUrl,

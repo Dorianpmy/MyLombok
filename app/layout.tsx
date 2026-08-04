@@ -62,9 +62,10 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <body>
         <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('my-lombok-theme');if(t==='dark')document.documentElement.dataset.theme='dark'}catch(e){}` }} />
+        <a className="skip-link" href="#main-content">Aller au contenu principal</a>
         <PwaRegister />
         <SiteHeader />
-        <div className="site-main">{children}</div>
+        <div className="site-main" id="main-content" tabIndex={-1}>{children}</div>
         <SiteFooter />
         <AppNavigation />
       </body>

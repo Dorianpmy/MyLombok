@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { Apple, BookOpen, ChevronRight, CloudDownload, Eye, EyeOff, LogOut, Mail, MoonStar, ShieldCheck, Sun, Trash2, UserRound, X } from "lucide-react";
 import { getSupabaseBrowserClient } from "../lib/supabase";
+import { clearPersonalState, readPersonalArray, setActiveLocalUserId, writePersonalArray } from "../lib/local-state";
 import { useDialogA11y } from "./use-dialog-a11y";
 import { PrayerCard } from "./prayer-card";
 import { CurrencyConverter } from "./currency-converter";
@@ -16,10 +17,6 @@ const officialGuides = [
   { title: "Fiscalité et NPWP", summary: "Informations fiscales pour particuliers et entreprises.", href: "https://www.pajak.go.id/en", source: "Direction générale des impôts" },
   { title: "Services de la province", summary: "Informations publiques de Nusa Tenggara Barat.", href: "https://ntbprov.go.id/", source: "Gouvernement de NTB" },
 ];
-
-function safeArray<T>(key: string): T[] {
-  try { const value = JSON.parse(localStorage.getItem(key) || "[]"); return Array.isArray(value) ? value : []; } catch { return []; }
-}
 
 export function ProfileClient() {
   const [user, setUser] = useState<User | null>(null);
@@ -34,27 +31,35 @@ export function ProfileClient() {
   const [notice, setNotice] = useState("");
   const [syncReady, setSyncReady] = useState(false);
   const skipNextCloudSync = useRef(false);
+  const supabaseAvailable = Boolean(getSupabaseBrowserClient());
 
   useEffect(() => {
     let active = true;
+    const hydratePersonalState = (nextUser: User | null) => {
+      if (!active) return;
+      const userId = nextUser?.id || null;
+      setActiveLocalUserId(userId);
+      setFavorites(readPersonalArray<string>("my-lombok-favorites", userId));
+      setVisited(readPersonalArray<string>("my-lombok-visited", userId));
+      setRequests(readPersonalArray<StoredRequest>("my-lombok-requests", userId));
+    };
     const timer = window.setTimeout(() => {
       if (!active) return;
       setDark(localStorage.getItem("my-lombok-theme") === "dark");
       setMuslimMode(localStorage.getItem("my-lombok-muslim-mode") === "true");
-      setFavorites(safeArray<string>("my-lombok-favorites"));
-      setVisited(safeArray<string>("my-lombok-visited"));
-      setRequests(safeArray<StoredRequest>("my-lombok-requests"));
     }, 0);
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
-      const loadingTimer = window.setTimeout(() => active && setLoading(false), 0);
+      const loadingTimer = window.setTimeout(() => { hydratePersonalState(null); if (active) setLoading(false); }, 0);
       return () => { active = false; window.clearTimeout(timer); window.clearTimeout(loadingTimer); };
     }
-    supabase.auth.getSession().then(({ data }) => { if (active) { setSyncReady(false); setUser(data.session?.user ?? null); setLoading(false); } });
+    supabase.auth.getSession().then(({ data }) => { if (active) { const nextUser = data.session?.user ?? null; setSyncReady(false); setUser(nextUser); hydratePersonalState(nextUser); setLoading(false); } });
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return;
+      const nextUser = session?.user ?? null;
       setSyncReady(false);
-      setUser(session?.user ?? null);
+      setUser(nextUser);
+      hydratePersonalState(nextUser);
       if (event === "PASSWORD_RECOVERY") { setPasswordRecovery(true); setAuthOpen(true); }
     });
     return () => { active = false; window.clearTimeout(timer); data.subscription.unsubscribe(); };
@@ -72,9 +77,9 @@ export function ProfileClient() {
         return;
       }
       if (data) {
-        if (Array.isArray(data.favorites)) { setFavorites(data.favorites); localStorage.setItem("my-lombok-favorites", JSON.stringify(data.favorites)); }
-        if (Array.isArray(data.visited)) { setVisited(data.visited); localStorage.setItem("my-lombok-visited", JSON.stringify(data.visited)); }
-        if (Array.isArray(data.requests)) { setRequests(data.requests as StoredRequest[]); localStorage.setItem("my-lombok-requests", JSON.stringify(data.requests)); }
+        if (Array.isArray(data.favorites)) { setFavorites(data.favorites); writePersonalArray("my-lombok-favorites", data.favorites, user.id); }
+        if (Array.isArray(data.visited)) { setVisited(data.visited); writePersonalArray("my-lombok-visited", data.visited, user.id); }
+        if (Array.isArray(data.requests)) { setRequests(data.requests as StoredRequest[]); writePersonalArray("my-lombok-requests", data.requests as StoredRequest[], user.id); }
         const prefs = data.preferences as { dark?: boolean; muslimMode?: boolean } | null;
         if (typeof prefs?.muslimMode === "boolean") { setMuslimMode(prefs.muslimMode); localStorage.setItem("my-lombok-muslim-mode", String(prefs.muslimMode)); }
         if (typeof prefs?.dark === "boolean") {
@@ -128,13 +133,18 @@ export function ProfileClient() {
   async function clearLocalData() {
     if (!window.confirm("Effacer les favoris, visites, demandes et préférences enregistrés sur cet appareil ?")) return;
     skipNextCloudSync.current = true;
-    ["my-lombok-favorites", "my-lombok-visited", "my-lombok-requests", "my-lombok-muslim-mode", "my-lombok-theme"].forEach((key) => localStorage.removeItem(key));
+    clearPersonalState(user?.id || null);
+    ["my-lombok-muslim-mode", "my-lombok-theme"].forEach((key) => localStorage.removeItem(key));
     setFavorites([]); setVisited([]); setRequests([]); setMuslimMode(false); setDark(false); delete document.documentElement.dataset.theme;
     setNotice("Les données locales de cet appareil ont été effacées.");
   }
 
   async function signOut() {
     await getSupabaseBrowserClient()?.auth.signOut();
+    setActiveLocalUserId(null);
+    setFavorites(readPersonalArray<string>("my-lombok-favorites", null));
+    setVisited(readPersonalArray<string>("my-lombok-visited", null));
+    setRequests(readPersonalArray<StoredRequest>("my-lombok-requests", null));
     setSyncReady(false);
     setUser(null);
     setNotice("Vous êtes déconnecté.");
@@ -145,8 +155,8 @@ export function ProfileClient() {
       {notice && <div className="profile-notice" role="status">{notice}</div>}
       <section className="profile-account">
         <div className="profile-account__avatar">{user ? String(displayName).slice(0, 1).toUpperCase() : <UserRound aria-hidden="true" />}</div>
-        <div><span className="eyebrow">Votre espace personnel</span><h2>{loading ? "Vérification…" : user ? `Bonjour ${displayName}` : "Retrouvez votre carnet partout"}</h2><p>{user ? user.email : "Un compte permet de synchroniser vos favoris et vos demandes entre vos appareils."}</p></div>
-        {user ? <button className="button button--outline" onClick={signOut}><LogOut aria-hidden="true" /> Se déconnecter</button> : <button className="button button--primary" onClick={() => setAuthOpen(true)} disabled={loading}>Créer ou ouvrir mon compte</button>}
+        <div><span className="eyebrow">Votre espace personnel</span><h2>{loading ? "Vérification…" : user ? `Bonjour ${displayName}` : supabaseAvailable ? "Retrouvez votre carnet partout" : "Votre carnet reste sur cet appareil"}</h2><p>{user ? user.email : supabaseAvailable ? "Un compte permet de synchroniser vos favoris et vos demandes entre vos appareils." : "Favoris, visites et demandes restent disponibles localement. La synchronisation par compte n’est pas encore activée sur ce déploiement."}</p></div>
+        {user ? <button className="button button--outline" onClick={signOut}><LogOut aria-hidden="true" /> Se déconnecter</button> : supabaseAvailable ? <button className="button button--primary" onClick={() => setAuthOpen(true)} disabled={loading}>Créer ou ouvrir mon compte</button> : <span className="profile-account__local-status"><ShieldCheck aria-hidden="true" /> Carnet local actif</span>}
       </section>
 
       <section className="profile-overview" aria-label="Résumé de votre carnet">

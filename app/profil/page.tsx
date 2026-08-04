@@ -4,6 +4,7 @@ import { ProfileClient } from "../components/profile-client";
 export const metadata: Metadata = {
   title: "Mon espace",
   description: "Retrouvez vos favoris, demandes et préférences de séjour MyLombok.",
+  robots: { index: false, follow: false },
 };
 
 export default function ProfilePage() {

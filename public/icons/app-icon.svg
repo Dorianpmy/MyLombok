@@ -1,15 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="bg" x1="130" y1="110" x2="890" y2="920" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#153B4C"/><stop offset="1" stop-color="#07141F"/>
-    </linearGradient>
-    <linearGradient id="island" x1="220" y1="250" x2="820" y2="810" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#62D6E4"/><stop offset="1" stop-color="#6E74F2"/>
-    </linearGradient>
-  </defs>
-  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
-  <circle cx="754" cy="244" r="73" fill="#E9DFFF"/>
-  <path d="M214 657c113-8 151-210 267-210 128 0 150 179 288 193" fill="none" stroke="url(#island)" stroke-width="91" stroke-linecap="round"/>
-  <path d="M202 750c127 72 241 73 363 6 100-56 179-65 258-26" fill="none" stroke="#EAFBFF" stroke-width="57" stroke-linecap="round"/>
-  <path d="m294 645 183-305 192 304" fill="none" stroke="#EAFBFF" stroke-width="57" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="MyLombok">
+  <rect width="64" height="64" fill="#193229"/>
+  <path d="M12 44c0-17 7.8-28 14.8-28 5.1 0 6.2 7.4 6.2 16.7C33 23.4 34.5 16 39.7 16 46.3 16 52 27 52 44" fill="none" stroke="#F6F2E9" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M11.5 45c8 4.1 15.9 4.1 23.9 0 6.4-3.2 12-3.5 17.1-.8" fill="none" stroke="#B28A52" stroke-width="3.8" stroke-linecap="round"/>
 </svg>
