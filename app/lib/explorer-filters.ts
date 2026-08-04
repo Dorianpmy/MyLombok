@@ -3,6 +3,7 @@ import { distanceKm, type PlaceCategory } from "../data/places";
 export const KUTA_REFERENCE = { lat: -8.8947, lng: 116.2832 } as const;
 
 const categoryAliases: Record<string, PlaceCategory> = {
+  activite: "activite", activites: "activite", activité: "activite", activités: "activite",
   restaurant: "restaurant", restaurants: "restaurant",
   plage: "plage", plages: "plage",
   service: "service", services: "service",

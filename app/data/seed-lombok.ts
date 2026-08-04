@@ -9,6 +9,7 @@
  */
 
 export type Category =
+  | "activite"
   | "restaurant"
   | "plage"
   | "service"
@@ -330,7 +331,7 @@ export const places: Place[] = [
   },
   {
     id: "mandalika-beach-club", island: "lombok", region: "central-lombok", city: "Kuta",
-    category: "plage", subcategory: "beach club", name: "Mandalika Beach Club",
+    category: "activite", subcategory: "beach club", name: "Mandalika Beach Club",
     slug: "mandalika-beach-club", specialty: "Deux piscines, transats gratuits, entrée libre sans minimum de conso",
     tags: ["piscine", "wifi", "entrée libre", "travailler"],
     price_level: 2, price_range: "Entrée gratuite", lat: -8.8962364, lng: 116.2910989,
@@ -364,10 +365,10 @@ export const places: Place[] = [
     vigilance: "Faux points de contrôle qui réclament un droit de passage",
   },
 
-  /* ─────────────── SERVICES — ÉCOLES DE SURF ─────────────── */
+  /* ─────────────── ACTIVITÉS — ÉCOLES & SÉJOURS SURF ─────────────── */
   {
     id: "kuta-lombok-surf-school", island: "lombok", region: "central-lombok", city: "Kuta",
-    category: "service", subcategory: "école de surf", name: "Kuta Lombok Surf School",
+    category: "activite", subcategory: "école de surf", name: "Kuta Lombok Surf School",
     slug: "kuta-lombok-surf-school", specialty: "Cours à la semaine, choix du spot selon les conditions, pick-up hôtel",
     tags: ["débutant", "pick-up inclus", "matériel fourni"],
     price_level: 2, price_range: null, lat: -8.8916285, lng: 116.2744222,
@@ -377,7 +378,7 @@ export const places: Place[] = [
   },
   {
     id: "heartbeach-surf", island: "lombok", region: "central-lombok", city: "Kuta",
-    category: "service", subcategory: "école de surf", name: "Heartbeach Lombok Surf Academy",
+    category: "activite", subcategory: "école de surf", name: "Heartbeach Lombok Surf Academy",
     slug: "heartbeach-surf-academy", specialty: "Quasi cours particulier, photos/drone, cours enfants dès 5 ans",
     tags: ["famille", "enfants", "photos incluses", "WhatsApp"],
     price_level: 2, price_range: null, lat: -8.8911782, lng: 116.2813773,
@@ -387,7 +388,7 @@ export const places: Place[] = [
   },
   {
     id: "surf-cult", island: "lombok", region: "central-lombok", city: "Kuta",
-    category: "service", subcategory: "école de surf", name: "Surf Cult Surf School",
+    category: "activite", subcategory: "école de surf", name: "Surf Cult Surf School",
     slug: "surf-cult-lombok", specialty: "Petits groupes, réservation à J-1 possible, coaching adapté au niveau",
     tags: ["petits groupes", "flexible"],
     price_level: 2, price_range: null, lat: -8.8919375, lng: 116.2731875,
@@ -397,7 +398,7 @@ export const places: Place[] = [
   },
   {
     id: "paradise-surfschool", island: "lombok", region: "central-lombok", city: "Kuta",
-    category: "service", subcategory: "école de surf", name: "Paradise Surfschool Lombok",
+    category: "activite", subcategory: "école de surf", name: "Paradise Surfschool Lombok",
     slug: "paradise-surfschool", specialty: "Cours particuliers, accompagnement des peurs de la vague",
     tags: ["débutant", "cours particulier"],
     price_level: 2, price_range: null, lat: -8.8919774, lng: 116.2733823,
@@ -407,7 +408,7 @@ export const places: Place[] = [
   },
   {
     id: "surf-camp-lombok", island: "lombok", region: "central-lombok", city: "Gerupuk",
-    category: "service", subcategory: "surf camp", name: "Surf Camp Lombok",
+    category: "activite", subcategory: "surf camp", name: "Surf Camp Lombok",
     slug: "surf-camp-lombok", specialty: "Séjours de 2 semaines, analyse vidéo, théorie, yoga, pension complète",
     tags: ["camp", "hébergement", "coworking", "yoga"],
     price_level: 3, price_range: null, lat: -8.9155622, lng: 116.3464081,
@@ -417,7 +418,7 @@ export const places: Place[] = [
   },
   {
     id: "lmbk-surf-house", island: "lombok", region: "central-lombok", city: "Kuta",
-    category: "service", subcategory: "surf house", name: "LMBK Surf House",
+    category: "activite", subcategory: "surf house", name: "LMBK Surf House",
     slug: "lmbk-surf-house", specialty: "Hébergement + cours de surf, centre-ville accessible à pied",
     tags: ["hébergement", "solo-friendly", "communauté"],
     price_level: 2, price_range: null, lat: -8.8897947, lng: 116.2765813,

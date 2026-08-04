@@ -1,6 +1,7 @@
 import seedPlaces from "./seed-lombok";
+import { semanticPhotoForPlace } from "./place-media";
 
-export type PlaceCategory = "restaurant" | "plage" | "service" | "nature" | "excursion" | "culture";
+export type PlaceCategory = "activite" | "restaurant" | "plage" | "service" | "nature" | "excursion" | "culture";
 export type HalalStatus = "certifié" | "sans porc ni alcool" | "non" | "inconnu";
 export type Ambiance = "romantique" | "calme" | "familial" | "animé" | "vue";
 export type NearbyMosque = { nom: string; distance_m: number; mawaqit_slug: string };
@@ -24,6 +25,8 @@ export interface Place {
   lng: number;
   opening_hours: string | null;
   whatsapp: string | null;
+  phone?: string | null;
+  contact_source_url?: string | null;
   maps_url: string;
   photos: string[];
   menu: RestaurantMenu | null;
@@ -41,38 +44,23 @@ export interface Place {
   created_at: string;
 }
 
-const categoryPhotos: Record<PlaceCategory, string> = {
-  restaurant: "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=78",
-  plage: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=78",
-  service: "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=900&q=78",
-  nature: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=900&q=78",
-  excursion: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=78",
-  culture: "https://images.unsplash.com/photo-1533669955142-6a73332af4db?auto=format&fit=crop&w=900&q=78",
-};
+const activityPlaceIds = new Set([
+  "kuta-lombok-surf-school",
+  "heartbeach-surf",
+  "surf-cult",
+  "paradise-surfschool",
+  "surf-camp-lombok",
+  "lmbk-surf-house",
+  "mandalika-beach-club",
+  "rinjani-trek",
+  "gili-air-day",
+  "pink-beach-boat",
+]);
 
-const restaurantPhotoIds = [
-  "photo-1504674900247-0877df9cc836", "photo-1565299624946-b28f40a0ae38", "photo-1547592180-85f173990554", "photo-1512621776951-a57141f2eefd",
-  "photo-1482049016688-2d3e1b311543", "photo-1473093295043-cdd812d0e601", "photo-1563379926898-05f4575a45d8", "photo-1546069901-ba9599a7e63c",
-  "photo-1551218808-94e220e084d2", "photo-1565958011703-44f9829ba187", "photo-1498837167922-ddd27525d352", "photo-1543353071-873f17a7a088",
-  "photo-1559339352-11d035aa65de", "photo-1528712306091-ed0763094c98", "photo-1476224203421-9ac39bcb3327", "photo-1529042410759-befb1204b468",
-  "photo-1490645935967-10de6ba17061", "photo-1540189549336-e6e99c3679fe", "photo-1551183053-bf91a1d81141", "photo-1569058242253-92a9c755a0ec",
-  "photo-1495474472287-4d71bcdd2085", "photo-1562565652-a0d8f0c59eb4", "photo-1533777857889-4be7c70b33f7", "photo-1555396273-367ea4eb4db5",
-];
-
-const travelPhotoIds = [
-  "photo-1507525428034-b723cf961d3e", "photo-1518509562904-e7ef99cdcc86", "photo-1469474968028-56623f02e42e", "photo-1441974231531-c6227db76b6e",
-  "photo-1470770841072-f978cf4d019e", "photo-1500530855697-b586d89ba3ee", "photo-1464822759023-fed622ff2c3b", "photo-1501785888041-af3ef285b470",
-  "photo-1521292270410-a8c4d716d518", "photo-1472396961693-142e6e269027", "photo-1510414842594-a61c69b5ae57", "photo-1544551763-46a013bb70d5",
-  "photo-1526772662000-3f88f10405ff", "photo-1493558103817-58b2924bce98", "photo-1539635278303-d4002c07eae3", "photo-1527631746610-bca00a040d60",
-  "photo-1516483638261-f4dbaf036963", "photo-1500534314209-a25ddb2bd429", "photo-1511497584788-876760111969", "photo-1461696114087-397271a7aedc",
-  "photo-1470214304380-aadaedcfff1b", "photo-1465146344425-f00d5f5c8f07", "photo-1500534623283-312aade485b7", "photo-1433086966358-54859d0ed716",
-  "photo-1473445361085-b9a07f55608b", "photo-1497250681960-ef046c08a56e", "photo-1533669955142-6a73332af4db", "photo-1528181304800-259b08848526",
-  "photo-1528127269322-539801943592", "photo-1540202404-a2f29016b523", "photo-1540206395-68808572332f", "photo-1530789253388-582c481c54b0",
-];
-
-function editorialPhoto(category: PlaceCategory, index: number) {
-  const collection = category === "restaurant" ? restaurantPhotoIds : travelPhotoIds;
-  return `https://images.unsplash.com/${collection[index % collection.length]}?auto=format&fit=crop&w=900&q=78`;
+function canonicalCategory(id: string, category: PlaceCategory): PlaceCategory {
+  if (activityPlaceIds.has(id)) return "activite";
+  if (id === "bangsal-public-boat") return "service";
+  return category;
 }
 
 const restaurantMenuSources: Record<string, Omit<RestaurantMenu, "highlights">> = {
@@ -90,8 +78,8 @@ const restaurantMenuSources: Record<string, Omit<RestaurantMenu, "highlights">> 
   milk: { source_url: "https://whatsyum.com/place/343325/milk-espresso-kuta-lombok-world-menu", source_label: "Carte numérisée MILK", verified_at: "22 juillet 2026", status: "communauté" },
 };
 
-export const importedPlaces: Place[] = seedPlaces.map((item, index) => {
-  const category = item.category as PlaceCategory;
+export const importedPlaces: Place[] = seedPlaces.map((item) => {
+  const category = canonicalCategory(item.id, item.category as PlaceCategory);
   const menuSource = restaurantMenuSources[item.id];
   const menuHighlights = item.specialty?.split(/,|—/).map((entry) => entry.trim()).filter(Boolean).slice(0, 4) || [];
   return {
@@ -113,7 +101,7 @@ export const importedPlaces: Place[] = seedPlaces.map((item, index) => {
     opening_hours: item.opening_hours,
     whatsapp: item.whatsapp,
     maps_url: `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}${item.google_place_id ? `&query_place_id=${item.google_place_id}` : ""}`,
-    photos: item.photos.length ? item.photos : [editorialPhoto(category, index)],
+    photos: [semanticPhotoForPlace({ id: item.id, name: item.name, category, subcategory: item.subcategory, city: item.city })],
     menu: category === "restaurant" ? {
       highlights: menuHighlights,
       source_url: menuSource?.source_url || `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}${item.google_place_id ? `&query_place_id=${item.google_place_id}` : ""}`,
@@ -142,30 +130,30 @@ export const importedPlaces: Place[] = seedPlaces.map((item, index) => {
 
 const extraPlacesBase: Omit<Place, "zone" | "halal" | "alcool_servi" | "ambiance" | "mosquee_proche" | "prive">[] = [
   {
-    id: "rinjani-trek", region: "north-lombok", island: "lombok", city: "Senaru", category: "nature", subcategory: "trek",
+    id: "rinjani-trek", region: "north-lombok", island: "lombok", city: "Senaru", category: "activite", subcategory: "trek guidé",
     name: "Trek du Mont Rinjani", slug: "trek-rinjani", description: "Ascension guidée du volcan et nuit face au lac Segara Anak. Réservation avec guide agréé indispensable.",
     specialty: "Trek 2 jours / 1 nuit", tags: ["trek", "volcan", "sunrise", "guide"], price_level: 3, price_range: "2,5–4,5 M Rp · à confirmer", lat: -8.4112, lng: 116.4573,
-    opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.4112,116.4573", photos: [categoryPhotos.nature], menu: null, tested_by_us: false, rating: null, best_time: "avril à novembre", level: "difficile", vigilance: "Trek exigeant : vérifier l’état des sentiers, la météo, les permis et l’agrément de l’opérateur avant le départ.", created_at: "2026-07-22T00:00:00.000Z"
+    opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.4112,116.4573", photos: [], menu: null, tested_by_us: false, rating: null, best_time: "avril à novembre", level: "difficile", vigilance: "Trek exigeant : vérifier l’état des sentiers, la météo, les permis et l’agrément de l’opérateur avant le départ.", created_at: "2026-07-22T00:00:00.000Z"
   },
   {
-    id: "gili-air-day", region: "north-lombok", island: "gili-air", city: "Gili Air", category: "excursion", subcategory: "snorkeling",
+    id: "gili-air-day", region: "north-lombok", island: "gili-air", city: "Gili Air", category: "activite", subcategory: "sortie snorkeling",
     name: "Journée snorkeling aux Gili", slug: "snorkeling-gili", description: "Bateau en petit groupe vers Gili Air, Meno et Trawangan, avec spots de tortues et statues sous-marines.",
     specialty: "3 îles & tortues", tags: ["bateau", "snorkeling", "tortues", "famille"], price_level: 2, price_range: "350–650k Rp · à confirmer", lat: -8.349, lng: 116.082,
-    opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.349,116.082", photos: [categoryPhotos.excursion], menu: null, tested_by_us: false, rating: null, best_time: "matin, mer calme", level: "facile", vigilance: "Horaires, tarif et opérateur à confirmer. Privilégier ceux qui ne nourrissent pas les tortues.", created_at: "2026-07-22T00:00:00.000Z"
+    opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.349,116.082", photos: [], menu: null, tested_by_us: false, rating: null, best_time: "matin, mer calme", level: "facile", vigilance: "Horaires, tarif et opérateur à confirmer. Privilégier ceux qui ne nourrissent pas les tortues.", created_at: "2026-07-22T00:00:00.000Z"
   },
   {
     id: "selong-belanak", region: "south-lombok", island: "lombok", city: "Selong Belanak", category: "plage", subcategory: "baignade & surf débutant",
     name: "Selong Belanak Beach", slug: "selong-belanak", description: "Grande baie de sable clair, idéale pour apprendre le surf et se baigner lorsque la mer est calme.",
     specialty: "Surf débutant", tags: ["plage", "surf", "baignade", "sunset", "warung"], price_level: 1, price_range: "Parking 10k Rp · à confirmer", lat: -8.8739, lng: 116.1624,
-    opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8739,116.1624", photos: [categoryPhotos.plage], menu: null, tested_by_us: false, rating: null, best_time: "matin ou coucher du soleil", level: "débutant · mi-marée", vigilance: "Conditions de baignade et de surf à confirmer sur place ; rester prudent lorsque la houle augmente.", created_at: "2026-07-22T00:00:00.000Z"
+    opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8739,116.1624", photos: [], menu: null, tested_by_us: false, rating: null, best_time: "matin ou coucher du soleil", level: "débutant · mi-marée", vigilance: "Conditions de baignade et de surf à confirmer sur place ; rester prudent lorsque la houle augmente.", created_at: "2026-07-22T00:00:00.000Z"
   },
 ];
 
-const extraPlaces: Place[] = extraPlacesBase.map((place, index) => ({ ...place, photos: [editorialPhoto(place.category, importedPlaces.length + index)], zone: place.city, halal: "inconnu", alcool_servi: null, ambiance: place.category === "culture" ? ["calme", "familial"] : place.category === "nature" || place.category === "plage" ? ["vue", "romantique"] : ["calme"], mosquee_proche: null, prive: false }));
+const extraPlaces: Place[] = extraPlacesBase.map((place) => ({ ...place, photos: [semanticPhotoForPlace(place)], zone: place.city, halal: "inconnu", alcool_servi: null, ambiance: place.category === "culture" ? ["calme", "familial"] : place.category === "nature" || place.category === "plage" ? ["vue", "romantique"] : ["calme"], mosquee_proche: null, prive: false }));
 
 const mosques: Place[] = [
-  { id: "masjid-nurul-bilad", region: "central-lombok", island: "lombok", city: "Kuta", category: "service", subcategory: "mosquée", name: "Masjid Nurul Bilad Mandalika", slug: "masjid-nurul-bilad", description: "Grande mosquée de Mandalika, facilement accessible depuis Kuta.", specialty: "Salle de prière et ablutions", tags: ["mosquée", "prière", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.8937, lng: 116.2965, opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8937,116.2965", photos: [categoryPhotos.culture], menu: null, tested_by_us: false, rating: null, best_time: "hors grande affluence du vendredi", level: null, vigilance: "Les horaires d'accès peuvent varier autour des prières et des événements.", zone: "Kuta/Mandalika", halal: "inconnu", alcool_servi: null, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
-  { id: "masjid-hubbul-wathan", region: "west-lombok", island: "lombok", city: "Mataram", category: "service", subcategory: "mosquée", name: "Islamic Center Hubbul Wathan", slug: "islamic-center-lombok", description: "Mosquée emblématique de Mataram et centre culturel islamique de Lombok.", specialty: "Architecture et grande salle de prière", tags: ["mosquée", "culture", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.5831, lng: 116.1036, opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.5831,116.1036", photos: [categoryPhotos.culture], menu: null, tested_by_us: false, rating: null, best_time: "avant le coucher du soleil", level: null, vigilance: "Les horaires d'accès peuvent varier autour des prières et des événements.", zone: "Mataram", halal: "inconnu", alcool_servi: null, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
+  { id: "masjid-nurul-bilad", region: "central-lombok", island: "lombok", city: "Kuta", category: "service", subcategory: "mosquée", name: "Masjid Nurul Bilad Mandalika", slug: "masjid-nurul-bilad", description: "Grande mosquée de Mandalika, facilement accessible depuis Kuta.", specialty: "Salle de prière et ablutions", tags: ["mosquée", "prière", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.8937, lng: 116.2965, opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8937,116.2965", photos: [semanticPhotoForPlace({ id: "masjid-nurul-bilad", name: "Masjid Nurul Bilad Mandalika", category: "service", subcategory: "mosquée", city: "Kuta" })], menu: null, tested_by_us: false, rating: null, best_time: "hors grande affluence du vendredi", level: null, vigilance: "Les horaires d'accès peuvent varier autour des prières et des événements.", zone: "Kuta/Mandalika", halal: "inconnu", alcool_servi: null, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
+  { id: "masjid-hubbul-wathan", region: "west-lombok", island: "lombok", city: "Mataram", category: "service", subcategory: "mosquée", name: "Islamic Center Hubbul Wathan", slug: "islamic-center-lombok", description: "Mosquée emblématique de Mataram et centre culturel islamique de Lombok.", specialty: "Architecture et grande salle de prière", tags: ["mosquée", "culture", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.5831, lng: 116.1036, opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.5831,116.1036", photos: [semanticPhotoForPlace({ id: "masjid-hubbul-wathan", name: "Islamic Center Hubbul Wathan", category: "service", subcategory: "mosquée", city: "Mataram" })], menu: null, tested_by_us: false, rating: null, best_time: "avant le coucher du soleil", level: null, vigilance: "Les horaires d'accès peuvent varier autour des prières et des événements.", zone: "Mataram", halal: "inconnu", alcool_servi: null, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
 ];
 
 type CuratedPlaceInput = {
@@ -237,8 +225,8 @@ const curatedCatalog: CuratedPlaceInput[] = [
   { id: "gili-meno", name: "Gili Meno", city: "Gili Meno", category: "excursion", subcategory: "île calme", lat: -8.3503, lng: 116.056, specialty: "Île paisible, lac salé et snorkeling", tags: ["île", "calme", "tortues"], priceLevel: 2 },
   { id: "gili-trawangan", name: "Gili Trawangan", city: "Gili Trawangan", category: "excursion", subcategory: "île animée", lat: -8.3502, lng: 116.0387, specialty: "Plages, plongée et coucher du soleil", tags: ["île", "plongée", "sunset"], priceLevel: 2 },
   { id: "gili-air", name: "Gili Air", city: "Gili Air", category: "excursion", subcategory: "île & snorkeling", lat: -8.3572, lng: 116.0828, specialty: "Ambiance douce entre snorkeling et cafés", tags: ["île", "snorkeling", "famille"], priceLevel: 2 },
-  { id: "pink-beach-boat", name: "Boucle bateau Pink Beach", city: "Tanjung Luar", category: "excursion", subcategory: "sortie bateau", lat: -8.7737, lng: 116.5152, specialty: "Journée vers les plages roses et petits îlots", tags: ["bateau", "snorkeling", "plage"], priceLevel: 2, bestTime: "départ tôt" },
-  { id: "bangsal-public-boat", name: "Bateau public de Bangsal", city: "Bangsal", category: "excursion", subcategory: "traversée Gili", lat: -8.3937, lng: 116.0998, specialty: "Point de départ des bateaux publics vers les Gili", tags: ["bateau", "transport", "Gili"], priceLevel: 1, bestTime: "08:00–15:00" },
+  { id: "pink-beach-boat", name: "Boucle bateau Pink Beach", city: "Tanjung Luar", category: "activite", subcategory: "sortie bateau & snorkeling", lat: -8.7737, lng: 116.5152, specialty: "Journée vers les plages roses et petits îlots", tags: ["bateau", "snorkeling", "plage"], priceLevel: 2, bestTime: "départ tôt" },
+  { id: "bangsal-public-boat", name: "Bateau public de Bangsal", city: "Bangsal", category: "service", subcategory: "transport maritime", lat: -8.3937, lng: 116.0998, specialty: "Point de départ des bateaux publics vers les Gili", tags: ["bateau", "transport", "Gili"], priceLevel: 1, bestTime: "08:00–15:00" },
 
   { id: "zainuddin-airport", name: "Aéroport International Zainuddin Abdul Madjid", city: "Praya", category: "service", subcategory: "aéroport", lat: -8.7573, lng: 116.2767, specialty: "Arrivées, départs, taxis officiels et distributeurs", tags: ["aéroport", "transfert", "ATM"], priceLevel: 1 },
   { id: "rsud-ntb", name: "RSUD Provinsi NTB", city: "Mataram", category: "service", subcategory: "hôpital", lat: -8.6231, lng: 116.1182, specialty: "Hôpital public provincial de référence", tags: ["santé", "urgence", "hôpital"], priceLevel: 2 },
@@ -252,9 +240,9 @@ const curatedCatalog: CuratedPlaceInput[] = [
 const regionForCity = (city: string) => /Senaru|Sembalun|Bayan|Tanjung|Bangsal|Gili|Nipah|Klui/i.test(city) ? "north-lombok" : /Mataram|Ampenan|Senggigi|Lingsar|Narmada|Lembar|Sekotong/i.test(city) ? "west-lombok" : /Tetebatu|Ekas|Sekaroh|Tanjung Luar|Labuhan/i.test(city) ? "east-lombok" : "central-lombok";
 const islandForCity = (city: string) => city.startsWith("Gili ") ? city.toLowerCase().replaceAll(" ", "-") : "lombok";
 
-const curatedPlaces: Place[] = curatedCatalog.map((place, index) => {
+const curatedPlaces: Place[] = curatedCatalog.map((place) => {
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
-  const priceLevel = place.priceLevel ?? (place.category === "restaurant" || place.category === "excursion" ? 2 : 1);
+  const priceLevel = place.priceLevel ?? (place.category === "restaurant" || place.category === "activite" || place.category === "excursion" ? 2 : 1);
   return {
     ...place,
     region: regionForCity(place.city),
@@ -266,7 +254,7 @@ const curatedPlaces: Place[] = curatedCatalog.map((place, index) => {
     opening_hours: null,
     whatsapp: null,
     maps_url: mapUrl,
-    photos: [editorialPhoto(place.category, importedPlaces.length + extraPlaces.length + mosques.length + index)],
+    photos: [semanticPhotoForPlace(place)],
     menu: place.category === "restaurant" ? { highlights: [place.specialty], source_url: mapUrl, source_label: "Carte et horaires à confirmer auprès du restaurant", verified_at: "23 juillet 2026", status: "à confirmer" } : null,
     tested_by_us: false,
     rating: null,
@@ -283,9 +271,55 @@ const curatedPlaces: Place[] = curatedCatalog.map((place, index) => {
   };
 });
 
-export const places: Place[] = [...importedPlaces, ...extraPlaces, ...mosques, ...curatedPlaces];
+const verifiedAdditions: Place[] = [
+  {
+    id: "baleoli-beach",
+    region: "west-lombok",
+    island: "lombok",
+    city: "Batu Layar",
+    category: "restaurant",
+    subcategory: "restaurant de plage",
+    name: "Baléoli Beach",
+    slug: "baleoli-beach",
+    description: "Restaurant en bord de mer sur la route de Senggigi, avec cuisine indonésienne, pizzas et fruits de mer. Une adresse à envisager au coucher du soleil, à environ quinze minutes de Mataram selon la circulation.",
+    specialty: "Dîner face à la mer, pizzas et cuisine indonésienne",
+    tags: ["bord de mer", "sunset", "terrasse", "wifi", "parking"],
+    price_level: 1,
+    price_range: "25–50k Rp · à confirmer",
+    lat: -8.5229289,
+    lng: 116.0655994,
+    opening_hours: "15:00–22:00 · 7j/7 · à confirmer",
+    whatsapp: null,
+    phone: "+62 819-1391-9949",
+    contact_source_url: "https://restaurantguru.com/Baleoli-Beach-Indonesia",
+    maps_url: "https://www.google.com/maps/search/?api=1&query=Bal%C3%A9oli%20Beach%2C%20Jl.%20Raya%20Senggigi%20No.999%2C%20Batu%20Layar%2C%20Lombok",
+    photos: [semanticPhotoForPlace({ id: "baleoli-beach", name: "Baléoli Beach", category: "restaurant", subcategory: "restaurant de plage", city: "Batu Layar" })],
+    menu: {
+      highlights: ["Cuisine indonésienne", "Pizzas", "Fruits de mer"],
+      source_url: "https://restaurantguru.com/Baleoli-Beach-Indonesia",
+      source_label: "Fiche publique Baléoli Beach",
+      verified_at: "5 août 2026",
+      status: "communauté",
+    },
+    tested_by_us: false,
+    rating: 4.4,
+    best_time: "coucher du soleil",
+    level: null,
+    vigilance: "Horaires, carte, prix et disponibilité à confirmer directement auprès du restaurant avant le déplacement.",
+    zone: "Batu Layar · proche Mataram/Senggigi",
+    halal: "inconnu",
+    alcool_servi: null,
+    ambiance: ["vue", "familial"],
+    mosquee_proche: null,
+    prive: false,
+    created_at: "2026-08-05T00:00:00.000Z",
+  },
+];
+
+export const places: Place[] = [...importedPlaces, ...extraPlaces, ...mosques, ...curatedPlaces, ...verifiedAdditions];
 
 export const categoryMeta: Record<PlaceCategory, { label: string; icon: string }> = {
+  activite: { label: "Activités", icon: "✦" },
   restaurant: { label: "Restaurants", icon: "♨" },
   plage: { label: "Plages", icon: "☀" },
   service: { label: "Services", icon: "✦" },

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
+import { placeMediaSubjectById, placePhotoOverrideById, semanticPhotoAlt, semanticPhotoForPlace } from "../app/data/place-media.ts";
 import { places } from "../app/data/places.ts";
 import seedPlaces from "../app/data/seed-lombok.ts";
 
@@ -44,17 +45,17 @@ test("les parcours principaux disposent de routes dédiées et d’une navigatio
 });
 
 test("Explorer conserve recherche, filtres, carte et fiches accessibles", async () => {
-  const [route, explorer, map, dialog] = await Promise.all([
+  const [route, explorer, map, dialog, placeData] = await Promise.all([
     read("app/explorer/page.tsx"),
     read("app/components/explorer-client.tsx"),
     read("app/components/explorer-map.tsx"),
     read("app/components/use-dialog-a11y.ts"),
+    read("app/data/places.ts"),
   ]);
 
   includesEvery(route, ["ExplorerClient", "searchParams", "initialCategory"], "la route Explorer");
   includesEvery(explorer, [
     "Un lieu, une zone, une envie…",
-    "Activités",
     'aria-label="Filtres de recherche"',
     'aria-live="polite"',
     'aria-label="Vue liste"',
@@ -70,6 +71,7 @@ test("Explorer conserve recherche, filtres, carte et fiches accessibles", async 
     "identityVerificationPending.current",
     "data.user?.id !== expectedUserId",
   ], "Explorer");
+  includesEvery(placeData, ['activite: { label: "Activités"'], "les catégories Explorer");
   assert.doesNotMatch(explorer, /auth\.getSession\(/, "Explorer doit vérifier l’identité distante avant d’ouvrir un carnet local");
   assert.match(explorer, /aria-label=\{favorite \? `Retirer .* des favoris` : `Ajouter .* aux favoris`\}/);
   assert.match(map, /L\.map|leaflet/i);
@@ -81,7 +83,7 @@ test("le catalogue est diversifié, sans doublon ni affirmation éditoriale fabr
   assert.ok(places.length >= 100, `le catalogue ne contient que ${places.length} lieux`);
   assert.equal(new Set(ids).size, places.length, "chaque lieu doit avoir un identifiant unique");
 
-  for (const category of ["restaurant", "plage", "service", "nature", "excursion", "culture"]) {
+  for (const category of ["activite", "restaurant", "plage", "service", "nature", "excursion", "culture"]) {
     assert.ok(places.some((place) => place.category === category), `la catégorie ${category} ne doit pas être vide`);
   }
   for (const place of places) {
@@ -91,6 +93,17 @@ test("le catalogue est diversifié, sans doublon ni affirmation éditoriale fabr
     assert.ok(place.photos.length > 0, `${place.id} doit avoir un visuel de repli`);
   }
   assert.ok(places.filter((place) => place.category === "restaurant").every((place) => place.menu), "chaque restaurant doit proposer une source de carte ou signaler qu’elle est à confirmer");
+  const activities = places.filter((place) => place.category === "activite");
+  assert.ok(activities.length >= 10, "les activités réservables doivent former une catégorie explicite");
+  assert.ok(!activities.some((place) => ["la-cabana", "warung-ombak", "piccolo", "golden-medical", "lasingan-laundry", "mawun-beach"].includes(place.id)), "les anciennes collisions de sous-chaînes ne doivent pas réapparaître");
+  assert.ok(["mandalika-beach-club", "lmbk-surf-house", "heartbeach-surf", "rinjani-trek"].every((id) => activities.some((place) => place.id === id)), "les expériences réservables doivent rester dans Activités");
+  const seedActivityIds = ["mandalika-beach-club", "kuta-lombok-surf-school", "heartbeach-surf", "surf-cult", "paradise-surfschool", "surf-camp-lombok", "lmbk-surf-house"];
+  assert.ok(seedActivityIds.every((id) => seedPlaces.some((place) => place.id === id && place.category === "activite")), "le seed doit conserver le classement Activités à la source");
+  const baleoli = places.find((place) => place.id === "baleoli-beach");
+  assert.ok(baleoli, "Baléoli Beach doit figurer dans le catalogue");
+  assert.equal(baleoli.category, "restaurant");
+  assert.equal(baleoli.city, "Batu Layar");
+  assert.match(baleoli.maps_url, /Bal%C3%A9oli%20Beach/);
 
   // Ces champs restent neutres tant qu’aucune provenance vérifiable n’est encodée.
   assert.equal(places.filter((place) => place.tested_by_us).length, 0, "aucun lieu ne doit être présenté comme testé sans preuve");
@@ -101,6 +114,22 @@ test("le catalogue est diversifié, sans doublon ni affirmation éditoriale fabr
   const contactSources = new Set(seedPlaces.filter((place) => place.google_place_id && place.whatsapp).map((place) => place.id));
   assert.ok(places.filter((place) => place.whatsapp).every((place) => contactSources.has(place.id)), "chaque WhatsApp de prestataire doit venir d’une fiche Google Place identifiée");
   assert.ok(seedPlaces.filter((place) => !place.google_place_id).every((place) => place.google_rating === null && place.rating === null), "une fiche sans identifiant Google ne doit pas recevoir de pseudo-note Google ou interne");
+});
+
+test("chaque fiche possède un visuel éditorial cohérent et explicite", () => {
+  for (const place of places) {
+    assert.ok(Object.hasOwn(placeMediaSubjectById, place.id), `${place.id} doit avoir un sujet visuel revu explicitement`);
+    assert.equal(place.photos[0], semanticPhotoForPlace(place), `${place.id} doit utiliser son visuel sémantique`);
+    assert.match(semanticPhotoAlt(place), /n'est pas une photo de/i, `${place.id} doit distinguer illustration et photo réelle`);
+    assert.doesNotMatch(place.photos[0], /hot-air-balloon|1470214304380/i, `${place.id} ne doit pas reprendre un ancien visuel hors sujet`);
+  }
+
+  assert.ok(new Set(places.map((place) => place.photos[0])).size >= 75, "le catalogue doit conserver une vraie variété de visuels");
+  assert.equal(placeMediaSubjectById["heartbeach-surf"], "surf-lesson");
+  assert.equal(placeMediaSubjectById["baleoli-beach"], "beachfront-dining");
+  assert.equal(placeMediaSubjectById["mandalika-beach-club"], "beach-club");
+  const correctedVisuals = ["heartbeach-surf", "selong-belanak", "rinjani-trek", "tetebatu-rice-terraces", "desa-sade", "sukarara-weaving", "masjid-hubbul-wathan", "loys-scooter", "zainuddin-airport", "pink-beach-boat"];
+  assert.ok(correctedVisuals.every((id) => Object.hasOwn(placePhotoOverrideById, id)), "les incohérences visuelles signalées doivent rester corrigées explicitement");
 });
 
 test("les demandes générales vont à MyLombok et les contacts directs restent ceux des prestataires", async () => {
@@ -126,7 +155,7 @@ test("les demandes générales vont à MyLombok et les contacts directs restent 
   assert.doesNotMatch(form, /activeLocalUserId\(/, "une demande ne doit jamais faire confiance à un ancien identifiant local");
   includesEvery(route, ["Sans engagement automatique", "ne déclenche ni paiement ni réservation", "validation dans WhatsApp"], "la page conciergerie");
 
-  includesEvery(explorer, ["normalizeWhatsAppNumber(place.whatsapp)", "WhatsApp du prestataire", "Contact direct non renseigné", "Demande générale à MyLombok", 'href={`/conciergerie?service=${', "noopener noreferrer"], "les fiches prestataires");
+  includesEvery(explorer, ["normalizeWhatsAppNumber(place.whatsapp)", "WhatsApp du prestataire", "Appeler le prestataire", "Contact direct non renseigné", "Demande générale à MyLombok", 'href={`/conciergerie?service=${', "noopener noreferrer"], "les fiches prestataires");
   assert.doesNotMatch(explorer, /33763664857/, "Explorer ne doit jamais remplacer le numéro d’un prestataire par celui de MyLombok");
 });
 

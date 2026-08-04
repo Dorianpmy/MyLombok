@@ -20,6 +20,7 @@ test("la distance ne filtre pas tant que le rayon est désactivé", () => {
 
 test("les libellés de catégories sont normalisés vers les clés du seed", () => {
   assert.equal(normalizeCategory("Restaurants"), "restaurant");
+  assert.equal(normalizeCategory("Activités"), "activite");
   assert.equal(normalizeCategory("Îles"), "excursion");
   assert.equal(normalizeCategory("PLAGES"), "plage");
   assert.equal(normalizeCategory(" catégorie inventée "), null);

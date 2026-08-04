@@ -32,6 +32,21 @@ function renderMarkers(
   });
 }
 
+function viewportSignature(items: PlaceWithDistance[]) {
+  return items.map(({ id, lat, lng }) => `${id}:${lat}:${lng}`).sort().join("|");
+}
+
+function fitMapToItems(L: LeafletModule, map: import("leaflet").Map, items: PlaceWithDistance[]) {
+  if (items.length > 1) {
+    const points = items.slice(0, 120).map((place) => L.latLng(place.lat, place.lng));
+    map.fitBounds(L.latLngBounds(points), { padding: [36, 36], maxZoom: 11, animate: false });
+  } else if (items[0]) {
+    map.setView([items[0].lat, items[0].lng], 12, { animate: false });
+  } else {
+    map.setView([-8.58, 116.28], 9, { animate: false });
+  }
+}
+
 export function ExplorerMap({ items, onSelect, userPosition }: { items: PlaceWithDistance[]; onSelect: (place: PlaceWithDistance) => void; userPosition: UserPosition | null }) {
   const node = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
@@ -41,6 +56,7 @@ export function ExplorerMap({ items, onSelect, userPosition }: { items: PlaceWit
   const itemsRef = useRef(items);
   const onSelectRef = useRef(onSelect);
   const positionRef = useRef(userPosition);
+  const viewportSignatureRef = useRef(viewportSignature(items));
 
   useEffect(() => { itemsRef.current = items; }, [items]);
   useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
@@ -48,7 +64,10 @@ export function ExplorerMap({ items, onSelect, userPosition }: { items: PlaceWit
   useEffect(() => {
     let disposed = false;
     let map: import("leaflet").Map | undefined;
-    let observer: MutationObserver | undefined;
+    let themeObserver: MutationObserver | undefined;
+    let resizeObserver: ResizeObserver | undefined;
+    let resizeFrame: number | undefined;
+    let initialInvalidateTimer: number | undefined;
     (async () => {
       const L = await import("leaflet");
       if (disposed || !node.current) return;
@@ -59,20 +78,28 @@ export function ExplorerMap({ items, onSelect, userPosition }: { items: PlaceWit
       L.control.zoom({ position: "bottomright" }).addTo(map);
       markerLayerRef.current = L.layerGroup().addTo(map);
       renderMarkers(L, markerLayerRef.current, itemsRef.current, (place) => onSelectRef.current(place));
-      if (itemsRef.current.length > 1) {
-        const points = itemsRef.current.slice(0, 120).map((place) => L.latLng(place.lat, place.lng));
-        map.fitBounds(L.latLngBounds(points), { padding: [36, 36], maxZoom: 11, animate: false });
-      } else if (itemsRef.current[0]) map.setView([itemsRef.current[0].lat, itemsRef.current[0].lng], 12);
+      viewportSignatureRef.current = viewportSignature(itemsRef.current);
+      fitMapToItems(L, map, itemsRef.current);
       if (positionRef.current) {
         userMarkerRef.current = L.circleMarker([positionRef.current.lat, positionRef.current.lng], { className: "map-user-marker", radius: 9, color: "#fcfaf6", weight: 3, fillColor: "#b28a52", fillOpacity: 1 }).addTo(map).bindTooltip("Votre position");
       }
-      observer = new MutationObserver(() => tileLayerRef.current?.setUrl(tileUrl()));
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-      window.setTimeout(() => map?.invalidateSize(), 80);
+      themeObserver = new MutationObserver(() => tileLayerRef.current?.setUrl(tileUrl()));
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+      if ("ResizeObserver" in window) {
+        resizeObserver = new ResizeObserver(() => {
+          if (resizeFrame !== undefined) window.cancelAnimationFrame(resizeFrame);
+          resizeFrame = window.requestAnimationFrame(() => map?.invalidateSize({ animate: false, pan: false }));
+        });
+        resizeObserver.observe(node.current);
+      }
+      initialInvalidateTimer = window.setTimeout(() => map?.invalidateSize({ animate: false, pan: false }), 80);
     })();
     return () => {
       disposed = true;
-      observer?.disconnect();
+      themeObserver?.disconnect();
+      resizeObserver?.disconnect();
+      if (resizeFrame !== undefined) window.cancelAnimationFrame(resizeFrame);
+      if (initialInvalidateTimer !== undefined) window.clearTimeout(initialInvalidateTimer);
       mapRef.current = null;
       markerLayerRef.current = null;
       userMarkerRef.current = null;
@@ -87,7 +114,14 @@ export function ExplorerMap({ items, onSelect, userPosition }: { items: PlaceWit
     if (!map || !layer) return;
     let active = true;
     void import("leaflet").then((L) => {
-      if (active) renderMarkers(L, layer, items, (place) => onSelectRef.current(place));
+      if (!active) return;
+      renderMarkers(L, layer, items, (place) => onSelectRef.current(place));
+      map.invalidateSize({ animate: false, pan: false });
+      const nextSignature = viewportSignature(items);
+      if (nextSignature !== viewportSignatureRef.current) {
+        viewportSignatureRef.current = nextSignature;
+        fitMapToItems(L, map, items);
+      }
     });
     return () => { active = false; };
   }, [items]);
