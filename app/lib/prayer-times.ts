@@ -4,16 +4,33 @@
  * portés par CalculationMethod.Singapore(). Madhab Shafi'i pour le Asr.
  * À vérifier sur une journée complète contre le tableau du Kemenag.
  */
-import { CalculationMethod, Coordinates, Madhab, Prayer, PrayerTimes } from "adhan";
+import { CalculationMethod, Coordinates, Madhab, PrayerTimes } from "adhan";
 
 export const LOMBOK = { lat: -8.8947, lng: 116.2832 } as const;
 export const LOMBOK_TZ = "Asia/Makassar";
 const IHTIYAT_MINUTES = 2;
+const WITA_DATE_PARTS_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  timeZone: LOMBOK_TZ,
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+});
+const WITA_TIME_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: LOMBOK_TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
 
-const NAMES: Record<string, string> = {
-  fajr: "Fajr", sunrise: "Lever du soleil", dhuhr: "Dhuhr",
-  asr: "Asr", maghrib: "Maghrib", isha: "Isha",
-};
+export const DAILY_PRAYERS = [
+  { key: "fajr", name: "Fajr" },
+  { key: "dhuhr", name: "Dhuhr" },
+  { key: "asr", name: "Asr" },
+  { key: "maghrib", name: "Maghrib" },
+  { key: "isha", name: "Isha" },
+] as const;
+
+export type DailyPrayerKey = (typeof DAILY_PRAYERS)[number]["key"];
 
 function params() {
   const p = CalculationMethod.Singapore();
@@ -25,8 +42,19 @@ function shift(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60000);
 }
 
-export function timesFor(date = new Date(), lat = LOMBOK.lat, lng = LOMBOK.lng) {
-  const t = new PrayerTimes(new Coordinates(lat, lng), date, params());
+/**
+ * `adhan` lit la date civile dans le fuseau du navigateur. On lui fournit donc
+ * explicitement le jour civil WITA afin qu'un voyageur encore en Europe voie
+ * bien les horaires du jour à Lombok.
+ */
+function lombokCalendarDate(reference: Date, dayOffset = 0) {
+  const parts = WITA_DATE_PARTS_FORMATTER.formatToParts(reference);
+  const value = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((part) => part.type === type)?.value);
+  return new Date(value("year"), value("month") - 1, value("day") + dayOffset, 12);
+}
+
+function timesForDay(reference: Date, dayOffset: number, lat: number, lng: number) {
+  const t = new PrayerTimes(new Coordinates(lat, lng), lombokCalendarDate(reference, dayOffset), params());
   return {
     fajr: shift(t.fajr, IHTIYAT_MINUTES),
     sunrise: t.sunrise,
@@ -37,10 +65,12 @@ export function timesFor(date = new Date(), lat = LOMBOK.lat, lng = LOMBOK.lng) 
   };
 }
 
+export function timesFor(date = new Date(), lat: number = LOMBOK.lat, lng: number = LOMBOK.lng) {
+  return timesForDay(date, 0, lat, lng);
+}
+
 export function formatWita(date: Date) {
-  return new Intl.DateTimeFormat("fr-FR", {
-    timeZone: LOMBOK_TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-  }).format(date);
+  return WITA_TIME_FORMATTER.format(date);
 }
 
 export function formatCountdown(ms: number) {
@@ -51,27 +81,33 @@ export function formatCountdown(ms: number) {
   return h + ":" + m + ":" + s;
 }
 
-/** Le nom et l'heure viennent du même objet : plus de décalage possible. */
-export function nextPrayer(now = new Date(), lat = LOMBOK.lat, lng = LOMBOK.lng) {
-  const coords = new Coordinates(lat, lng);
-  const today = new PrayerTimes(coords, now, params());
-  let key = today.nextPrayer(now);
-  let time: Date | null = key === Prayer.None ? null : today.timeForPrayer(key);
+function scheduleForDay(reference: Date, dayOffset: number, lat: number, lng: number) {
+  const times = timesForDay(reference, dayOffset, lat, lng);
+  return DAILY_PRAYERS.map((prayer) => ({
+    ...prayer,
+    time: times[prayer.key],
+    label: formatWita(times[prayer.key]),
+  }));
+}
 
-  if (!time) {
-    const tomorrow = new Date(now.getTime() + 86400000);
-    key = Prayer.Fajr;
-    time = new PrayerTimes(coords, tomorrow, params()).fajr;
-  }
+export function prayerScheduleFor(
+  date = new Date(),
+  lat: number = LOMBOK.lat,
+  lng: number = LOMBOK.lng,
+  dayOffset = 0,
+) {
+  return scheduleForDay(date, dayOffset, lat, lng);
+}
 
-  const shifted = shift(time, key === Prayer.Sunrise ? 0 : IHTIYAT_MINUTES);
-  const msLeft = Math.max(0, shifted.getTime() - now.getTime());
+/** La prochaine des cinq prières obligatoires (le lever du soleil est exclu). */
+export function nextPrayer(now = new Date(), lat: number = LOMBOK.lat, lng: number = LOMBOK.lng) {
+  const today = scheduleForDay(now, 0, lat, lng);
+  const tomorrow = scheduleForDay(now, 1, lat, lng);
+  const prayer = today.find((item) => item.time.getTime() > now.getTime()) ?? tomorrow[0];
+  const msLeft = Math.max(0, prayer.time.getTime() - now.getTime());
 
   return {
-    key: String(key),
-    name: NAMES[String(key)] ?? String(key),
-    time: shifted,
-    label: formatWita(shifted),
+    ...prayer,
     msLeft,
     countdown: formatCountdown(msLeft),
   };

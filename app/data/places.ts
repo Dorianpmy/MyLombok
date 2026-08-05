@@ -1,11 +1,19 @@
 import seedPlaces from "./seed-lombok";
 import { semanticPhotoForPlace } from "./place-media";
+import { mataramPlaces } from "./mataram-places";
+import { lombokMosques } from "./lombok-mosques";
 
 export type PlaceCategory = "activite" | "restaurant" | "plage" | "service" | "nature" | "excursion" | "culture";
 export type HalalStatus = "certifié" | "sans porc ni alcool" | "non" | "inconnu";
 export type Ambiance = "romantique" | "calme" | "familial" | "animé" | "vue";
 export type NearbyMosque = { nom: string; distance_m: number; mawaqit_slug: string };
 export type RestaurantMenu = { highlights: string[]; source_url: string; source_label: string; verified_at: string; status: "officiel" | "communauté" | "à confirmer" };
+export type PlaceSource = {
+  label: string;
+  url: string;
+  kind: "officiel" | "établissement" | "cartographie" | "éditorial";
+  verified_at: string;
+};
 
 export interface Place {
   id: string;
@@ -27,6 +35,9 @@ export interface Place {
   whatsapp: string | null;
   phone?: string | null;
   contact_source_url?: string | null;
+  sources?: PlaceSource[];
+  prayer_area?: string | null;
+  mawaqit_uuid?: string | null;
   maps_url: string;
   photos: string[];
   menu: RestaurantMenu | null;
@@ -150,11 +161,6 @@ const extraPlacesBase: Omit<Place, "zone" | "halal" | "alcool_servi" | "ambiance
 ];
 
 const extraPlaces: Place[] = extraPlacesBase.map((place) => ({ ...place, photos: [semanticPhotoForPlace(place)], zone: place.city, halal: "inconnu", alcool_servi: null, ambiance: place.category === "culture" ? ["calme", "familial"] : place.category === "nature" || place.category === "plage" ? ["vue", "romantique"] : ["calme"], mosquee_proche: null, prive: false }));
-
-const mosques: Place[] = [
-  { id: "masjid-nurul-bilad", region: "central-lombok", island: "lombok", city: "Kuta", category: "service", subcategory: "mosquée", name: "Masjid Nurul Bilad Mandalika", slug: "masjid-nurul-bilad", description: "Grande mosquée de Mandalika, facilement accessible depuis Kuta.", specialty: "Salle de prière et ablutions", tags: ["mosquée", "prière", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.8937, lng: 116.2965, opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.8937,116.2965", photos: [semanticPhotoForPlace({ id: "masjid-nurul-bilad", name: "Masjid Nurul Bilad Mandalika", category: "service", subcategory: "mosquée", city: "Kuta" })], menu: null, tested_by_us: false, rating: null, best_time: "hors grande affluence du vendredi", level: null, vigilance: "Les horaires d'accès peuvent varier autour des prières et des événements.", zone: "Kuta/Mandalika", halal: "inconnu", alcool_servi: null, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
-  { id: "masjid-hubbul-wathan", region: "west-lombok", island: "lombok", city: "Mataram", category: "service", subcategory: "mosquée", name: "Islamic Center Hubbul Wathan", slug: "islamic-center-lombok", description: "Mosquée emblématique de Mataram et centre culturel islamique de Lombok.", specialty: "Architecture et grande salle de prière", tags: ["mosquée", "culture", "ablutions", "parking"], price_level: null, price_range: "Gratuit", lat: -8.5831, lng: 116.1036, opening_hours: null, whatsapp: null, maps_url: "https://maps.google.com/?q=-8.5831,116.1036", photos: [semanticPhotoForPlace({ id: "masjid-hubbul-wathan", name: "Islamic Center Hubbul Wathan", category: "service", subcategory: "mosquée", city: "Mataram" })], menu: null, tested_by_us: false, rating: null, best_time: "avant le coucher du soleil", level: null, vigilance: "Les horaires d'accès peuvent varier autour des prières et des événements.", zone: "Mataram", halal: "inconnu", alcool_servi: null, ambiance: ["calme", "familial"], mosquee_proche: null, prive: false, created_at: "2026-07-22T00:00:00.000Z" },
-];
 
 type CuratedPlaceInput = {
   id: string;
@@ -316,7 +322,7 @@ const verifiedAdditions: Place[] = [
   },
 ];
 
-export const places: Place[] = [...importedPlaces, ...extraPlaces, ...mosques, ...curatedPlaces, ...verifiedAdditions];
+export const places: Place[] = [...importedPlaces, ...extraPlaces, ...lombokMosques, ...curatedPlaces, ...verifiedAdditions, ...mataramPlaces];
 
 export const categoryMeta: Record<PlaceCategory, { label: string; icon: string }> = {
   activite: { label: "Activités", icon: "✦" },

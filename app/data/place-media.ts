@@ -41,6 +41,7 @@ export type PlaceMediaSubject =
   | "mediterranean-food"
   | "mexican-food"
   | "mobile-internet"
+  | "museum"
   | "mosque"
   | "old-town"
   | "pharmacy"
@@ -52,6 +53,7 @@ export type PlaceMediaSubject =
   | "sasak-village"
   | "scooter-rental"
   | "seaside-promenade"
+  | "shopping-mall"
   | "snorkeling-reef"
   | "spa-massage"
   | "surf-camp"
@@ -61,6 +63,8 @@ export type PlaceMediaSubject =
   | "tiny-island"
   | "tropical-beach"
   | "tropical-restaurant"
+  | "urban-arcade"
+  | "urban-park"
   | "vegetarian-food"
   | "volcanic-lake"
   | "volcano-trek"
@@ -118,6 +122,7 @@ const subjectLabels: Record<PlaceMediaSubject, string> = {
   "mediterranean-food": "table méditerranéenne",
   "mexican-food": "cuisine mexicaine",
   "mobile-internet": "téléphone et connexion mobile",
+  museum: "musée consacré à la culture de Lombok",
   mosque: "mosquée contemporaine",
   "old-town": "rue de quartier historique",
   pharmacy: "pharmacie et soins de première nécessité",
@@ -129,6 +134,7 @@ const subjectLabels: Record<PlaceMediaSubject, string> = {
   "sasak-village": "village traditionnel indonésien",
   "scooter-rental": "scooter de location avec casque",
   "seaside-promenade": "promenade aménagée en bord de mer",
+  "shopping-mall": "centre commercial moderne",
   "snorkeling-reef": "snorkeling sur un récif tropical",
   "spa-massage": "massage dans un spa",
   "surf-camp": "séjour surf près de l'océan",
@@ -138,6 +144,8 @@ const subjectLabels: Record<PlaceMediaSubject, string> = {
   "tiny-island": "petit îlot tropical",
   "tropical-beach": "baie et plage tropicales",
   "tropical-restaurant": "restaurant tropical convivial",
+  "urban-arcade": "arcade et bowling en intérieur",
+  "urban-park": "parc urbain fréquenté par les habitants",
   "vegetarian-food": "assiette végétale colorée",
   "volcanic-lake": "lac volcanique de montagne",
   "volcano-trek": "trek sur un volcan",
@@ -186,6 +194,7 @@ export const semanticPhotoPools: Record<PlaceMediaSubject, readonly string[]> = 
   "mediterranean-food": [unsplash("photo-1473093295043-cdd812d0e601"), unsplash("photo-1563379926898-05f4575a45d8"), pexels(1640777)],
   "mexican-food": [unsplash("photo-1543353071-873f17a7a088"), pexels(461198), pexels(5737247)],
   "mobile-internet": [unsplash("photo-1511707171634-5f897ff02aa9"), pexels(607812), pexels(356056)],
+  museum: [unsplash("photo-1561214115-f2f134cc4912"), pexels(167404), unsplash("photo-1554907984-15263bfd63bd")],
   mosque: [unsplash("photo-1585036156171-384164a8c675"), pexels(1537086), pexels(2166559)],
   "old-town": [unsplash("photo-1527631746610-bca00a040d60"), pexels(2901209), pexels(1488463)],
   pharmacy: [pexels(4481259), pexels(3683074), pexels(263402)],
@@ -197,6 +206,7 @@ export const semanticPhotoPools: Record<PlaceMediaSubject, readonly string[]> = 
   "sasak-village": [pexels(210186), pexels(2166559), unsplash("photo-1528181304800-259b08848526")],
   "scooter-rental": [pexels(2611690), unsplash("photo-1558981806-ec527fa84c39")],
   "seaside-promenade": [pexels(994605), unsplash("photo-1518509562904-e7ef99cdcc86"), pexels(457882)],
+  "shopping-mall": [unsplash("photo-1441986300917-64674bd600d8"), unsplash("photo-1555529669-e69e7aa0ba9a"), pexels(264507)],
   "snorkeling-reef": [unsplash("photo-1544551763-46a013bb70d5"), unsplash("photo-1546026423-cc4642628d2b"), pexels(1430677)],
   "spa-massage": [pexels(3757942), pexels(3865676), unsplash("photo-1600334089648-b0d9d3028eb2")],
   "surf-camp": [unsplash("photo-1502680390469-be75c86b636f"), pexels(416676), unsplash("photo-1455729552865-3658a5d39692")],
@@ -206,6 +216,8 @@ export const semanticPhotoPools: Record<PlaceMediaSubject, readonly string[]> = 
   "tiny-island": [unsplash("photo-1540202404-a2f29016b523"), pexels(3601425), unsplash("photo-1518509562904-e7ef99cdcc86")],
   "tropical-beach": [unsplash("photo-1507525428034-b723cf961d3e"), unsplash("photo-1518509562904-e7ef99cdcc86"), pexels(457882), pexels(248797)],
   "tropical-restaurant": [unsplash("photo-1533777857889-4be7c70b33f7"), unsplash("photo-1559339352-11d035aa65de"), pexels(262978)],
+  "urban-arcade": [unsplash("photo-1511512578047-dfb367046420"), pexels(442576), pexels(1293269)],
+  "urban-park": [unsplash("photo-1497250681960-ef046c08a56e"), pexels(1173777), unsplash("photo-1500530855697-b586d89ba3ee")],
   "vegetarian-food": [unsplash("photo-1547592180-85f173990554"), unsplash("photo-1512621776951-a57141f2eefd"), unsplash("photo-1546069901-ba9599a7e63c"), pexels(1640777)],
   "volcanic-lake": [unsplash("photo-1470770841072-f978cf4d019e"), unsplash("photo-1501785888041-af3ef285b470"), pexels(417074)],
   "volcano-trek": [unsplash("photo-1464822759023-fed622ff2c3b"), unsplash("photo-1501785888041-af3ef285b470"), pexels(691668)],
@@ -286,6 +298,14 @@ export const placeMediaSubjectById = {
   "selong-belanak": "surf-lesson",
   "masjid-nurul-bilad": "mosque",
   "masjid-hubbul-wathan": "mosque",
+  "masjid-raya-al-taqwa-mataram": "mosque",
+  "masjid-agung-praya": "mosque",
+  "masjid-jamiq-al-mujahidin-selong": "mosque",
+  "masjid-al-akbar-masbagik": "mosque",
+  "masjid-syafaatul-ikhwan-jerowaru": "mosque",
+  "masjid-jami-al-istiqomah-pemenang": "mosque",
+  "masjid-baitur-rahman-gili-trawangan": "mosque",
+  "masjid-darrul-yaqin-bayan": "mosque",
   "ashtari-kuta": "tropical-restaurant",
   "el-bazar-kuta": "mediterranean-food",
   "krnk-kuta": "grill",
@@ -346,6 +366,24 @@ export const placeMediaSubjectById = {
   "lembar-port": "ferry-port",
   "kayangan-port": "ferry-port",
   "epicentrum-atm": "atm-banking",
+  "lombok-epicentrum-mall": "shopping-mall",
+  "mataram-mall": "shopping-mall",
+  "transmart-mataram-cgv": "shopping-mall",
+  "timezone-lombok-epicentrum": "urban-arcade",
+  "rua-rasa-immersive-edupark": "festival",
+  "nirwana-waterpark-mataram": "beach-club",
+  "museum-negeri-ntb": "museum",
+  "taman-sangkareang": "urban-park",
+  "taman-udayana": "urban-park",
+  "pantai-ampenan": "beach-sunset",
+  "taman-budaya-ntb": "festival",
+  "sate-rembiga-ibu-sinnaseh": "grill",
+  "sate-rembiga-bu-ririn": "grill",
+  "roemah-langko-putera-lombok": "indonesian-warung",
+  "rollpin-mataram": "tropical-restaurant",
+  "maktal-coffee-bar": "coffee-shop",
+  "elf-belly-mataram": "grill",
+  "begibung-resto": "indonesian-warung",
 } as const satisfies Record<string, PlaceMediaSubject>;
 
 /**

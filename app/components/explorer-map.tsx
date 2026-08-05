@@ -43,7 +43,7 @@ function fitMapToItems(L: LeafletModule, map: import("leaflet").Map, items: Plac
   } else if (items[0]) {
     map.setView([items[0].lat, items[0].lng], 12, { animate: false });
   } else {
-    map.setView([-8.58, 116.28], 9, { animate: false });
+    map.setView([-8.5833, 116.1167], 9, { animate: false });
   }
 }
 
@@ -72,7 +72,7 @@ export function ExplorerMap({ items, onSelect, userPosition }: { items: PlaceWit
       const L = await import("leaflet");
       if (disposed || !node.current) return;
       const bounds: import("leaflet").LatLngBoundsExpression = [[-9.18, 115.72], [-8.12, 116.86]];
-      map = L.map(node.current, { center: [-8.58, 116.28], zoom: 9, minZoom: 8, maxZoom: 17, maxBounds: bounds, maxBoundsViscosity: 1, zoomControl: false, attributionControl: true });
+      map = L.map(node.current, { center: [-8.5833, 116.1167], zoom: 9, minZoom: 8, maxZoom: 17, maxBounds: bounds, maxBoundsViscosity: 1, zoomControl: false, attributionControl: true });
       mapRef.current = map;
       tileLayerRef.current = L.tileLayer(tileUrl(), { maxZoom: 19, attribution: "© OpenStreetMap · CARTO" }).addTo(map);
       L.control.zoom({ position: "bottomright" }).addTo(map);
@@ -142,9 +142,9 @@ export function ExplorerMap({ items, onSelect, userPosition }: { items: PlaceWit
   }, [userPosition]);
 
   function recenter() {
-    const target = userPosition || { lat: -8.8947, lng: 116.2832 };
+    const target = userPosition || { lat: -8.5833, lng: 116.1167 };
     mapRef.current?.flyTo([target.lat, target.lng], userPosition ? 13 : 11, { duration: 1.1 });
   }
 
-  return <div className="explorer-map-shell"><div className="explorer-map" ref={node} aria-label="Carte de Lombok et des îles voisines" /><button type="button" className="explorer-map-recenter" onClick={recenter} aria-label={userPosition ? "Recentrer la carte sur ma position" : "Recentrer la carte sur Kuta Lombok"}><LocateFixed aria-hidden="true" /></button></div>;
+  return <div className="explorer-map-shell"><div className="explorer-map" ref={node} aria-label="Carte de Lombok et des îles voisines" /><button type="button" className="explorer-map-recenter" onClick={recenter} aria-label={userPosition ? "Recentrer la carte sur ma position" : "Recentrer la carte sur Mataram"}><LocateFixed aria-hidden="true" /></button></div>;
 }

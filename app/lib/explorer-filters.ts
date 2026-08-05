@@ -1,6 +1,6 @@
 import { distanceKm, type PlaceCategory } from "../data/places";
 
-export const KUTA_REFERENCE = { lat: -8.8947, lng: 116.2832 } as const;
+export const MATARAM_REFERENCE = { lat: -8.5833, lng: 116.1167 } as const;
 
 const categoryAliases: Record<string, PlaceCategory> = {
   activite: "activite", activites: "activite", activité: "activite", activités: "activite",
@@ -17,7 +17,7 @@ export function normalizeCategory(value: string): PlaceCategory | null {
 }
 
 export function getDistanceOrigin(position: { lat: number; lng: number } | null) {
-  if (!position || distanceKm(position, KUTA_REFERENCE) > 100) return { position: KUTA_REFERENCE, usingReference: true };
+  if (!position || distanceKm(position, MATARAM_REFERENCE) > 100) return { position: MATARAM_REFERENCE, usingReference: true };
   return { position, usingReference: false };
 }
 

@@ -65,6 +65,10 @@ test("Explorer conserve recherche, filtres, carte et fiches accessibles", async 
     "useDialogA11y",
     "ExplorerMap",
     "GlobeExplorer",
+    "MosquePrayerSchedule",
+    "Mosquées recensées",
+    "Annuaire officiel SIMAS",
+    "Politique d’intégration MAWAQIT",
     "place.maps_url",
     "Prix à confirmer",
     "onAuthStateChange",
@@ -73,7 +77,7 @@ test("Explorer conserve recherche, filtres, carte et fiches accessibles", async 
   ], "Explorer");
   includesEvery(placeData, ['activite: { label: "Activités"'], "les catégories Explorer");
   assert.doesNotMatch(explorer, /auth\.getSession\(/, "Explorer doit vérifier l’identité distante avant d’ouvrir un carnet local");
-  assert.match(explorer, /aria-label=\{favorite \? `Retirer .* des favoris` : `Ajouter .* aux favoris`\}/);
+  assert.match(explorer, /aria-label=\{\s*favorite\s*\?\s*`Retirer \$\{place\.name\} des favoris`\s*:\s*`Ajouter \$\{place\.name\} aux favoris`\s*\}/s);
   assert.match(map, /L\.map|leaflet/i);
   includesEvery(dialog, ["Escape", "const previous = document.activeElement", "focusable", 'event.key !== "Tab"', "previous?.focus()"], "la gestion des dialogues");
 });
@@ -104,6 +108,22 @@ test("le catalogue est diversifié, sans doublon ni affirmation éditoriale fabr
   assert.equal(baleoli.category, "restaurant");
   assert.equal(baleoli.city, "Batu Layar");
   assert.match(baleoli.maps_url, /Bal%C3%A9oli%20Beach/);
+
+  const mataramPlaces = places.filter((place) => place.city === "Mataram");
+  assert.ok(mataramPlaces.length >= 25, `Mataram ne contient que ${mataramPlaces.length} lieux`);
+  assert.ok(
+    ["lombok-epicentrum-mall", "mataram-mall", "timezone-lombok-epicentrum", "rua-rasa-immersive-edupark", "museum-negeri-ntb", "sate-rembiga-ibu-sinnaseh"].every((id) => mataramPlaces.some((place) => place.id === id)),
+    "les principaux repères, loisirs et restaurants de Mataram doivent rester présents",
+  );
+  assert.ok(
+    mataramPlaces.filter((place) => place.created_at.startsWith("2026-08-05")).every((place) => place.sources?.length >= 2),
+    "les nouvelles fiches de Mataram doivent exposer leurs sources",
+  );
+
+  const mosquePlaces = places.filter((place) => place.subcategory === "mosquée");
+  assert.ok(mosquePlaces.length >= 10, "les principales zones de Lombok doivent avoir des mosquées repérées");
+  assert.ok(mosquePlaces.every((place) => place.prayer_area && place.sources?.length && place.mawaqit_uuid === null), "chaque mosquée doit avoir une zone de calcul et une provenance, sans faux identifiant MAWAQIT");
+  assert.ok(["Mataram", "Kuta", "Praya", "Selong", "Masbagik", "Pemenang", "Gili Trawangan", "Bayan"].every((city) => mosquePlaces.some((place) => place.city === city)), "l’annuaire des mosquées doit couvrir les principales zones de l’île");
 
   // Ces champs restent neutres tant qu’aucune provenance vérifiable n’est encodée.
   assert.equal(places.filter((place) => place.tested_by_us).length, 0, "aucun lieu ne doit être présenté comme testé sans preuve");

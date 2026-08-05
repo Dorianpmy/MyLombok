@@ -68,9 +68,13 @@
 .home-hero__assurance span { display: inline-flex; align-items: center; gap: 9px; }
 .home-hero__assurance svg { width: 17px; color: #e3c79f; }
 .home-hero__scroll { position: absolute; right: clamp(24px, 4vw, 66px); bottom: 35px; display: flex; align-items: center; gap: 12px; color: rgba(255, 255, 255, 0.75); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-decoration: none; text-transform: uppercase; writing-mode: vertical-rl; }
-.weather-chip { display: grid; grid-template-columns: auto auto; align-items: center; gap: 0 8px; padding: 11px 14px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--radius-small); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); }
+.weather-chip { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 1px 9px; min-width: 205px; padding: 10px 12px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: var(--radius-small); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); }
 .weather-chip svg { grid-row: 1 / 3; width: 21px; color: #e6c99f; }
-.weather-chip span { font-weight: 700; line-height: 1; }
+.weather-chip__reading { min-width: 0; display: flex; align-items: center; gap: 7px; }
+.weather-chip__reading > span { flex: 0 0 auto; font-weight: 700; line-height: 1; }
+.weather-chip label { min-width: 0; display: flex; }
+.weather-chip select { min-width: 0; max-width: 118px; border: 0; outline: 0; background: transparent; color: #fff; font-size: 10px; font-weight: 700; text-overflow: ellipsis; }
+.weather-chip select option { background: #172820; color: #fff; }
 .weather-chip small { color: rgba(255, 255, 255, 0.68); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; }
 .home-preferences { margin-top: 30px; }
 .editorial-grid { display: grid; grid-template-columns: minmax(300px, 0.9fr) minmax(360px, 1fr); gap: clamp(64px, 10vw, 160px); align-items: start; }
@@ -221,16 +225,30 @@
 .empty-state strong { color: var(--ink); }
 .empty-state p { max-width: 380px; margin: 6px 0 14px; font-size: 12px; }
 .empty-state a, .empty-state button { border: 0; background: none; color: var(--forest-action); font-weight: 700; }
-.prayer-card { position: relative; min-height: 112px; display: grid; grid-template-columns: 58px 1fr 50px; gap: 20px; align-items: center; overflow: hidden; padding: 24px 28px; border: 1px solid var(--line); background: var(--surface); }
-.prayer-card__icon { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: var(--forest); color: white; }
+.prayer-card { position: relative; overflow: hidden; padding: 22px 26px 18px; border: 1px solid var(--line); background: var(--surface); }
+.prayer-card__summary { display: grid; grid-template-columns: 54px minmax(0, 1fr) 46px; gap: 17px; align-items: center; }
+.prayer-card__icon { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: var(--forest); color: white; }
 .prayer-card__icon svg { width: 23px; }
 .prayer-card small, .prayer-card strong, .prayer-card p { display: block; margin: 0; }
 .prayer-card small { color: var(--bronze-text); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-.prayer-card strong { font-family: var(--font-display); font-size: 27px; }
+.prayer-card strong { font-family: var(--font-display); font-size: 25px; }
 .prayer-card p { color: var(--muted); font-size: 11px; }
 .prayer-card p b { color: var(--ink); }
-.prayer-card__progress { --prayer-progress: 20%; width: 44px; height: 44px; display: grid; border-radius: 50%; background: conic-gradient(var(--bronze) var(--prayer-progress), var(--surface-soft) 0); }
+.prayer-card__progress { --prayer-progress: 20%; width: 42px; height: 42px; display: grid; border-radius: 50%; background: conic-gradient(var(--bronze) var(--prayer-progress), var(--surface-soft) 0); transition: background 0.8s linear; }
 .prayer-card__progress::after { content: ""; margin: 5px; border-radius: 50%; background: var(--surface); }
+.prayer-card__times { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 18px 0 0; padding: 0; border-top: 1px solid var(--line); border-left: 1px solid var(--line); list-style: none; }
+.prayer-card__times li { min-width: 0; display: grid; gap: 2px; padding: 9px 7px 8px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--muted); text-align: center; }
+.prayer-card__times li span { overflow: hidden; font-size: 9px; font-weight: 700; text-overflow: ellipsis; text-transform: uppercase; }
+.prayer-card__times time { color: var(--ink); font-family: var(--font-display); font-size: 17px; font-variant-numeric: tabular-nums; }
+.prayer-card__times li.is-next { background: color-mix(in srgb, var(--bronze) 13%, var(--surface)); color: var(--bronze-text); box-shadow: inset 0 2px 0 var(--bronze); animation: prayer-next-pulse 2.4s ease-in-out infinite; }
+.prayer-card__notice { display: flex; flex-wrap: wrap; gap: 3px 11px; margin-top: 9px; color: var(--muted); font-size: 9px; line-height: 1.4; }
+.prayer-card__notice a { color: var(--forest-action); font-weight: 700; }
+.prayer-card--compact { margin-top: 18px; padding: 18px; }
+.prayer-card--compact .prayer-card__summary { grid-template-columns: 44px minmax(0, 1fr) 38px; gap: 12px; }
+.prayer-card--compact .prayer-card__icon { width: 42px; height: 42px; }
+.prayer-card--compact .prayer-card__progress { width: 36px; height: 36px; }
+.prayer-card--compact strong { font-size: 21px; }
+@keyframes prayer-next-pulse { 50% { background: color-mix(in srgb, var(--bronze) 20%, var(--surface)); } }
 .currency-tool { padding: 34px; border: 1px solid var(--line); background: var(--surface); }
 .currency-tool__heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
 .currency-tool__heading .eyebrow { margin-bottom: 5px; }
@@ -409,6 +427,21 @@
 .place-detail__stats svg { width: 13px; }
 .place-detail__media-note { display: block; margin-top: 12px; color: var(--muted); font-size: 10px; line-height: 1.5; }
 .place-detail__description { margin: 25px 0; color: var(--muted); font-size: 16px; }
+.place-sources { margin: 28px 0; padding: 22px; border: 1px solid var(--line); background: var(--surface-soft); }
+.place-sources h3 { margin: 5px 0 14px; font-size: 22px; }
+.place-sources > div { display: grid; gap: 1px; background: var(--line); }
+.place-sources a { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 13px 14px; background: var(--surface); color: var(--ink); text-decoration: none; }
+.place-sources a:hover { color: var(--bronze-text); }
+.place-sources a span { display: grid; gap: 2px; font-weight: 700; }
+.place-sources a small { color: var(--muted); font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.place-sources a svg { width: 16px; flex: 0 0 auto; }
+.mosque-directory-status { margin: 12px 0 24px; padding: 18px 20px; border: 1px solid var(--line); border-left: 3px solid var(--bronze); background: var(--surface-soft); }
+.mosque-directory-status h3 { margin: 5px 0 7px; font-size: 21px; }
+.mosque-directory-status p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+.mosque-directory-status > div { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 13px; }
+.mosque-directory-status a { display: inline-flex; align-items: center; gap: 6px; color: var(--forest-action); font-size: 11px; font-weight: 750; text-decoration: none; }
+.mosque-directory-status a:hover { color: var(--bronze-text); }
+.mosque-directory-status a svg { width: 14px; }
 .vigilance { display: grid; grid-template-columns: 24px 1fr; gap: 13px; margin: 22px 0; padding: 17px; border-left: 2px solid #ae7b3d; background: color-mix(in srgb, var(--surface) 80%, #ead7b2); }
 .vigilance > svg { width: 19px; color: #9b682e; }
 .vigilance strong, .vigilance p { display: block; margin: 0; }
@@ -527,7 +560,8 @@
   .home-hero__actions { flex-direction: column; align-items: stretch; }
   .home-hero__assurance { display: grid; margin-top: 30px; }
   .home-hero__scroll { display: none; }
-  .weather-chip { padding: 8px 10px; }
+  .weather-chip { min-width: 178px; padding: 8px 10px; }
+  .weather-chip select { max-width: 92px; }
   .weather-chip small { display: none; }
   .service-editorial { grid-template-columns: 36px 45px 1fr; gap: 13px; padding: 28px 0; }
   .service-editorial__icon { width: 43px; height: 43px; }
@@ -594,9 +628,16 @@
   .concierge-form fieldset { padding: 22px 17px; }
   .concierge-form legend { max-width: 90%; font-size: 22px; }
   .profile-panel, .currency-tool { padding: 21px 18px; }
-  .prayer-card { grid-template-columns: 48px 1fr; padding: 19px; }
+  .prayer-card { padding: 18px 16px 15px; }
+  .prayer-card__summary { grid-template-columns: 44px minmax(0, 1fr); gap: 12px; }
   .prayer-card__icon { width: 46px; height: 46px; }
+  .prayer-card strong { font-size: 21px; }
   .prayer-card__progress { display: none; }
+  .prayer-card__times { margin-top: 14px; }
+  .prayer-card__times li { padding: 8px 2px 7px; }
+  .prayer-card__times li span { font-size: 8px; letter-spacing: -0.01em; }
+  .prayer-card__times time { font-size: 15px; }
+  .prayer-card__notice { font-size: 8px; }
   .official-guides > div:last-child > a { padding: 17px; }
   .auth-dialog { padding: 30px 20px; }
   .auth-dialog h2 { font-size: 38px; }
