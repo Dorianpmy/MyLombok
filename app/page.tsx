@@ -76,37 +76,40 @@ export default function HomePage() {
         <a className="home-hero__scroll" href="#explorer-blocks">Découvrir <span aria-hidden="true">↓</span></a>
       </section>
 
-      <section className="destination-quick-links" id="explorer-blocks">
-        <div className="site-container" style={{ padding: 0 }}>
-          <div className="destination-quick-links > div" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderLeft: "1px solid var(--line)" }}>
-            {exploreBlocks.map(({ href, Icon, title, text }) => (
-              <Link
-                key={title}
-                href={href}
-                style={{
-                  minWidth: 0,
-                  display: "grid",
-                  gridTemplateColumns: "35px 1fr 17px",
-                  gap: 12,
-                  alignItems: "center",
-                  minHeight: 96,
-                  padding: 20,
-                  borderRight: "1px solid var(--line)",
-                  borderBottom: "1px solid var(--line)",
-                  color: "var(--ink)",
-                  textDecoration: "none",
-                  background: "var(--surface)",
-                }}
-              >
-                <Icon aria-hidden="true" style={{ width: 24, color: "var(--bronze-text)" }} />
-                <span style={{ minWidth: 0, display: "grid" }}>
-                  <strong style={{ fontFamily: "var(--font-display)", fontSize: 21 }}>{title}</strong>
-                  <small style={{ color: "var(--muted)", fontSize: 10 }}>{text}</small>
-                </span>
-                <ArrowRight aria-hidden="true" style={{ width: 16, color: "var(--muted)" }} />
-              </Link>
-            ))}
-          </div>
+      <section id="explorer-blocks" style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            maxWidth: 1280,
+            margin: "0 auto",
+          }}
+        >
+          {exploreBlocks.map(({ href, Icon, title, text }) => (
+            <Link
+              key={title}
+              href={href}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: 10,
+                minHeight: 110,
+                padding: "22px 18px",
+                borderRight: "1px solid var(--line)",
+                borderBottom: "1px solid var(--line)",
+                color: "var(--ink)",
+                textDecoration: "none",
+                background: "var(--surface)",
+              }}
+            >
+              <Icon aria-hidden="true" style={{ width: 22, height: 22, color: "var(--bronze-text)", flexShrink: 0 }} />
+              <span style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0, width: "100%" }}>
+                <strong style={{ fontFamily: "var(--font-display)", fontSize: 20, lineHeight: 1.15 }}>{title}</strong>
+                <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.35 }}>{text}</small>
+              </span>
+            </Link>
+          ))}
         </div>
       </section>
 
