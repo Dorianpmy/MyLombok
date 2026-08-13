@@ -22,38 +22,94 @@ export function DestinationSwitcher() {
   const dialogRef = useDialogA11y<HTMLDivElement>(open, close);
 
   function choose(nextDestinationId: DestinationId) {
-    try { localStorage.setItem(ACTIVE_DESTINATION_KEY, nextDestinationId); } catch { /* La navigation fonctionne sans stockage. */ }
+    try {
+      localStorage.setItem(ACTIVE_DESTINATION_KEY, nextDestinationId);
+    } catch {
+      /* ignore */
+    }
     setOpen(false);
+    // Leave overflow lock before navigation
+    document.body.style.overflow = "";
     router.push(destinationRouteForPath(pathname, nextDestinationId));
   }
 
   return (
     <>
-      <button className="destination-switcher__trigger" type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-expanded={open}>
+      <button
+        className="destination-switcher__trigger"
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={`Destination : ${current.shortName}. Changer`}
+      >
         <MapPin aria-hidden="true" />
-        <span><small>Destination</small>{current.shortName}</span>
+        <span>
+          <small>Destination</small>
+          {current.shortName}
+        </span>
         <ChevronDown aria-hidden="true" />
       </button>
-      {open && (
-        <div className="destination-switcher__backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}>
-          <div ref={dialogRef} className="destination-switcher__sheet" role="dialog" aria-modal="true" aria-labelledby="destination-switcher-title">
+
+      {open ? (
+        <div
+          className="destination-switcher__backdrop"
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) close();
+          }}
+        >
+          <div
+            ref={dialogRef}
+            className="destination-switcher__sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="destination-switcher-title"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="destination-switcher__heading">
-              <div><span className="eyebrow">MyLombok en voyage</span><h2 id="destination-switcher-title">Choisir une destination</h2></div>
-              <button type="button" className="dialog-close" onClick={close} aria-label="Fermer le choix de destination"><X aria-hidden="true" /></button>
+              <div>
+                <span className="eyebrow">Changer de destination</span>
+                <h2 id="destination-switcher-title">Où veux-tu aller ?</h2>
+              </div>
+              <button type="button" className="dialog-close" onClick={close} aria-label="Fermer">
+                <X aria-hidden="true" />
+              </button>
             </div>
+
             <div className="destination-switcher__list">
-              {destinations.map((destination) => (
-                <button key={destination.id} type="button" className={destination.id === current.id ? "is-current" : ""} onClick={() => choose(destination.id)}>
-                  <span className="destination-switcher__image"><Image src={destination.heroImage} alt="" fill sizes="(max-width: 640px) 88px, 120px" /></span>
-                  <span className="destination-switcher__copy"><strong>{destination.name}</strong><small>{destination.country}</small><span>{destination.description}</span></span>
-                  {destination.id === current.id && <Check aria-label="Destination active" />}
-                </button>
-              ))}
+              {destinations.map((destination) => {
+                const selected = destination.id === current.id;
+                return (
+                  <button
+                    key={destination.id}
+                    type="button"
+                    className={selected ? "is-current" : ""}
+                    onClick={() => choose(destination.id)}
+                  >
+                    <span className="destination-switcher__thumb">
+                      {destination.heroImage ? (
+                        <Image
+                          src={destination.heroImage}
+                          alt=""
+                          fill
+                          sizes="120px"
+                          style={{ objectFit: "cover" }}
+                        />
+                      ) : null}
+                    </span>
+                    <span className="destination-switcher__meta">
+                      <strong>{destination.name}</strong>
+                      <small>{destination.tagline || destination.country || destination.shortName}</small>
+                    </span>
+                    {selected ? <Check aria-hidden="true" /> : <span aria-hidden="true" />}
+                  </button>
+                );
+              })}
             </div>
-            <p className="destination-switcher__note">Lombok reste le cœur de MyLombok. Les services proposés s’adaptent à la destination choisie.</p>
           </div>
         </div>
-      )}
+      ) : null}
     </>
   );
 }

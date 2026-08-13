@@ -1,0 +1,74 @@
+/* Destination switcher — mobile touch fix */
+
+.destination-switcher__trigger {
+  position: relative;
+  z-index: 5;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.destination-switcher__backdrop {
+  z-index: 4000 !important;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
+
+.destination-switcher__sheet {
+  pointer-events: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.destination-switcher__list > button {
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  min-height: 72px;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .destination-switcher__trigger {
+    min-width: 44px;
+    min-height: 44px !important;
+    max-width: 42vw;
+    padding: 6px 10px !important;
+    gap: 6px !important;
+  }
+
+  .destination-switcher__trigger span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .destination-switcher__backdrop {
+    place-items: end center !important;
+    padding: 0 !important;
+    align-items: flex-end;
+  }
+
+  .destination-switcher__sheet {
+    width: 100% !important;
+    max-height: min(88dvh, 100%) !important;
+    margin: 0 !important;
+    border-radius: 20px 20px 0 0;
+    padding: 22px 18px calc(28px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .destination-switcher__heading {
+    padding-right: 48px !important;
+    gap: 12px !important;
+  }
+
+  .destination-switcher__heading h2 {
+    font-size: clamp(28px, 7vw, 36px) !important;
+    margin-bottom: 18px !important;
+  }
+
+  .destination-switcher__list > button {
+    grid-template-columns: 72px 1fr 22px !important;
+    gap: 12px !important;
+    padding: 8px !important;
+    min-height: 68px;
+  }
+}
