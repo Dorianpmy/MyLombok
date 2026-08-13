@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MessageCircle, Sparkles, Smartphone } from "lucide-react";
+import { CheckoutButton } from "../components/checkout-button";
 
 export const metadata: Metadata = {
   title: "Accompagnement & tarifs",
@@ -38,9 +39,6 @@ const formulas = [
   },
 ];
 
-const appMessage =
-  "Salut ! Je suis intéressé par l’accès app one-shot à 39 € (contacts locaux + guides). Tu peux m’expliquer comment je paie et j’accède ?";
-
 export default function AccompagnementPage() {
   return (
     <main className="inner-page">
@@ -62,10 +60,13 @@ export default function AccompagnementPage() {
               <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>39 €</p>
               <p>
                 <strong>Le plus important : les contacts locaux</strong> à joindre pour le logement, les démarches, la vie pratique.
-                Plus les zones, tips et parcours. Paiement unique — pas d’abonnement.
+                Plus les zones, tips et parcours. Paiement unique via Stripe — pas d’abonnement.
               </p>
+              <div style={{ marginTop: "1rem" }}>
+                <CheckoutButton label="Payer 39 € — accès immédiat" />
+              </div>
             </div>
-            <a href={waLink(appMessage)} target="_blank" rel="noopener noreferrer">Demander</a>
+            <span aria-hidden="true" />
           </article>
 
           <div className="service-editorial-list" style={{ marginTop: "1rem" }}>
@@ -100,7 +101,7 @@ export default function AccompagnementPage() {
           </div>
 
           <p style={{ marginTop: "2rem", opacity: 0.75, fontSize: "0.95rem" }}>
-            App 39 € (contacts + guides). Accompagnement humain dès 250 €. Les deux sont optionnels l’un par rapport à l’autre.
+            App 39 € (contacts + guides) via Stripe. Accompagnement humain dès 250 € sur WhatsApp. Les deux sont optionnels l’un par rapport à l’autre.
           </p>
         </div>
       </section>
