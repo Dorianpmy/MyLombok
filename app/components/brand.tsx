@@ -11,7 +11,7 @@ export function Brand({ compact = false }: { compact?: boolean }) {
       </span>
       <span className="brand-words">
         <strong>MyLombok</strong>
-        {!compact && <small>Conciergerie locale</small>}
+        {!compact && <small>Aide à l’installation</small>}
       </span>
     </Link>
   );
