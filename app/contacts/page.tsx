@@ -1,29 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MessageCircle, Phone } from "lucide-react";
+import { CheckoutButton } from "../components/checkout-button";
 
 export const metadata: Metadata = {
   title: "Contacts utiles",
-  description: "Le cœur de MyLombok : des contacts locaux à joindre pour le logement, les démarches et la vie à Lombok.",
+  description: "2 contacts locaux à joindre (logements et visa) pour s’installer à Lombok — inclus dans l’accès app 69 €.",
 };
 
 const categories = [
   {
-    title: "Immobilier longue durée",
+    title: "Logements",
     items: [
-      { name: "Bientôt disponible", note: "Contacts pour locations longue durée par zone. Tu pourras les joindre pour une visite, un bail, une question de loyer." },
+      {
+        name: "Contact immobilier longue durée",
+        note: "Pour une visite, un bail ou une question de loyer longue durée. Inclus dans l’accès app.",
+      },
     ],
   },
   {
-    title: "Visa & formalités",
+    title: "Visa",
     items: [
-      { name: "Bientôt disponible", note: "Repères et contacts pour les démarches courantes — pour savoir à qui écrire ou où te rendre." },
-    ],
-  },
-  {
-    title: "Vie pratique",
-    items: [
-      { name: "Bientôt disponible", note: "SIM, banques, santé, scooter… des personnes ou lieux à contacter selon ton besoin." },
+      {
+        name: "Contact démarches visa",
+        note: "Pour savoir à qui t’adresser ou où te rendre pour les formalités courantes. Inclus dans l’accès app.",
+      },
     ],
   },
 ];
@@ -39,8 +40,8 @@ export default function ContactsPage() {
               <h1>Contacts utiles</h1>
             </div>
             <p>
-              C’est le cœur de l’app à 69 € : des contacts locaux que tu peux joindre pour savoir ci ou ça —
-              logement, démarches, vie sur place. Pas seulement des articles à lire.
+              Avec l’accès app (69 €) : <strong>2 contacts locaux à joindre</strong> — logements et visa.
+              L’idée : poser ta question à quelqu’un sur place, pas chercher pendant des heures sur des groupes au hasard.
             </p>
           </div>
 
@@ -48,8 +49,8 @@ export default function ContactsPage() {
             <p style={{ margin: 0, display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
               <Phone aria-hidden="true" style={{ flexShrink: 0, marginTop: 4 }} />
               <span>
-                <strong>Tu as une question précise ?</strong> L’idée est de pouvoir contacter quelqu’un sur place
-                plutôt que de chercher pendant des heures sur des groupes au hasard.
+                <strong>2 contacts inclus</strong> dans l’app : un pour les logements longue durée, un pour le visa / les formalités.
+                Les coordonnées te sont communiquées après paiement (ou sur demande WhatsApp si tu as déjà payé).
               </span>
             </p>
           </div>
@@ -68,21 +69,24 @@ export default function ContactsPage() {
             ))}
           </div>
 
-          <p style={{ marginTop: "2rem", opacity: 0.8 }}>
-            La base se remplit progressivement avec des contacts vérifiés. En attendant, tu peux m’écrire :
-            je t’orientes selon ta zone et ton projet.
-          </p>
-
-          <div className="final-cta" style={{ marginTop: "2rem", padding: "2rem", borderRadius: "1rem" }}>
-            <h2>Besoin d’un contact tout de suite ?</h2>
-            <p>Écris-moi sur WhatsApp. Je te dirige vers la bonne personne ou la bonne démarche.</p>
-            <a className="button button--primary" href="https://wa.me/33763664857" target="_blank" rel="noopener noreferrer" style={{ marginTop: "1rem", display: "inline-flex" }}>
-              <MessageCircle aria-hidden="true" /> WhatsApp
-            </a>
+          <div className="final-cta" style={{ marginTop: "2.5rem", padding: "2rem", borderRadius: "1rem" }}>
+            <h2>Débloquer les 2 contacts</h2>
+            <p>Accès app 69 € — paiement unique, pas d’abonnement.</p>
+            <div style={{ marginTop: "1rem", display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
+              <CheckoutButton label="Payer 69 € — accès immédiat" />
+              <a
+                className="button button--outline"
+                href="https://wa.me/33763664857?text=Salut%20%21%20J%27ai%20pay%C3%A9%20l%27acc%C3%A8s%20app%20et%20je%20voudrais%20les%202%20contacts%20(logement%20%2B%20visa)."
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle aria-hidden="true" /> Déjà payé ? WhatsApp
+              </a>
+            </div>
           </div>
 
           <div style={{ marginTop: "2rem", display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-            <Link className="editorial-link" href="/accompagnement">Accès app 69 € →</Link>
+            <Link className="editorial-link" href="/accompagnement">Voir tous les tarifs →</Link>
             <Link className="editorial-link" href="/parcours">Parcours guidé →</Link>
           </div>
         </div>
