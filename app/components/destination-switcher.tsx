@@ -92,14 +92,14 @@ export function DestinationSwitcher() {
                           src={destination.heroImage}
                           alt=""
                           fill
-                          sizes="120px"
+                          sizes="80px"
                           style={{ objectFit: "cover" }}
                         />
                       ) : null}
                     </span>
                     <span className="destination-switcher__meta">
                       <strong>{destination.name}</strong>
-                      <small>{destination.country} · {destination.description}</small>
+                      <small>{destination.country}</small>
                     </span>
                     {selected ? <Check aria-hidden="true" /> : <span aria-hidden="true" />}
                   </button>
