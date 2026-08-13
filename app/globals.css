@@ -136,6 +136,37 @@ h3 { line-height: 1.25; }
 .editorial-link:hover svg { transform: translateX(4px); }
 .editorial-link--light { color: #f6f2e9; }
 
+/* Map + list: fixed height, list scrolls inside */
+.destination-map {
+  height: min(730px, 76dvh);
+  max-height: min(730px, 76dvh);
+  min-height: 0 !important;
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch;
+}
+.destination-map__canvas-shell {
+  min-height: 0 !important;
+  height: 100%;
+}
+.destination-map__list {
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 900px) {
+  .destination-map {
+    height: auto;
+    max-height: none;
+    grid-template-rows: minmax(420px, 55dvh) minmax(220px, 32dvh);
+  }
+  .destination-map__list {
+    max-height: 32dvh;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto; animation-duration: 0.01ms; animation-iteration-count: 1; transition-duration: 0.01ms; }
 }
