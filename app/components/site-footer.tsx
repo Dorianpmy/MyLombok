@@ -7,19 +7,19 @@ export function SiteFooter() {
       <div className="site-container site-footer__grid">
         <div className="site-footer__brand">
           <Brand />
-          <p>Une présence locale pour préparer et simplifier votre séjour à Lombok.</p>
+          <p>Aide concrète pour s’installer proprement à Lombok — zones, tips et accompagnement local.</p>
         </div>
         <div>
-          <strong>Découvrir</strong>
-          <Link href="/explorer">Explorer Lombok</Link>
-          <Link href="/services">Nos services</Link>
+          <strong>S’installer</strong>
+          <Link href="/zones">Zones d’installation</Link>
+          <Link href="/tips">Tips pratiques</Link>
+          <Link href="/parcours">Parcours guidé</Link>
+        </div>
+        <div>
+          <strong>Accompagnement</strong>
+          <Link href="/accompagnement">Accompagnement A à Z</Link>
+          <Link href="/contacts">Contacts utiles</Link>
           <Link href="/a-propos">À propos</Link>
-        </div>
-        <div>
-          <strong>Votre séjour</strong>
-          <Link href="/conciergerie">Parler à la conciergerie</Link>
-          <Link href="/profil">Mon espace</Link>
-          <Link href="/installer">Installer l’application</Link>
         </div>
         <div>
           <strong>Informations</strong>
