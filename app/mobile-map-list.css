@@ -1,0 +1,20 @@
+/* Mobile map list: larger selectable rows */
+@media (max-width: 900px) {
+  .destination-map {
+    grid-template-rows: minmax(260px, 40dvh) minmax(300px, 44dvh) !important;
+  }
+  .destination-map__list {
+    max-height: 44dvh !important;
+    min-height: 300px !important;
+  }
+  .destination-map__list a,
+  .destination-map__list button,
+  .destination-map__list [role="button"],
+  .destination-map__list li > * {
+    min-height: 56px !important;
+  }
+  .destination-map__list li {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+}
