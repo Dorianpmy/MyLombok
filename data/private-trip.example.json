@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "destinationId": "kuala-lumpur",
+  "startDate": "",
+  "endDate": "",
+  "accommodation": null,
+  "travelers": {
+    "adults": 1,
+    "children": 0,
+    "baby": false
+  },
+  "preferences": [],
+  "excludedPlaceIds": [],
+  "days": [],
+  "updatedAt": ""
+}

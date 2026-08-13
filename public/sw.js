@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "mylombok-static-";
-const CACHE = `${CACHE_PREFIX}v4`;
+const CACHE = `${CACHE_PREFIX}v5`;
 const OFFLINE_PAGE = "/offline.html";
 const PRECACHE = [
   OFFLINE_PAGE,
@@ -13,7 +13,7 @@ const PRECACHE = [
   "/fonts/manrope-700.ttf",
 ];
 const STATIC_PATHS = new Set(PRECACHE);
-const PRIVATE_PATHS = ["/api", "/auth", "/profil"];
+const PRIVATE_PATHS = ["/api", "/auth", "/profil", "/trip", "/saved"];
 
 function pathMatches(pathname, prefix) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);

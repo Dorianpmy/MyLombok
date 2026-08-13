@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="130" y1="110" x2="890" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#153B4C"/><stop offset="1" stop-color="#07141F"/>
+    </linearGradient>
+    <linearGradient id="island" x1="220" y1="250" x2="820" y2="810" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#62D6E4"/><stop offset="1" stop-color="#6E74F2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <circle cx="754" cy="244" r="73" fill="#E9DFFF"/>
+  <path d="M214 657c113-8 151-210 267-210 128 0 150 179 288 193" fill="none" stroke="url(#island)" stroke-width="91" stroke-linecap="round"/>
+  <path d="M202 750c127 72 241 73 363 6 100-56 179-65 258-26" fill="none" stroke="#EAFBFF" stroke-width="57" stroke-linecap="round"/>
+  <path d="m294 645 183-305 192 304" fill="none" stroke="#EAFBFF" stroke-width="57" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

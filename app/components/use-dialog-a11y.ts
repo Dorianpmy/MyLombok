@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
-export function useDialogA11y(open: boolean, onClose: () => void) {
-  const dialogRef = useRef<HTMLElement>(null);
+export function useDialogA11y<T extends HTMLElement = HTMLElement>(open: boolean, onClose: () => void) {
+  const dialogRef = useRef<T>(null);
 
   useEffect(() => {
     if (!open) return;

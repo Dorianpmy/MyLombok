@@ -49,6 +49,7 @@ export function ProfileClient() {
   const activeUserId = useRef<string | null>(null);
   const identityReady = useRef(false);
   const authGeneration = useRef(0);
+  const cloudPreferences = useRef<Record<string, unknown>>({});
   const supabaseAvailable = Boolean(getSupabaseBrowserClient());
 
   useEffect(() => {
@@ -145,7 +146,10 @@ export function ProfileClient() {
             setRequests(mergedRequests);
             writePersonalArray("my-lombok-requests", mergedRequests, user.id);
           }
-          const prefs = data.preferences as { dark?: boolean; muslimMode?: boolean } | null;
+          const prefs = data.preferences && typeof data.preferences === "object" && !Array.isArray(data.preferences)
+            ? data.preferences as Record<string, unknown> & { dark?: boolean; muslimMode?: boolean }
+            : null;
+          cloudPreferences.current = prefs ? { ...prefs } : {};
           if (typeof prefs?.muslimMode === "boolean") { setMuslimMode(prefs.muslimMode); localStorage.setItem("my-lombok-muslim-mode", String(prefs.muslimMode)); }
           if (typeof prefs?.dark === "boolean") {
             setDark(prefs.dark);
@@ -172,7 +176,21 @@ export function ProfileClient() {
       try {
         const { data: identity, error: identityError } = await supabase.auth.getUser();
         if (identityError || identity.user?.id !== expectedUserId || activeUserId.current !== expectedUserId) return;
-        const { error } = await supabase.from("user_state").upsert({ user_id: expectedUserId, favorites, visited, requests, preferences: { dark, muslimMode }, updated_at: new Date().toISOString() });
+        const { data: latestState, error: preferencesError } = await supabase
+          .from("user_state")
+          .select("preferences")
+          .eq("user_id", expectedUserId)
+          .maybeSingle();
+        if (preferencesError || activeUserId.current !== expectedUserId) {
+          if (activeUserId.current === expectedUserId) setNotice("La synchronisation est momentanément indisponible. Vos données restent sur cet appareil.");
+          return;
+        }
+        const latestPreferences = latestState?.preferences && typeof latestState.preferences === "object" && !Array.isArray(latestState.preferences)
+          ? latestState.preferences as Record<string, unknown>
+          : {};
+        const preferences = { ...cloudPreferences.current, ...latestPreferences, dark, muslimMode };
+        const { error } = await supabase.from("user_state").upsert({ user_id: expectedUserId, favorites, visited, requests, preferences, updated_at: new Date().toISOString() });
+        if (!error) cloudPreferences.current = preferences;
         if (error && activeUserId.current === expectedUserId) setNotice("La synchronisation est momentanément indisponible. Vos données restent sur cet appareil.");
       } catch {
         if (activeUserId.current === expectedUserId) setNotice("La synchronisation est momentanément indisponible. Vos données restent sur cet appareil.");

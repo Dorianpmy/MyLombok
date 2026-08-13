@@ -5,8 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, MessageCircle, X } from "lucide-react";
 import { Brand } from "./brand";
+import { DestinationSwitcher } from "./destination-switcher";
 
 const links = [
+  { href: "/destinations", label: "Destinations" },
   { href: "/services", label: "Nos services" },
   { href: "/explorer", label: "Explorer" },
   { href: "/a-propos", label: "À propos" },
@@ -87,6 +89,7 @@ export function SiteHeader() {
             return <Link key={link.href} href={link.href} aria-current={isCurrent ? "page" : undefined}>{link.label}</Link>;
           })}
         </nav>
+        <div className="site-header__destination"><DestinationSwitcher /></div>
         <Link className="button button--primary header-cta" href="/conciergerie">
           <MessageCircle aria-hidden="true" />
           Organiser mon séjour
