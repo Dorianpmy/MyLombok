@@ -5,7 +5,7 @@ import { CheckoutButton } from "../components/checkout-button";
 
 export const metadata: Metadata = {
   title: "Tarifs — App & accompagnement",
-  description: "App 69 € avec 2 contacts. Accompagnement humain à 500 € ou sur devis pour s’installer à Lombok.",
+  description: "App 69 € avec 2 contacts (logements et visa). Accompagnement humain à 500 € ou sur devis pour s’installer à Lombok.",
 };
 
 function waLink(message: string) {
@@ -87,7 +87,7 @@ export default function AccompagnementPage() {
                   <strong>Paiement unique</strong> via Stripe · pas d’abonnement · tu avances seul avec les bons outils.
                 </p>
                 <ul style={{ margin: "0 0 1rem", paddingLeft: "1.1rem", opacity: 0.9 }}>
-                  <li><strong>2 contacts</strong> locaux à joindre</li>
+                  <li><strong>2 contacts locaux à joindre</strong> (logements et visa)</li>
                   <li>Fiches zones d’installation (ambiance, budget, pour qui)</li>
                   <li>Parcours guidé + checklist</li>
                 </ul>
