@@ -8,12 +8,12 @@ export const metadata: Metadata = {
 };
 
 const categories = [
-  { href: "/tips/visa", Icon: FileText, title: "Visa & démarches", text: "Types de visa, renouvellements, points d’attention." },
-  { href: "/tips/logement", Icon: Home, title: "Logement longue durée", text: "Comment chercher, négocier et sécuriser un bail." },
-  { href: "/tips/banque", Icon: Banknote, title: "Banque & argent", text: "Ouvrir un compte, retirer, transferts internationaux." },
-  { href: "/tips/sim-internet", Icon: Smartphone, title: "SIM & internet", text: "Opérateurs, forfaits, fibre et réalités du terrain." },
-  { href: "/tips/cout-de-la-vie", Icon: Wallet, title: "Coût de la vie réel", text: "Loyer, courses, transport, budget mensuel réaliste." },
-  { href: "/tips/pieges", Icon: AlertTriangle, title: "Pièges fréquents", text: "Arnaques classiques et erreurs à éviter." },
+  { href: "/tips/visa", Icon: FileText, number: "01", title: "Visa & démarches", text: "Types de visa, renouvellements, points d’attention." },
+  { href: "/tips/logement", Icon: Home, number: "02", title: "Logement longue durée", text: "Comment chercher, négocier et sécuriser un bail." },
+  { href: "/tips/banque", Icon: Banknote, number: "03", title: "Banque & argent", text: "Ouvrir un compte, retirer, transferts internationaux." },
+  { href: "/tips/sim-internet", Icon: Smartphone, number: "04", title: "SIM & internet", text: "Opérateurs, forfaits, fibre et réalités du terrain." },
+  { href: "/tips/cout-de-la-vie", Icon: Wallet, number: "05", title: "Coût de la vie réel", text: "Loyer, courses, transport, budget mensuel réaliste." },
+  { href: "/tips/pieges", Icon: AlertTriangle, number: "06", title: "Pièges fréquents", text: "Arnaques classiques et erreurs à éviter." },
 ];
 
 export default function TipsPage() {
@@ -30,8 +30,9 @@ export default function TipsPage() {
           </div>
 
           <div className="service-editorial-list" style={{ marginTop: "2.5rem" }}>
-            {categories.map(({ href, Icon, title, text }) => (
+            {categories.map(({ href, Icon, number, title, text }) => (
               <article className="service-editorial" key={href}>
+                <span className="service-editorial__number">{number}</span>
                 <span className="service-editorial__icon"><Icon aria-hidden="true" /></span>
                 <div><h3>{title}</h3><p>{text}</p></div>
                 <Link href={href}>Lire <ArrowRight aria-hidden="true" /></Link>
