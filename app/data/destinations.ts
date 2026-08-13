@@ -7,7 +7,7 @@ export const destinations: readonly Destination[] = [
     name: "Lombok",
     country: "Indonésie",
     shortName: "Lombok",
-    description: "Voyage, conciergerie et installation",
+    description: "S’installer et vivre à Lombok",
     coordinates: { latitude: -8.5833, longitude: 116.1167 },
     bounds: [[-9.18, 115.72], [-8.12, 116.86]],
     defaultZoom: 9,
@@ -24,7 +24,7 @@ export const destinations: readonly Destination[] = [
       concierge: true,
       expatriation: true,
     },
-    badges: ["Explorer", "Séjour", "Installation"],
+    badges: ["Installation", "Zones", "Explorer"],
   },
   {
     id: "kuala-lumpur",
@@ -32,7 +32,7 @@ export const destinations: readonly Destination[] = [
     name: "Kuala Lumpur",
     country: "Malaisie",
     shortName: "Kuala Lumpur",
-    description: "City guide, activités et séjour",
+    description: "City guide — activités, mosquées, restaurants et carte",
     coordinates: { latitude: 3.139, longitude: 101.6869 },
     bounds: [[2.95, 101.55], [3.29, 101.83]],
     defaultZoom: 12,
@@ -51,7 +51,7 @@ export const destinations: readonly Destination[] = [
       concierge: false,
       expatriation: false,
     },
-    badges: ["City guide", "Activités", "Carte"],
+    badges: ["City guide", "Mosquées", "Restos", "Carte"],
   },
 ] as const;
 
