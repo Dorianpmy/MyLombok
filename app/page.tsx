@@ -1,46 +1,53 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, MapPin, Phone, ShieldCheck, ListChecks } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, Compass, Map, MapPin, Phone, Route, ShieldCheck, ListChecks } from "lucide-react";
 import { WeatherChip } from "./components/weather-chip";
 
 export const metadata: Metadata = {
   title: "S’installer à Lombok",
-  description: "Zones, tips, contacts et accompagnement pour s’installer à Lombok. App 69 € · Appel 39 € · Pack dès 500 €.",
+  description: "Zones, tips, explorer, carte et accompagnement pour s’installer à Lombok.",
   alternates: { canonical: "/" },
 };
 
+const exploreBlocks = [
+  { href: "/explorer", Icon: Compass, title: "Explorer", text: "Lieux et activités" },
+  { href: "/destination/lombok/map", Icon: Map, title: "Carte", text: "Repérer les quartiers" },
+  { href: "/trip?destination=lombok", Icon: Route, title: "Mon voyage", text: "Programme privé" },
+  { href: "/parcours", Icon: BookOpen, title: "S’installer", text: "Guides & parcours" },
+];
+
 const pillars = [
   {
-    Icon: Phone,
-    number: "01",
-    title: "Contacts utiles",
-    text: "Inclus dans l’app : 2 contacts locaux (logements et visa) à joindre pour avancer concrètement.",
-    href: "/accompagnement",
-    action: "Voir les offres",
-  },
-  {
     Icon: MapPin,
-    number: "02",
+    number: "01",
     title: "Zones d’installation",
-    text: "Senggigi, Mangsit, Mataram, Kuta, Sekotong… Ambiance, budget loyer, pour qui c’est adapté, points forts et faibles.",
+    text: "Senggigi, Mangsit, Mataram, Kuta, Sekotong… Ambiance, budget loyer, pour qui c’est adapté.",
     href: "/zones",
     action: "Voir les zones",
   },
   {
     Icon: ListChecks,
-    number: "03",
+    number: "02",
     title: "Tips & parcours",
-    text: "Visa, logement, banque, SIM, budget, pièges — et un fil conducteur pour enchaîner les étapes dans le bon ordre.",
+    text: "Visa, logement, banque, SIM, budget, pièges — et un fil conducteur étape par étape.",
     href: "/tips",
     action: "Lire les tips",
+  },
+  {
+    Icon: Phone,
+    number: "03",
+    title: "Contacts & offres",
+    text: "2 contacts locaux (logements et visa) dans l’app, ou un appel / pack si tu préfères être aidé.",
+    href: "/accompagnement",
+    action: "Voir les offres",
   },
 ];
 
 const method = [
   { Icon: CheckCircle2, title: "Clarifier le projet", text: "Durée, budget, style de vie : quelques points suffisent pour orienter les bons choix." },
   { Icon: MapPin, title: "Choisir sa zone", text: "On compare les endroits pour y vivre au quotidien, pas seulement pour y passer une semaine." },
-  { Icon: Phone, title: "Joindre les bons contacts", text: "Logement et visa : des contacts inclus dans l’app pour poser tes questions sur place." },
+  { Icon: Phone, title: "Joindre les bons contacts", text: "Logement et visa : des contacts pour poser tes questions sur place." },
 ];
 
 export default function HomePage() {
@@ -55,18 +62,52 @@ export default function HomePage() {
             <WeatherChip />
           </div>
           <h1>Lombok,<br /><em>pour y vivre.</em></h1>
-          <p>Des contacts locaux, les bonnes zones, les étapes concrètes — pour t’installer proprement, sans te faire voler.</p>
+          <p>Zones d’installation, tips concrets et parcours guidé pour poser tes bases sur l’île.</p>
           <div className="home-hero__actions">
-            <Link className="button button--light" href="/accompagnement">Voir les offres <ArrowRight aria-hidden="true" /></Link>
-            <Link className="button button--ghost-light" href="/parcours">Parcours guidé</Link>
+            <Link className="button button--light" href="/explorer"><Compass aria-hidden="true" /> Explorer</Link>
+            <Link className="button button--ghost-light" href="/destination/lombok/map"><Map aria-hidden="true" /> Ouvrir la carte</Link>
           </div>
           <div className="home-hero__assurance">
-            <span><Phone aria-hidden="true" /> App 69 €</span>
-            <span><MapPin aria-hidden="true" /> Appel 39 €</span>
-            <span><ShieldCheck aria-hidden="true" /> Pack dès 500 €</span>
+            <span><MapPin aria-hidden="true" /> Zones pour vivre</span>
+            <span><ListChecks aria-hidden="true" /> Tips concrets</span>
+            <span><ShieldCheck aria-hidden="true" /> Parcours guidé</span>
           </div>
         </div>
-        <a className="home-hero__scroll" href="#introduction">Découvrir <span aria-hidden="true">↓</span></a>
+        <a className="home-hero__scroll" href="#explorer-blocks">Découvrir <span aria-hidden="true">↓</span></a>
+      </section>
+
+      <section className="destination-quick-links" id="explorer-blocks">
+        <div className="site-container" style={{ padding: 0 }}>
+          <div className="destination-quick-links > div" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderLeft: "1px solid var(--line)" }}>
+            {exploreBlocks.map(({ href, Icon, title, text }) => (
+              <Link
+                key={title}
+                href={href}
+                style={{
+                  minWidth: 0,
+                  display: "grid",
+                  gridTemplateColumns: "35px 1fr 17px",
+                  gap: 12,
+                  alignItems: "center",
+                  minHeight: 96,
+                  padding: 20,
+                  borderRight: "1px solid var(--line)",
+                  borderBottom: "1px solid var(--line)",
+                  color: "var(--ink)",
+                  textDecoration: "none",
+                  background: "var(--surface)",
+                }}
+              >
+                <Icon aria-hidden="true" style={{ width: 24, color: "var(--bronze-text)" }} />
+                <span style={{ minWidth: 0, display: "grid" }}>
+                  <strong style={{ fontFamily: "var(--font-display)", fontSize: 21 }}>{title}</strong>
+                  <small style={{ color: "var(--muted)", fontSize: 10 }}>{text}</small>
+                </span>
+                <ArrowRight aria-hidden="true" style={{ width: 16, color: "var(--muted)" }} />
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="site-section home-intro" id="introduction">
@@ -76,9 +117,9 @@ export default function HomePage() {
             <h2>Moins d’approximations.<br />Plus de clarté.</h2>
           </div>
           <div className="home-intro__copy">
-            <p className="lead-copy">MyLombok t’aide à t’installer : app avec contacts, appel conseil, ou accompagnement humain selon ton besoin.</p>
-            <p>Zones, tips et parcours pour ne pas avancer à l’aveugle. Choisis l’offre qui te correspond.</p>
-            <Link className="editorial-link" href="/accompagnement">Voir les offres <ArrowRight aria-hidden="true" /></Link>
+            <p className="lead-copy">Explore l’île, compare les zones, suis un parcours — et avance avec des contacts utiles quand tu en as besoin.</p>
+            <p>L’app, un appel conseil ou un accompagnement : tu choisis selon ton rythme.</p>
+            <Link className="editorial-link" href="/zones">Voir les zones <ArrowRight aria-hidden="true" /></Link>
           </div>
         </div>
       </section>
@@ -86,8 +127,8 @@ export default function HomePage() {
       <section className="site-section services-section" id="pillars">
         <div className="site-container">
           <div className="section-heading">
-            <div><span className="eyebrow">Ce que tu trouves ici</span><h2>Des outils clairs.<br />Des offres simples.</h2></div>
-            <p>Tu avances seul avec l’app, ou tu prends un appel / un pack si tu préfères être aidé.</p>
+            <div><span className="eyebrow">Ce que tu trouves ici</span><h2>Explorer.<br />Puis s’installer.</h2></div>
+            <p>Des repères concrets pour vivre à Lombok — pas seulement pour y passer une semaine.</p>
           </div>
           <div className="service-editorial-list">
             {pillars.map(({ Icon, number, title, text, href, action }) => (
@@ -124,32 +165,21 @@ export default function HomePage() {
       <section className="editorial-escape">
         <div className="editorial-escape__image"><Image src="/lombok-bay.jpg" alt="Route côtière bordée de palmiers face à une baie de Lombok" fill sizes="(max-width: 900px) 100vw, 62vw" /></div>
         <div className="editorial-escape__copy">
-          <span className="eyebrow">Offres</span>
+          <span className="eyebrow">Besoin d’un coup de main ?</span>
           <h2>App, appel, ou accompagnement.</h2>
-          <p>69 € · 39 € · pack dès 500 € — des formules claires, pas des tarifs d’agence européenne.</p>
+          <p>Tu avances seul avec les outils, ou tu prends un échange / un suivi si tu préfères déléguer.</p>
           <Link className="editorial-link" href="/accompagnement">Voir les offres <ArrowRight aria-hidden="true" /></Link>
-        </div>
-      </section>
-
-      <section className="site-section why-section">
-        <div className="site-container why-grid">
-          <div><span className="eyebrow">Pourquoi MyLombok</span><h2>Concret, transparent, accessible.</h2></div>
-          <div className="why-points">
-            <article><Phone aria-hidden="true" /><div><h3>Des gens à joindre</h3><p>Contacts logements et visa inclus dans l’app pour passer à l’action.</p></div></article>
-            <article><MapPin aria-hidden="true" /><div><h3>Ancré sur place</h3><p>Zones et tips pensés pour s’installer — pas pour une semaine de vacances.</p></div></article>
-            <article><ShieldCheck aria-hidden="true" /><div><h3>Prix justes</h3><p>App 69 € · Appel 39 € · Pack 500 €. Transparent, sans abonnement forcé.</p></div></article>
-          </div>
         </div>
       </section>
 
       <section className="site-section final-cta-section">
         <div className="site-container final-cta">
           <span className="eyebrow eyebrow--light">Prochaine étape</span>
-          <h2>Choisis l’offre qui te correspond.</h2>
-          <p>App seule, appel conseil, ou accompagnement — tout est sur une seule page.</p>
+          <h2>Commence par explorer.</h2>
+          <p>Carte, lieux, zones — puis les offres si tu as besoin d’aide.</p>
           <div>
-            <Link className="button button--light" href="/accompagnement">Voir les offres <ArrowRight aria-hidden="true" /></Link>
-            <Link className="button button--ghost-light" href="/parcours">Parcours guidé</Link>
+            <Link className="button button--light" href="/explorer">Explorer <ArrowRight aria-hidden="true" /></Link>
+            <Link className="button button--ghost-light" href="/accompagnement">Voir les offres</Link>
           </div>
         </div>
       </section>
