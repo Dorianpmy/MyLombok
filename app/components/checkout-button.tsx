@@ -9,7 +9,7 @@ type Props = {
   className?: string;
 };
 
-export function CheckoutButton({ product = "app_access", label = "Payer 39 €", className }: Props) {
+export function CheckoutButton({ product = "app_access", label = "Payer 69 €", className }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 

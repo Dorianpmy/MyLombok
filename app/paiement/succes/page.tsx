@@ -51,10 +51,10 @@ export default function PaiementSuccesPage() {
             >
               <CheckCircle2 aria-hidden="true" style={{ width: 32, height: 32 }} />
             </div>
-            <span className="eyebrow" style={{ justifyContent: "center" }}>Paiement reçu · 39 €</span>
+            <span className="eyebrow" style={{ justifyContent: "center" }}>Paiement reçu · 69 €</span>
             <h1>Bienvenue — ton accès est actif.</h1>
             <p className="lead-copy">
-              Merci. Tu as maintenant l’accès app : contacts locaux, zones, tips et parcours pour t’installer proprement à Lombok.
+              Merci. Tu as l’accès app : contacts locaux, zones, tips et parcours pour t’installer proprement à Lombok.
             </p>
             <p style={{ opacity: 0.8, marginTop: "0.75rem" }}>
               Un reçu Stripe t’a été envoyé par e-mail. Garde-le précieusement.
@@ -78,10 +78,7 @@ export default function PaiementSuccesPage() {
             </div>
           </div>
 
-          <div
-            className="final-cta"
-            style={{ marginTop: "2.75rem", padding: "1.75rem 2rem", borderRadius: "1rem" }}
-          >
+          <div className="final-cta" style={{ marginTop: "2.75rem", padding: "1.75rem 2rem", borderRadius: "1rem" }}>
             <div style={{ display: "grid", gap: "0.75rem" }}>
               <h2 style={{ margin: 0, fontSize: "1.6rem" }}>Une question tout de suite ?</h2>
               <p style={{ margin: 0 }}>
@@ -90,7 +87,7 @@ export default function PaiementSuccesPage() {
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
                 <a
                   className="button button--primary"
-                  href="https://wa.me/33763664857?text=Salut%20%21%20Je%20viens%20de%20payer%20l%27acc%C3%A8s%20app%2039%20%E2%82%AC%20et%20j%27ai%20une%20question."
+                  href="https://wa.me/33763664857?text=Salut%20%21%20Je%20viens%20de%20payer%20l%27acc%C3%A8s%20app%2069%20%E2%82%AC%20et%20j%27ai%20une%20question."
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -105,7 +102,7 @@ export default function PaiementSuccesPage() {
           </div>
 
           <p style={{ marginTop: "1.75rem", textAlign: "center", opacity: 0.7, fontSize: "0.9rem" }}>
-            Paiement unique · pas d’abonnement · accès conservé sur cet appareil / compte
+            Paiement unique · pas d’abonnement
           </p>
         </div>
       </section>
