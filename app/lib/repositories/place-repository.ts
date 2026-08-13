@@ -67,19 +67,15 @@ export const placeRepository = {
   list(): readonly TravelPlace[] {
     return allPlaces;
   },
-
   listByDestination(destinationId: string): TravelPlace[] {
     return allPlaces.filter((place) => place.destinationId === destinationId);
   },
-
   getById(id: string): TravelPlace | null {
     return allPlaces.find((place) => place.id === id) ?? null;
   },
-
   getBySlug(slug: string): TravelPlace | null {
     return allPlaces.find((place) => place.slug === slug) ?? null;
   },
-
   search(query: string, destinationId?: string): TravelPlace[] {
     const normalized = query.trim().toLocaleLowerCase("fr");
     const source = destinationId ? this.listByDestination(destinationId) : allPlaces;
