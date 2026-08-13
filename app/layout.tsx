@@ -3,6 +3,7 @@ import "./globals.css";
 import "./design-system.css";
 import "./mobile-map-list.css";
 import "./mobile-polish.css";
+import "./destination-switcher-mobile.css";
 import PwaRegister from "./pwa-register";
 import { SiteHeader } from "./components/site-header";
 import { SiteFooter } from "./components/site-footer";
