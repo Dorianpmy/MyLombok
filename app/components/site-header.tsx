@@ -12,7 +12,7 @@ const links = [
   { href: "/tips", label: "Tips" },
   { href: "/hijrah", label: "Hijrah" },
   { href: "/parcours", label: "Parcours" },
-  { href: "/a-propos", label: "À propos" },
+  { href: "/accompagnement", label: "Offres" },
 ];
 
 export function SiteHeader() {
@@ -62,8 +62,8 @@ export function SiteHeader() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <DestinationSwitcher />
-          <Link className="button button--primary header-cta" href="/parcours">
-            S’installer
+          <Link className="button button--primary header-cta" href="/accompagnement">
+            Voir les offres
           </Link>
           <button
             type="button"
@@ -95,8 +95,8 @@ export function SiteHeader() {
               </Link>
             );
           })}
-          <Link className="button button--primary" href="/parcours" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}>
-            S’installer
+          <Link className="button button--primary" href="/accompagnement" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}>
+            Voir les offres
           </Link>
         </nav>
       </div>
