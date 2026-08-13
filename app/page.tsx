@@ -76,15 +76,16 @@ export default function HomePage() {
         <a className="home-hero__scroll" href="#explorer-blocks">Découvrir <span aria-hidden="true">↓</span></a>
       </section>
 
-      <section id="explorer-blocks" className="home-explore-grid">
-        <div className="home-explore-grid__inner">
+      <section className="destination-quick-links" id="explorer-blocks">
+        <div>
           {exploreBlocks.map(({ href, Icon, title, text }) => (
-            <Link key={title} href={href} className="home-explore-grid__card">
-              <Icon aria-hidden="true" className="home-explore-grid__icon" />
-              <span className="home-explore-grid__copy">
+            <Link key={title} href={href}>
+              <Icon aria-hidden="true" />
+              <span>
                 <strong>{title}</strong>
                 <small>{text}</small>
               </span>
+              <ArrowRight aria-hidden="true" />
             </Link>
           ))}
         </div>
