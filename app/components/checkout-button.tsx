@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
+type ProductKey = "app_access" | "call_conseil";
+
 type Props = {
-  product?: "app_access";
+  product?: ProductKey;
   label?: string;
   className?: string;
 };

@@ -5,7 +5,7 @@ import { CheckoutButton } from "../components/checkout-button";
 
 export const metadata: Metadata = {
   title: "Tarifs — App & accompagnement",
-  description: "App 69 € avec 2 contacts (logements et visa). Accompagnement humain à 500 € ou sur devis pour s’installer à Lombok.",
+  description: "App 69 €, appel conseil 55 €, pack accompagnement 500 € ou sur devis pour s’installer à Lombok.",
 };
 
 function waLink(message: string) {
@@ -14,7 +14,7 @@ function waLink(message: string) {
 
 const formulas = [
   {
-    number: "01",
+    number: "02",
     name: "Essentiel + Complet",
     price: "500 €",
     tagline: "Cadre clair + aide concrète pour t’installer proprement.",
@@ -31,7 +31,7 @@ const formulas = [
       "Salut ! Je suis intéressé par le pack Essentiel + Complet (500 €) pour m’installer à Lombok. Tu peux me dire comment on démarre ?",
   },
   {
-    number: "02",
+    number: "03",
     name: "Premium / A à Z",
     price: "Sur devis",
     tagline: "Tu préfères déléguer le maximum jusqu’à être installé.",
@@ -55,12 +55,12 @@ export default function AccompagnementPage() {
         <div className="site-container">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Deux façons d’avancer</span>
-              <h1>App seule, ou accompagné.</h1>
+              <span className="eyebrow">Trois façons d’avancer</span>
+              <h1>App, appel, ou accompagné.</h1>
             </div>
             <p>
-              L’app te donne des outils et des contacts à joindre.
-              L’accompagnement humain, c’est du temps avec moi pour avancer plus vite — ou tout déléguer.
+              L’app te donne des outils et des contacts. L’appel, c’est mon temps pour répondre à tes questions.
+              L’accompagnement, c’est un suivi plus large.
             </p>
           </div>
 
@@ -79,7 +79,7 @@ export default function AccompagnementPage() {
               }}
             >
               <span className="service-editorial__number">00</span>
-              <span className="service-editorial__icon"><Phone aria-hidden="true" /></span>
+              <span className="service-editorial__icon"><Smartphone aria-hidden="true" /></span>
               <div>
                 <h3>Accès app + contacts</h3>
                 <p style={{ fontWeight: 700, fontSize: "1.35rem", margin: "0.35rem 0 0.75rem" }}>69 €</p>
@@ -91,7 +91,44 @@ export default function AccompagnementPage() {
                   <li>Fiches zones d’installation (ambiance, budget, pour qui)</li>
                   <li>Parcours guidé + checklist</li>
                 </ul>
-                <CheckoutButton label="Payer 69 € — accès immédiat" />
+                <CheckoutButton label="Payer 69 € — accès immédiat" product="app_access" />
+              </div>
+              <span aria-hidden="true" />
+            </article>
+          </div>
+
+          <div style={{ marginTop: "2rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.75rem" }}>
+              <Phone aria-hidden="true" style={{ width: 18, color: "var(--bronze-text)" }} />
+              <span className="eyebrow" style={{ margin: 0 }}>Appel · mon temps</span>
+            </div>
+            <article
+              className="service-editorial"
+              style={{
+                border: "1px solid var(--line-strong)",
+                borderRadius: "var(--radius-medium)",
+                padding: "1.5rem 1.25rem",
+                background: "var(--surface)",
+              }}
+            >
+              <span className="service-editorial__number">01</span>
+              <span className="service-editorial__icon"><Phone aria-hidden="true" /></span>
+              <div>
+                <h3>Appel conseil</h3>
+                <p style={{ fontWeight: 700, fontSize: "1.35rem", margin: "0.35rem 0 0.75rem" }}>55 €</p>
+                <p style={{ marginBottom: "0.75rem" }}>
+                  Un appel pour clarifier ton projet, ta zone, le logement ou le visa — sans pack complet.
+                </p>
+                <ul style={{ margin: "0 0 1rem", paddingLeft: "1.1rem", opacity: 0.9 }}>
+                  <li>Appel ~30–45 min (WhatsApp ou téléphone)</li>
+                  <li>Orientation personnalisée selon ta situation</li>
+                  <li>Après paiement, tu m’écris pour fixer le créneau</li>
+                </ul>
+                <p style={{ fontSize: 13, opacity: 0.8, marginBottom: "0.75rem" }}>
+                  <strong>WhatsApp sans paiement</strong> = message court pour réserver ou poser une question logistique.
+                  Un conseil détaillé ou un appel = 55 €.
+                </p>
+                <CheckoutButton label="Payer 55 € — réserver un appel" product="call_conseil" />
               </div>
               <span aria-hidden="true" />
             </article>
@@ -103,8 +140,7 @@ export default function AccompagnementPage() {
               <span className="eyebrow" style={{ margin: 0 }}>Service · accompagnement humain</span>
             </div>
             <p style={{ marginBottom: "1.25rem", maxWidth: 560, opacity: 0.9 }}>
-              Tu préfères qu’on en parle et que je t’aide concrètement ? Deux niveaux.
-              On commence toujours par un échange WhatsApp — pas de paiement forcé sans discussion.
+              Pour un suivi plus large que un seul appel. On cadre d’abord par message, puis on avance ensemble.
             </p>
 
             <div className="service-editorial-list">
@@ -131,25 +167,27 @@ export default function AccompagnementPage() {
           </div>
 
           <div className="final-cta" style={{ marginTop: "3rem", padding: "2rem", borderRadius: "1rem" }}>
-            <h2>Pas sûr de ce qu’il te faut ?</h2>
-            <p>Dis-moi où tu en es. On regarde ensemble si l’app seule suffit ou si un accompagnement a plus de sens.</p>
+            <h2>WhatsApp : à quoi ça sert ?</h2>
+            <p>
+              Un message court pour réserver un appel, confirmer un paiement ou une question pratique = ok.
+              Un conseil détaillé ou un échange long = <strong>appel 55 €</strong> (ou un pack).
+            </p>
             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1.25rem" }}>
+              <CheckoutButton label="Réserver un appel — 55 €" product="call_conseil" />
               <a
-                className="button button--primary"
-                href={waLink("Salut ! J’aimerais discuter de mon projet d’installation à Lombok. Tu es dispo pour un échange rapide ?")}
+                className="button button--outline"
+                href={waLink("Salut ! J’ai payé (ou je vais payer) l’appel conseil 55 €. On peut fixer un créneau ?")}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <MessageCircle aria-hidden="true" /> Discuter sur WhatsApp
+                <MessageCircle aria-hidden="true" /> Déjà payé ? Fixer le créneau
               </a>
-              <Link className="button button--outline" href="/contacts">Aperçu contacts</Link>
             </div>
           </div>
 
           <p style={{ marginTop: "2rem", opacity: 0.75, fontSize: "0.95rem" }}>
-            <strong>App 69 €</strong> = outils + 2 contacts (self-service).
-            <strong> Pack 500 €</strong> = mon temps avec toi.
-            <strong> Premium</strong> = sur devis. Les offres peuvent se cumuler.
+            <strong>App 69 €</strong> · <strong>Appel 55 €</strong> · <strong>Pack 500 €</strong> · <strong>Premium sur devis</strong>.
+            Les offres peuvent se cumuler.
           </p>
         </div>
       </section>
