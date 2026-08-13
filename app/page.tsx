@@ -1,47 +1,46 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CarFront, Compass, Headphones, MapPin, MessageCircle, Plane, Route, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Home, MapPin, MessageCircle, ShieldCheck, Sparkles, ListChecks } from "lucide-react";
 import { WeatherChip } from "./components/weather-chip";
-import { HomePreferences } from "./components/home-preferences";
 
 export const metadata: Metadata = {
-  title: "Conciergerie locale à Lombok",
-  description: "Préparez votre séjour à Lombok avec un interlocuteur local : transferts, mobilité, activités et recommandations adaptées à vos envies.",
+  title: "S’installer à Lombok",
+  description: "Les meilleurs endroits pour vivre à Lombok, tips concrets d’installation, checklist et contacts utiles. Accompagnement local possible.",
   alternates: { canonical: "/" },
 };
 
-const services = [
+const pillars = [
   {
-    Icon: Plane,
+    Icon: MapPin,
     number: "01",
-    title: "Arriver sereinement",
-    text: "Transfert depuis l’aéroport, horaires d’arrivée et première installation : les détails pratiques sont préparés avant votre départ.",
-    href: "/services/transferts-arrivee",
-    action: "Préparer mon arrivée",
+    title: "Zones d’installation",
+    text: "Senggigi, Mangsit, Mataram, Kuta, Sekotong… Ambiance, budget loyer, pour qui c’est adapté, points forts et faibles.",
+    href: "/zones",
+    action: "Voir les zones",
   },
   {
-    Icon: CarFront,
+    Icon: ListChecks,
     number: "02",
-    title: "Se déplacer simplement",
-    text: "Scooter, chauffeur ou trajet ponctuel : nous clarifions votre besoin et vous orientons vers la solution adaptée.",
-    href: "/services/mobilite-ile",
-    action: "Organiser mes déplacements",
+    title: "Tips d’installation",
+    text: "Visa, logement longue durée, banque, SIM, coût de la vie réel et pièges fréquents — dans l’ordre des étapes.",
+    href: "/tips",
+    action: "Lire les tips",
   },
   {
-    Icon: Compass,
+    Icon: Home,
     number: "03",
-    title: "Vivre Lombok à votre rythme",
-    text: "Plages, nature, culture et activités : composez une sélection cohérente sans surcharger vos journées.",
-    href: "/services/activites-excursions",
-    action: "Explorer les expériences",
+    title: "Parcours guidé",
+    text: "Un fil conducteur clair : de la clarification du projet jusqu’aux premiers mois sur place.",
+    href: "/parcours",
+    action: "Commencer le parcours",
   },
 ];
 
 const method = [
-  { Icon: MessageCircle, title: "Vous nous racontez", text: "Dates, envies, contraintes et niveau d’autonomie : quelques éléments suffisent pour commencer." },
-  { Icon: Route, title: "Nous préparons", text: "Nous structurons les priorités et les points pratiques avant de vous orienter vers les bons contacts." },
-  { Icon: Headphones, title: "Nous restons disponibles", text: "Un même interlocuteur vous accompagne lorsque votre programme évolue ou qu’un détail change." },
+  { Icon: CheckCircle2, title: "Clarifier le projet", text: "Durée, budget, style de vie : quelques points suffisent pour orienter les bons choix." },
+  { Icon: MapPin, title: "Choisir sa zone", text: "On compare les endroits pour y vivre au quotidien, pas seulement pour y passer une semaine." },
+  { Icon: MessageCircle, title: "S’installer proprement", text: "Visa, logement, premiers jours… et un accompagnement humain si tu préfères déléguer." },
 ];
 
 export default function HomePage() {
@@ -52,47 +51,46 @@ export default function HomePage() {
         <div className="home-hero__veil" />
         <div className="site-container home-hero__content">
           <div className="home-hero__topline">
-            <span className="eyebrow eyebrow--light">Conciergerie privée à Lombok</span>
+            <span className="eyebrow eyebrow--light">Aide à l’installation à Lombok</span>
             <WeatherChip />
           </div>
-          <h1>Lombok,<br /><em>en toute sérénité.</em></h1>
-          <p>Une présence locale et attentionnée pour préparer votre arrivée, organiser les détails utiles et découvrir l’île à votre rythme.</p>
+          <h1>Lombok,<br /><em>pour y vivre.</em></h1>
+          <p>Les meilleurs endroits pour s’installer, les étapes concrètes et les contacts utiles — pour poser tes bases proprement, sans te faire voler.</p>
           <div className="home-hero__actions">
-            <Link className="button button--light" href="/conciergerie">Organiser mon séjour <ArrowRight aria-hidden="true" /></Link>
-            <Link className="button button--ghost-light" href="/explorer">Explorer Lombok</Link>
+            <Link className="button button--light" href="/parcours">S’installer à Lombok <ArrowRight aria-hidden="true" /></Link>
+            <Link className="button button--ghost-light" href="/zones">Voir les zones</Link>
           </div>
           <div className="home-hero__assurance">
-            <span><MessageCircle aria-hidden="true" /> Échange direct sur WhatsApp</span>
-            <span><MapPin aria-hidden="true" /> Conseils centrés sur Lombok</span>
+            <span><MessageCircle aria-hidden="true" /> Présence locale</span>
+            <span><MapPin aria-hidden="true" /> Conseils concrets</span>
+            <span><ShieldCheck aria-hidden="true" /> Accompagnement possible</span>
           </div>
         </div>
         <a className="home-hero__scroll" href="#introduction">Découvrir <span aria-hidden="true">↓</span></a>
       </section>
 
-      <HomePreferences />
-
       <section className="site-section home-intro" id="introduction">
         <div className="site-container editorial-grid">
           <div>
-            <span className="eyebrow">Votre séjour, simplement</span>
-            <h2>Moins de recherches.<br />Plus de temps sur l’île.</h2>
+            <span className="eyebrow">Vivre à Lombok</span>
+            <h2>Moins d’approximations.<br />Plus de bases solides.</h2>
           </div>
           <div className="home-intro__copy">
-            <p className="lead-copy">MyLombok vous aide à faire les bons choix avant le départ, sans transformer votre séjour en programme rigide.</p>
-            <p>Vous gardez la liberté de voyager. Nous apportons le contexte local, les repères pratiques et un point de contact clair lorsque vous souhaitez être accompagné.</p>
-            <Link className="editorial-link" href="/a-propos">Découvrir notre approche <ArrowRight aria-hidden="true" /></Link>
+            <p className="lead-copy">MyLombok t’aide à choisir où t’installer et à enchaîner les bonnes étapes, sans promesse gonflée ni prix d’agence européenne.</p>
+            <p>La vie sur l’île est accessible. L’objectif : t’installer proprement, avec des infos concrètes et un accompagnement humain si tu le souhaites.</p>
+            <Link className="editorial-link" href="/a-propos">Découvrir l’approche <ArrowRight aria-hidden="true" /></Link>
           </div>
         </div>
       </section>
 
-      <section className="site-section services-section" id="services">
+      <section className="site-section services-section" id="pillars">
         <div className="site-container">
           <div className="section-heading">
-            <div><span className="eyebrow">Ce que nous organisons</span><h2>Une aide précise,<br />au bon moment.</h2></div>
-            <p>Commencez par un besoin concret. Chaque demande est préparée avec vous, puis transmise au bon interlocuteur lorsque c’est nécessaire.</p>
+            <div><span className="eyebrow">Ce que tu trouves ici</span><h2>Trois piliers pour<br />s’installer sereinement.</h2></div>
+            <p>L’app seule te donne déjà l’essentiel. L’accompagnement humain est disponible si tu préfères déléguer.</p>
           </div>
           <div className="service-editorial-list">
-            {services.map(({ Icon, number, title, text, href, action }) => (
+            {pillars.map(({ Icon, number, title, text, href, action }) => (
               <article className="service-editorial" key={title}>
                 <span className="service-editorial__number">{number}</span>
                 <span className="service-editorial__icon"><Icon aria-hidden="true" /></span>
@@ -101,16 +99,15 @@ export default function HomePage() {
               </article>
             ))}
           </div>
-          <div className="services-more"><Link className="button button--outline" href="/services">Voir tous les services</Link></div>
         </div>
       </section>
 
       <section className="site-section method-section">
         <div className="site-container method-layout">
           <div className="method-intro">
-            <span className="eyebrow eyebrow--light">L’expérience MyLombok</span>
-            <h2>Un fil conducteur,<br />du premier message au séjour.</h2>
-            <p>Pas de catalogue imposé. Nous avançons à partir de votre façon de voyager et de ce que vous souhaitez réellement déléguer.</p>
+            <span className="eyebrow eyebrow--light">Le fil conducteur</span>
+            <h2>S’installer étape<br />par étape.</h2>
+            <p>Pas de catalogue touristique. Un parcours clair pour poser tes bases à Lombok.</p>
           </div>
           <ol className="method-list">
             {method.map(({ Icon, title, text }, index) => (
@@ -127,30 +124,33 @@ export default function HomePage() {
       <section className="editorial-escape">
         <div className="editorial-escape__image"><Image src="/lombok-bay.jpg" alt="Route côtière bordée de palmiers face à une baie de Lombok" fill sizes="(max-width: 900px) 100vw, 62vw" /></div>
         <div className="editorial-escape__copy">
-          <span className="eyebrow">Lombok au-delà des listes</span>
-          <h2>Laisser de la place à l’inattendu.</h2>
-          <p>Une bonne préparation ne remplit pas chaque heure. Elle vous évite surtout les mauvaises surprises et vous laisse disponible pour ce que l’île offre sur place.</p>
-          <Link className="editorial-link" href="/explorer">Parcourir le carnet local <ArrowRight aria-hidden="true" /></Link>
+          <span className="eyebrow">Accompagnement humain</span>
+          <h2>Tu préfères être accompagné de A à Z ?</h2>
+          <p>Formules accessibles, adaptées au coût de la vie local. Pas de prix d’agence européenne — juste une aide concrète pour s’installer proprement.</p>
+          <Link className="editorial-link" href="/accompagnement">Voir l’accompagnement <ArrowRight aria-hidden="true" /></Link>
         </div>
       </section>
 
       <section className="site-section why-section">
         <div className="site-container why-grid">
-          <div><span className="eyebrow">Pourquoi MyLombok</span><h2>Une relation plus humaine avec votre séjour.</h2></div>
+          <div><span className="eyebrow">Pourquoi MyLombok</span><h2>Une aide juste, ancrée sur place.</h2></div>
           <div className="why-points">
-            <article><Sparkles aria-hidden="true" /><div><h3>Des choix lisibles</h3><p>Les informations inconnues sont signalées comme telles, sans promesse ajoutée pour embellir une fiche.</p></div></article>
-            <article><MessageCircle aria-hidden="true" /><div><h3>Un point de contact clair</h3><p>Les demandes générales arrivent chez MyLombok ; les contacts directs restent ceux des prestataires lorsqu’ils sont disponibles.</p></div></article>
-            <article><ShieldCheck aria-hidden="true" /><div><h3>Vos données sous votre contrôle</h3><p>Sans compte, votre carnet reste sur cet appareil. Avec un compte gratuit, favoris et demandes se synchronisent entre vos appareils.</p></div></article>
+            <article><Sparkles aria-hidden="true" /><div><h3>Infos concrètes</h3><p>Zones, loyers, démarches et pièges fréquents — sans promesse ajoutée pour embellir une fiche.</p></div></article>
+            <article><MessageCircle aria-hidden="true" /><div><h3>Présence locale</h3><p>Un point de contact clair quand tu as besoin d’un conseil ou d’un coup de main sur place.</p></div></article>
+            <article><ShieldCheck aria-hidden="true" /><div><h3>Prix accessibles</h3><p>L’app reste utile seule. L’accompagnement humain reste juste par rapport au coût de la vie à Lombok.</p></div></article>
           </div>
         </div>
       </section>
 
       <section className="site-section final-cta-section">
         <div className="site-container final-cta">
-          <span className="eyebrow eyebrow--light">Votre prochain pas</span>
-          <h2>Parlons de votre séjour à Lombok.</h2>
-          <p>Dites-nous où vous en êtes. Une première demande suffit pour clarifier la suite.</p>
-          <div><Link className="button button--light" href="/conciergerie">Écrire à la conciergerie <ArrowRight aria-hidden="true" /></Link><Link className="button button--ghost-light" href="/explorer">Explorer d’abord</Link></div>
+          <span className="eyebrow eyebrow--light">Prochaine étape</span>
+          <h2>Commence par choisir ta zone.</h2>
+          <p>Ou suis le parcours guidé si tu préfères avancer étape par étape.</p>
+          <div>
+            <Link className="button button--light" href="/zones">Voir les zones <ArrowRight aria-hidden="true" /></Link>
+            <Link className="button button--ghost-light" href="/parcours">Parcours guidé</Link>
+          </div>
         </div>
       </section>
     </main>
