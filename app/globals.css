@@ -101,7 +101,6 @@ img { max-width: 100%; }
 ::selection { background: var(--bronze); color: #151714; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
-/* Avoid default blue links, but never override .button colors */
 a:link:not(.button):not(.editorial-link),
 a:visited:not(.button):not(.editorial-link),
 a:hover:not(.button):not(.editorial-link),
@@ -146,7 +145,6 @@ h3 { line-height: 1.25; }
 .button:hover { transform: translateY(-2px); }
 .button:disabled { cursor: not-allowed; opacity: 0.48; transform: none; }
 
-/* Explicit colors with link-state specificity so text never goes white-on-white */
 a.button--primary,
 a.button--primary:link,
 a.button--primary:visited,
@@ -220,7 +218,10 @@ a.editorial-link--light:link,
 a.editorial-link--light:visited,
 .editorial-link--light { color: #f6f2e9; }
 
-/* —— Explorer UI: less square, more soft —— */
+/* —— Explorer: soft radii —— */
+.destination-explorer {
+  gap: 14px !important;
+}
 .destination-explorer__search,
 .destination-explorer__scope select,
 .destination-explorer__view,
@@ -228,29 +229,28 @@ a.editorial-link--light:visited,
 .destination-explorer__empty,
 .travel-empty,
 .saved-empty {
+  border-radius: 999px;
+}
+.destination-explorer__filters,
+.destination-explorer__empty,
+.travel-empty,
+.saved-empty {
   border-radius: var(--radius-medium);
 }
-
-.destination-explorer__categories button {
-  border-radius: 999px;
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
-}
-
+.destination-explorer__categories button,
 .destination-explorer__filter-toggles button {
   border-radius: 999px;
 }
-
 .destination-explorer__view {
   overflow: hidden;
+  border-radius: 999px;
 }
-
 .destination-explorer__view button.is-active {
   background: var(--forest);
   color: #fff;
 }
-
 .destination-explorer__duration select {
-  border-radius: var(--radius-small);
+  border-radius: 999px;
 }
 
 .destination-map {
@@ -277,15 +277,92 @@ a.editorial-link--light:visited,
   border-radius: 999px;
 }
 
+/* —— Mobile: compact explorer (no giant blocks) —— */
 @media (max-width: 900px) {
+  .destination-explorer {
+    gap: 10px !important;
+  }
+
+  .destination-explorer__toolbar {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 8px !important;
+    align-items: end;
+  }
+
+  .destination-explorer__search {
+    grid-column: 1 / -1;
+    min-height: 44px !important;
+    border-radius: 999px !important;
+    padding: 0 14px !important;
+    font-size: 14px;
+  }
+  .destination-explorer__search svg {
+    width: 16px !important;
+  }
+
+  .destination-explorer__scope {
+    min-width: 0;
+  }
+  .destination-explorer__scope select {
+    min-height: 40px !important;
+    border-radius: 999px !important;
+    padding: 0 28px 0 12px !important;
+    font-size: 12px !important;
+  }
+
+  .destination-explorer__view {
+    display: inline-grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-radius: 999px !important;
+    overflow: hidden;
+  }
+  .destination-explorer__view button {
+    min-height: 40px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+    gap: 5px !important;
+  }
+  .destination-explorer__view svg {
+    width: 14px !important;
+  }
+
+  .destination-explorer__categories {
+    gap: 6px !important;
+    padding-bottom: 2px !important;
+  }
+  .destination-explorer__categories button {
+    min-height: 34px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+  }
+
+  .destination-explorer__filters {
+    padding: 12px 14px !important;
+    gap: 12px !important;
+    border-radius: 16px !important;
+  }
+  .destination-explorer__filter-toggles {
+    gap: 6px !important;
+  }
+  .destination-explorer__filter-toggles button {
+    min-height: 30px !important;
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+  }
+  .destination-explorer__duration select {
+    min-height: 36px !important;
+    border-radius: 999px !important;
+  }
+
   .destination-map {
     height: auto;
     max-height: none;
-    grid-template-rows: minmax(380px, 50dvh) minmax(200px, 28dvh);
+    grid-template-rows: minmax(340px, 48dvh) minmax(180px, 26dvh);
     border-radius: var(--radius-medium);
   }
   .destination-map__list {
-    max-height: 28dvh;
+    max-height: 26dvh;
   }
 
   .site-main,
@@ -325,25 +402,6 @@ a.editorial-link--light:visited,
   .leaflet-control a {
     color: #333 !important;
     background: #fff !important;
-  }
-
-  .destination-explorer__toolbar { gap: 10px; }
-  .destination-explorer__search {
-    min-height: 52px;
-    border-radius: 999px;
-    padding: 0 16px;
-  }
-  .destination-explorer__categories {
-    gap: 8px;
-    padding-bottom: 4px;
-  }
-  .destination-explorer__categories button {
-    min-height: 42px;
-    padding: 0 14px;
-  }
-  .destination-explorer__filters {
-    border-radius: var(--radius-medium);
-    padding: 18px;
   }
 }
 
