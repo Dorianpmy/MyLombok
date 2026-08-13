@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CheckCircle2, Compass, Map, MapPin, Phone, Route, ShieldCheck, ListChecks } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, Compass, Map, MapPin, Phone, ShieldCheck, ListChecks, Sparkles } from "lucide-react";
 import { WeatherChip } from "./components/weather-chip";
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const exploreBlocks = [
   { href: "/explorer", Icon: Compass, title: "Explorer", text: "Lieux et activités" },
   { href: "/destination/lombok/map", Icon: Map, title: "Carte", text: "Repérer les quartiers" },
-  { href: "/trip?destination=lombok", Icon: Route, title: "Mon voyage", text: "Programme privé" },
+  { href: "/accompagnement", Icon: Sparkles, title: "Offres", text: "App, appel, pack" },
   { href: "/parcours", Icon: BookOpen, title: "S’installer", text: "Guides & parcours" },
 ];
 
@@ -76,7 +76,7 @@ export default function HomePage() {
         <a className="home-hero__scroll" href="#explorer-blocks">Découvrir <span aria-hidden="true">↓</span></a>
       </section>
 
-      <section id="explorer-blocks" style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
+      <section id="explorer-blocks" style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)", paddingBottom: "calc(88px + env(safe-area-inset-bottom))" }}>
         <div
           style={{
             display: "grid",
