@@ -93,7 +93,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; background: var(--background); }
 body { margin: 0; min-width: 320px; background: var(--background); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-button, input, textarea, select { font: inherit; color: inherit; }
+button, input, textarea, select { font: inherit; }
 button, a, [role="button"] { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 button { cursor: pointer; }
 a { color: inherit; text-decoration-thickness: from-font; }
@@ -101,8 +101,14 @@ img { max-width: 100%; }
 ::selection { background: var(--bronze); color: #151714; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
-/* Kill iOS/Android default blue link / visited states */
-a:link, a:visited, a:hover, a:active { color: inherit; }
+/* Avoid default blue links, but never override .button colors */
+a:link:not(.button):not(.editorial-link),
+a:visited:not(.button):not(.editorial-link),
+a:hover:not(.button):not(.editorial-link),
+a:active:not(.button):not(.editorial-link) {
+  color: inherit;
+}
+
 input, textarea, select { -webkit-appearance: none; appearance: none; border-radius: var(--radius-small); }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
@@ -121,23 +127,97 @@ h2 { font-size: clamp(38px, 5vw, 64px); line-height: 1.02; }
 h3 { line-height: 1.25; }
 .lead-copy { font-size: clamp(21px, 2.25vw, 30px); line-height: 1.45; color: var(--ink); }
 
-.button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 13px 20px; border: 1px solid transparent; border-radius: 999px; font-size: 14px; font-weight: 700; line-height: 1.2; text-decoration: none; transition: transform 180ms var(--ease), background-color 180ms ease, border-color 180ms ease, color 180ms ease; }
+.button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 20px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: transform 180ms var(--ease), background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
 .button svg { width: 18px; height: 18px; }
 .button:hover { transform: translateY(-2px); }
 .button:disabled { cursor: not-allowed; opacity: 0.48; transform: none; }
-.button--primary { background: var(--forest); color: #fffaf1; }
-.button--primary:hover { background: var(--forest-deep); }
-.button--outline { border-color: var(--line-strong); background: transparent; color: var(--ink); }
+
+/* Explicit colors with link-state specificity so text never goes white-on-white */
+a.button--primary,
+a.button--primary:link,
+a.button--primary:visited,
+.button--primary {
+  background: var(--forest);
+  color: #fffaf1;
+}
+a.button--primary:hover,
+.button--primary:hover { background: var(--forest-deep); color: #fffaf1; }
+
+a.button--outline,
+a.button--outline:link,
+a.button--outline:visited,
+.button--outline {
+  border-color: var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+}
+a.button--outline:hover,
 .button--outline:hover { border-color: var(--bronze-text); color: var(--bronze-text); }
-.button--light { background: #f9f5ed; color: #1c251f; }
-.button--light:hover { background: #fff; }
-.button--ghost-light { border-color: rgba(255, 255, 255, 0.42); color: #fff; background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(12px); }
-.button--ghost-light:hover { background: rgba(255, 255, 255, 0.13); }
-.button--danger { border-color: var(--danger-line); background: transparent; color: var(--danger-text); }
+
+a.button--light,
+a.button--light:link,
+a.button--light:visited,
+.button--light {
+  background: #f9f5ed;
+  color: #1c251f;
+}
+a.button--light:hover,
+.button--light:hover { background: #ffffff; color: #1c251f; }
+
+a.button--ghost-light,
+a.button--ghost-light:link,
+a.button--ghost-light:visited,
+.button--ghost-light {
+  border-color: rgba(255, 255, 255, 0.42);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+}
+a.button--ghost-light:hover,
+.button--ghost-light:hover { background: rgba(255, 255, 255, 0.13); color: #ffffff; }
+
+a.button--danger,
+a.button--danger:link,
+a.button--danger:visited,
+.button--danger {
+  border-color: var(--danger-line);
+  background: transparent;
+  color: var(--danger-text);
+}
+
 .button--large { min-height: 56px; padding: 16px 26px; font-size: 15px; }
-.editorial-link { display: inline-flex; align-items: center; gap: 10px; border: 0; background: none; color: var(--forest-action); padding: 6px 0; font-weight: 700; text-decoration: none; }
+
+.editorial-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: none;
+  color: var(--forest-action);
+  padding: 6px 0;
+  font-weight: 700;
+  text-decoration: none;
+}
+a.editorial-link:link,
+a.editorial-link:visited { color: var(--forest-action); }
 .editorial-link svg { width: 17px; transition: transform 180ms var(--ease); }
 .editorial-link:hover svg { transform: translateX(4px); }
+a.editorial-link--light:link,
+a.editorial-link--light:visited,
 .editorial-link--light { color: #f6f2e9; }
 
 /* —— Explorer UI: less square, more soft —— */
@@ -197,7 +277,6 @@ h3 { line-height: 1.25; }
   border-radius: 999px;
 }
 
-/* —— Mobile: bottom nav must not block content; no blue traps —— */
 @media (max-width: 900px) {
   .destination-map {
     height: auto;
@@ -209,7 +288,6 @@ h3 { line-height: 1.25; }
     max-height: 28dvh;
   }
 
-  /* Space above fixed bottom nav so content stays clickable */
   .site-main,
   .destination-activities-page__content,
   .destination-map-page__content,
@@ -230,7 +308,6 @@ h3 { line-height: 1.25; }
     color: #fff;
   }
 
-  /* Map preview sheet must sit above map but below app nav when needed */
   .destination-map__preview {
     z-index: 1100;
     max-height: 42dvh;
@@ -239,7 +316,6 @@ h3 { line-height: 1.25; }
     padding-bottom: calc(18px + env(safe-area-inset-bottom));
   }
 
-  /* Leaflet controls stay tappable */
   .leaflet-control-container,
   .leaflet-top,
   .leaflet-bottom {
@@ -251,9 +327,7 @@ h3 { line-height: 1.25; }
     background: #fff !important;
   }
 
-  .destination-explorer__toolbar {
-    gap: 10px;
-  }
+  .destination-explorer__toolbar { gap: 10px; }
   .destination-explorer__search {
     min-height: 52px;
     border-radius: 999px;
