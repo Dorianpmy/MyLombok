@@ -4,7 +4,7 @@ import { MessageCircle, Sparkles, Smartphone } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Accompagnement & tarifs",
-  description: "App one-shot 39 €. Accompagnement humain à partir de 250 € pour s’installer à Lombok.",
+  description: "App 39 € avec contacts locaux. Accompagnement humain à partir de 250 € pour s’installer à Lombok.",
 };
 
 const formulas = [
@@ -38,7 +38,7 @@ export default function AccompagnementPage() {
               <span className="eyebrow">Tarifs clairs</span>
               <h1>App & accompagnement</h1>
             </div>
-            <p>Deux niveaux : l’app en one-shot, ou un accompagnement humain si tu préfères déléguer. Prix adaptés au coût de la vie à Lombok.</p>
+            <p>L’app te donne surtout des contacts à joindre. L’accompagnement humain, c’est si tu préfères déléguer une partie du travail.</p>
           </div>
 
           <article className="service-editorial" style={{ marginTop: "2rem" }}>
@@ -47,7 +47,10 @@ export default function AccompagnementPage() {
             <div>
               <h3>Accès app (one-shot)</h3>
               <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>39 €</p>
-              <p>Zones d’installation, tips complets, parcours guidé, checklist. Paiement unique — pas d’abonnement.</p>
+              <p>
+                <strong>Le plus important : les contacts locaux</strong> à joindre pour le logement, les démarches, la vie pratique.
+                Plus les zones, tips et parcours. Paiement unique — pas d’abonnement.
+              </p>
             </div>
             <a href="https://wa.me/33763664857?text=Je%20suis%20int%C3%A9ress%C3%A9%20par%20l%27acc%C3%A8s%20app%2039%E2%82%AC" target="_blank" rel="noopener noreferrer">Demander</a>
           </article>
@@ -69,17 +72,17 @@ export default function AccompagnementPage() {
 
           <div className="final-cta" style={{ marginTop: "3rem", padding: "2rem", borderRadius: "1rem" }}>
             <h2>On en parle ?</h2>
-            <p>Dis-moi où tu en es. Une discussion suffit pour voir ce qui a du sens pour toi.</p>
+            <p>Dis-moi où tu en es. Une discussion suffit pour voir si l’app seule ou un accompagnement a plus de sens.</p>
             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1.25rem" }}>
               <a className="button button--primary" href="https://wa.me/33763664857" target="_blank" rel="noopener noreferrer">
                 <MessageCircle aria-hidden="true" /> Discuter sur WhatsApp
               </a>
-              <Link className="button button--outline" href="/parcours">Voir le parcours seul</Link>
+              <Link className="button button--outline" href="/contacts">Voir la page contacts</Link>
             </div>
           </div>
 
           <p style={{ marginTop: "2rem", opacity: 0.75, fontSize: "0.95rem" }}>
-            L’app à 39 € reste utile seule. L’accompagnement humain (à partir de 250 €) est une option, pas une obligation.
+            App 39 € (contacts + guides). Accompagnement humain dès 250 €. Les deux sont optionnels l’un par rapport à l’autre.
           </p>
         </div>
       </section>
