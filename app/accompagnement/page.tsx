@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MessageCircle, Phone, Sparkles, Smartphone, Users } from "lucide-react";
+import { MessageCircle, Phone, Sparkles, Smartphone } from "lucide-react";
 import { CheckoutButton } from "../components/checkout-button";
 
 export const metadata: Metadata = {
@@ -12,15 +12,15 @@ function waLink(message: string) {
   return `https://wa.me/33763664857?text=${encodeURIComponent(message)}`;
 }
 
-const cardStyle: React.CSSProperties = {
+const cardStyle = {
   border: "1px solid var(--line-strong)",
   borderRadius: "1.1rem",
   padding: "1.75rem 1.35rem",
   background: "var(--surface)",
-  textAlign: "center",
+  textAlign: "center" as const,
   display: "grid",
   gap: "0.85rem",
-  justifyItems: "center",
+  justifyItems: "center" as const,
 };
 
 const formulas = [
@@ -70,7 +70,6 @@ export default function AccompagnementPage() {
             </p>
           </div>
 
-          {/* App */}
           <div style={{ marginBottom: "1.25rem" }}>
             <p style={{ textAlign: "center", margin: "0 0 0.65rem", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--bronze-text)" }}>
               Produit · self-service
@@ -97,7 +96,6 @@ export default function AccompagnementPage() {
             </article>
           </div>
 
-          {/* Appel */}
           <div style={{ marginBottom: "1.25rem" }}>
             <p style={{ textAlign: "center", margin: "0 0 0.65rem", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--bronze-text)" }}>
               Appel · mon temps
@@ -127,7 +125,6 @@ export default function AccompagnementPage() {
             </article>
           </div>
 
-          {/* Packs */}
           <div style={{ marginTop: "2.25rem" }}>
             <p style={{ textAlign: "center", margin: "0 0 0.35rem", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--bronze-text)" }}>
               Accompagnement humain
