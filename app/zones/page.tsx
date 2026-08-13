@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 const zones = [
   {
     slug: "senggigi",
+    number: "01",
     name: "Senggigi",
     vibe: "Côte ouest établie, calme et pratique",
     rent: "150–350 €/mois",
@@ -19,6 +20,7 @@ const zones = [
   },
   {
     slug: "mangsit",
+    number: "02",
     name: "Mangsit",
     vibe: "Plus résidentiel et verdoyant que Senggigi",
     rent: "180–400 €/mois",
@@ -28,6 +30,7 @@ const zones = [
   },
   {
     slug: "mataram",
+    number: "03",
     name: "Mataram",
     vibe: "Capitale — vie urbaine indonésienne réelle",
     rent: "100–250 €/mois",
@@ -37,6 +40,7 @@ const zones = [
   },
   {
     slug: "kuta-lombok",
+    number: "04",
     name: "Kuta Lombok",
     vibe: "Hub sud — surf, cafés, communauté expat",
     rent: "150–350 €/mois",
@@ -46,6 +50,7 @@ const zones = [
   },
   {
     slug: "sekotong",
+    number: "05",
     name: "Sekotong",
     vibe: "Sud-ouest plus isolé, nature et calme",
     rent: "120–280 €/mois",
@@ -71,22 +76,21 @@ export default function ZonesPage() {
           <div className="service-editorial-list" style={{ marginTop: "2.5rem" }}>
             {zones.map((zone) => (
               <article className="service-editorial" key={zone.slug}>
+                <span className="service-editorial__number">{zone.number}</span>
                 <span className="service-editorial__icon"><MapPin aria-hidden="true" /></span>
                 <div>
                   <h3>{zone.name}</h3>
-                  <p><strong>{zone.vibe}</strong></p>
-                  <p>Loyer approx. : {zone.rent} · Idéal pour : {zone.bestFor}</p>
-                  <p>✓ {zone.pros}</p>
-                  <p>− {zone.cons}</p>
+                  <p><strong>{zone.vibe}</strong> · Loyer approx. {zone.rent} · Idéal pour : {zone.bestFor}</p>
+                  <p>✓ {zone.pros} · − {zone.cons}</p>
                 </div>
                 <Link href={`/zones/${zone.slug}`}>Voir la fiche <ArrowRight aria-hidden="true" /></Link>
               </article>
             ))}
           </div>
 
-          <div className="services-more" style={{ marginTop: "3rem" }}>
+          <div className="services-more" style={{ marginTop: "3rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             <Link className="button button--outline" href="/parcours">Suivre le parcours guidé</Link>
-            <Link className="button button--primary" href="/accompagnement" style={{ marginLeft: "1rem" }}>Être accompagné de A à Z</Link>
+            <Link className="button button--primary" href="/accompagnement">Être accompagné de A à Z</Link>
           </div>
         </div>
       </section>
