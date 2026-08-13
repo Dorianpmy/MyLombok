@@ -12,39 +12,48 @@ function waLink(message: string) {
   return `https://wa.me/33763664857?text=${encodeURIComponent(message)}`;
 }
 
+const cardStyle: React.CSSProperties = {
+  border: "1px solid var(--line-strong)",
+  borderRadius: "1.1rem",
+  padding: "1.75rem 1.35rem",
+  background: "var(--surface)",
+  textAlign: "center",
+  display: "grid",
+  gap: "0.85rem",
+  justifyItems: "center",
+};
+
 const formulas = [
   {
-    number: "02",
     name: "Essentiel + Complet",
     price: "500 €",
     tagline: "Cadre clair + aide concrète pour t’installer proprement.",
     items: [
       "Clarification du projet & orientation zone",
       "Checklist personnalisée",
-      "Tips concrets : visa, logement, banque, SIM, budget, pièges",
-      "Aide visa / formalités (orientation)",
-      "Aide à la recherche de logement longue durée",
-      "Préparation de l’arrivée",
-      "Support WhatsApp pendant la phase d’installation",
+      "Tips : visa, logement, banque, SIM, budget, pièges",
+      "Aide visa / formalités",
+      "Aide recherche logement longue durée",
+      "Préparation arrivée + support WhatsApp",
     ],
     message:
       "Salut ! Je suis intéressé par le pack Essentiel + Complet (500 €) pour m’installer à Lombok. Tu peux me dire comment on démarre ?",
+    cta: "Demander",
   },
   {
-    number: "03",
     name: "Premium / A à Z",
     price: "Sur devis",
     tagline: "Tu préfères déléguer le maximum jusqu’à être installé.",
     items: [
       "Tout le pack 500 €",
       "Suivi rapproché sur place",
-      "Mise en relation prioritaire avec des contacts locaux",
-      "Ajustements après ton arrivée",
-      "Accompagnement prolongé sur les premiers mois",
-      "Devis selon ton projet et ta durée",
+      "Contacts locaux prioritaires",
+      "Ajustements après arrivée",
+      "Accompagnement prolongé",
     ],
     message:
       "Salut ! Je voudrais un devis pour l’accompagnement Premium / A à Z pour m’installer à Lombok. On peut en discuter ?",
+    cta: "Demander un devis",
   },
 ];
 
@@ -52,142 +61,132 @@ export default function AccompagnementPage() {
   return (
     <main className="inner-page">
       <section className="site-section">
-        <div className="site-container">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">Trois façons d’avancer</span>
-              <h1>App, appel, ou accompagné.</h1>
-            </div>
-            <p>
-              L’app te donne des outils et des contacts. L’appel, c’est mon temps pour répondre à tes questions.
-              L’accompagnement, c’est un suivi plus large.
+        <div className="site-container" style={{ maxWidth: 640 }}>
+          <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+            <span className="eyebrow" style={{ justifyContent: "center" }}>Trois façons d’avancer</span>
+            <h1 style={{ marginTop: "0.5rem" }}>App, appel, ou accompagné.</h1>
+            <p className="lead-copy" style={{ margin: "0.75rem auto 0", maxWidth: 480 }}>
+              L’app te donne des outils et des contacts. L’appel, c’est mon temps. L’accompagnement, un suivi plus large.
             </p>
           </div>
 
-          <div style={{ marginTop: "2.5rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.75rem" }}>
-              <Smartphone aria-hidden="true" style={{ width: 18, color: "var(--bronze-text)" }} />
-              <span className="eyebrow" style={{ margin: 0 }}>Produit · self-service</span>
-            </div>
-            <article
-              className="service-editorial"
-              style={{
-                border: "1px solid var(--line-strong)",
-                borderRadius: "var(--radius-medium)",
-                padding: "1.5rem 1.25rem",
-                background: "var(--surface)",
-              }}
-            >
-              <span className="service-editorial__number">00</span>
-              <span className="service-editorial__icon"><Smartphone aria-hidden="true" /></span>
+          {/* App */}
+          <div style={{ marginBottom: "1.25rem" }}>
+            <p style={{ textAlign: "center", margin: "0 0 0.65rem", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--bronze-text)" }}>
+              Produit · self-service
+            </p>
+            <article style={cardStyle}>
+              <span style={{ width: 48, height: 48, borderRadius: "50%", border: "1px solid var(--line)", display: "grid", placeItems: "center", color: "var(--forest-action)" }}>
+                <Smartphone aria-hidden="true" style={{ width: 22 }} />
+              </span>
               <div>
-                <h3>Accès app + contacts</h3>
-                <p style={{ fontWeight: 700, fontSize: "1.35rem", margin: "0.35rem 0 0.75rem" }}>69 €</p>
-                <p style={{ marginBottom: "0.75rem" }}>
-                  <strong>Paiement unique</strong> via Stripe · pas d’abonnement · tu avances seul avec les bons outils.
-                </p>
-                <ul style={{ margin: "0 0 1rem", paddingLeft: "1.1rem", opacity: 0.9 }}>
-                  <li><strong>2 contacts locaux à joindre</strong> (logements et visa)</li>
-                  <li>Fiches zones d’installation (ambiance, budget, pour qui)</li>
-                  <li>Parcours guidé + checklist</li>
-                </ul>
+                <h3 style={{ margin: 0, fontSize: "1.55rem" }}>Accès app + contacts</h3>
+                <p style={{ fontWeight: 700, fontSize: "1.5rem", margin: "0.4rem 0 0" }}>69 €</p>
+              </div>
+              <p style={{ margin: 0, opacity: 0.88, fontSize: 14 }}>
+                Paiement unique · pas d’abonnement · tu avances seul avec les bons outils.
+              </p>
+              <ul style={{ margin: 0, padding: 0, listStyle: "none", fontSize: 14, opacity: 0.9, display: "grid", gap: 6, width: "100%", textAlign: "left" }}>
+                <li>· <strong>2 contacts locaux</strong> (logements et visa)</li>
+                <li>· Fiches zones d’installation</li>
+                <li>· Parcours guidé + checklist</li>
+              </ul>
+              <div style={{ width: "100%", marginTop: 4 }}>
                 <CheckoutButton label="Payer 69 € — accès immédiat" product="app_access" />
               </div>
-              <span aria-hidden="true" />
             </article>
           </div>
 
-          <div style={{ marginTop: "2rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.75rem" }}>
-              <Phone aria-hidden="true" style={{ width: 18, color: "var(--bronze-text)" }} />
-              <span className="eyebrow" style={{ margin: 0 }}>Appel · mon temps</span>
-            </div>
-            <article
-              className="service-editorial"
-              style={{
-                border: "1px solid var(--line-strong)",
-                borderRadius: "var(--radius-medium)",
-                padding: "1.5rem 1.25rem",
-                background: "var(--surface)",
-              }}
-            >
-              <span className="service-editorial__number">01</span>
-              <span className="service-editorial__icon"><Phone aria-hidden="true" /></span>
+          {/* Appel */}
+          <div style={{ marginBottom: "1.25rem" }}>
+            <p style={{ textAlign: "center", margin: "0 0 0.65rem", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--bronze-text)" }}>
+              Appel · mon temps
+            </p>
+            <article style={cardStyle}>
+              <span style={{ width: 48, height: 48, borderRadius: "50%", border: "1px solid var(--line)", display: "grid", placeItems: "center", color: "var(--forest-action)" }}>
+                <Phone aria-hidden="true" style={{ width: 22 }} />
+              </span>
               <div>
-                <h3>Appel conseil</h3>
-                <p style={{ fontWeight: 700, fontSize: "1.35rem", margin: "0.35rem 0 0.75rem" }}>39 €</p>
-                <p style={{ marginBottom: "0.75rem" }}>
-                  Un appel pour clarifier ton projet, ta zone, le logement ou le visa — sans pack complet.
-                </p>
-                <ul style={{ margin: "0 0 1rem", paddingLeft: "1.1rem", opacity: 0.9 }}>
-                  <li>Appel ~30–45 min (WhatsApp ou téléphone)</li>
-                  <li>Orientation personnalisée selon ta situation</li>
-                  <li>Après paiement, tu m’écris pour fixer le créneau</li>
-                </ul>
-                <p style={{ fontSize: 13, opacity: 0.8, marginBottom: "0.75rem" }}>
-                  <strong>WhatsApp sans paiement</strong> = message court pour réserver ou poser une question logistique.
-                  Un conseil détaillé ou un appel = 39 €.
-                </p>
+                <h3 style={{ margin: 0, fontSize: "1.55rem" }}>Appel conseil</h3>
+                <p style={{ fontWeight: 700, fontSize: "1.5rem", margin: "0.4rem 0 0" }}>39 €</p>
+              </div>
+              <p style={{ margin: 0, opacity: 0.88, fontSize: 14 }}>
+                Clarifier ton projet, ta zone, le logement ou le visa — sans pack complet.
+              </p>
+              <ul style={{ margin: 0, padding: 0, listStyle: "none", fontSize: 14, opacity: 0.9, display: "grid", gap: 6, width: "100%", textAlign: "left" }}>
+                <li>· Appel ~30–45 min (WhatsApp ou téléphone)</li>
+                <li>· Orientation personnalisée</li>
+                <li>· Après paiement, on fixe le créneau</li>
+              </ul>
+              <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>
+                Message court WhatsApp = ok. Conseil détaillé / appel = 39 €.
+              </p>
+              <div style={{ width: "100%", marginTop: 4 }}>
                 <CheckoutButton label="Payer 39 € — réserver un appel" product="call_conseil" />
               </div>
-              <span aria-hidden="true" />
             </article>
           </div>
 
-          <div style={{ marginTop: "3rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.5rem" }}>
-              <Users aria-hidden="true" style={{ width: 18, color: "var(--bronze-text)" }} />
-              <span className="eyebrow" style={{ margin: 0 }}>Service · accompagnement humain</span>
-            </div>
-            <p style={{ marginBottom: "1.25rem", maxWidth: 560, opacity: 0.9 }}>
-              Pour un suivi plus large que un seul appel. On cadre d’abord par message, puis on avance ensemble.
+          {/* Packs */}
+          <div style={{ marginTop: "2.25rem" }}>
+            <p style={{ textAlign: "center", margin: "0 0 0.35rem", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--bronze-text)" }}>
+              Accompagnement humain
             </p>
-
-            <div className="service-editorial-list">
+            <p style={{ textAlign: "center", margin: "0 0 1rem", fontSize: 14, opacity: 0.85 }}>
+              Pour un suivi plus large qu’un seul appel.
+            </p>
+            <div style={{ display: "grid", gap: "1rem" }}>
               {formulas.map((f) => (
-                <article className="service-editorial" key={f.name}>
-                  <span className="service-editorial__number">{f.number}</span>
-                  <span className="service-editorial__icon"><Sparkles aria-hidden="true" /></span>
+                <article key={f.name} style={cardStyle}>
+                  <span style={{ width: 48, height: 48, borderRadius: "50%", border: "1px solid var(--line)", display: "grid", placeItems: "center", color: "var(--forest-action)" }}>
+                    <Sparkles aria-hidden="true" style={{ width: 22 }} />
+                  </span>
                   <div>
-                    <h3>{f.name}</h3>
-                    <p style={{ fontWeight: 700, margin: "0.25rem 0 0.35rem" }}>{f.price}</p>
-                    <p style={{ fontStyle: "italic", opacity: 0.85, marginBottom: "0.5rem" }}>{f.tagline}</p>
-                    <ul style={{ margin: 0, paddingLeft: "1.1rem", opacity: 0.9 }}>
-                      {f.items.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
+                    <h3 style={{ margin: 0, fontSize: "1.45rem" }}>{f.name}</h3>
+                    <p style={{ fontWeight: 700, fontSize: "1.35rem", margin: "0.35rem 0 0" }}>{f.price}</p>
                   </div>
-                  <a href={waLink(f.message)} target="_blank" rel="noopener noreferrer">
-                    {f.price === "Sur devis" ? "Demander un devis" : "Demander"}
+                  <p style={{ margin: 0, fontStyle: "italic", opacity: 0.85, fontSize: 14 }}>{f.tagline}</p>
+                  <ul style={{ margin: 0, padding: 0, listStyle: "none", fontSize: 14, opacity: 0.9, display: "grid", gap: 6, width: "100%", textAlign: "left" }}>
+                    {f.items.map((item) => (
+                      <li key={item}>· {item}</li>
+                    ))}
+                  </ul>
+                  <a
+                    className="button button--outline"
+                    href={waLink(f.message)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ width: "100%", justifyContent: "center" }}
+                  >
+                    {f.cta}
                   </a>
                 </article>
               ))}
             </div>
           </div>
 
-          <div className="final-cta" style={{ marginTop: "3rem", padding: "2rem", borderRadius: "1rem" }}>
-            <h2>WhatsApp : à quoi ça sert ?</h2>
-            <p>
-              Un message court pour réserver un appel, confirmer un paiement ou une question pratique = ok.
-              Un conseil détaillé ou un échange long = <strong>appel 39 €</strong> (ou un pack).
+          <div className="final-cta" style={{ marginTop: "2.5rem", padding: "1.75rem 1.35rem", borderRadius: "1.1rem", textAlign: "center" }}>
+            <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.5rem" }}>WhatsApp : à quoi ça sert ?</h2>
+            <p style={{ margin: "0 auto", maxWidth: 420, fontSize: 14 }}>
+              Message court pour réserver ou confirmer = ok.
+              Conseil détaillé = <strong>appel 39 €</strong> (ou un pack).
             </p>
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1.25rem" }}>
+            <div style={{ display: "grid", gap: 10, marginTop: "1.15rem" }}>
               <CheckoutButton label="Réserver un appel — 39 €" product="call_conseil" />
               <a
                 className="button button--outline"
                 href={waLink("Salut ! J’ai payé (ou je vais payer) l’appel conseil 39 €. On peut fixer un créneau ?")}
                 target="_blank"
                 rel="noopener noreferrer"
+                style={{ justifyContent: "center" }}
               >
                 <MessageCircle aria-hidden="true" /> Déjà payé ? Fixer le créneau
               </a>
             </div>
           </div>
 
-          <p style={{ marginTop: "2rem", opacity: 0.75, fontSize: "0.95rem" }}>
-            <strong>App 69 €</strong> · <strong>Appel 39 €</strong> · <strong>Pack 500 €</strong> · <strong>Premium sur devis</strong>.
-            Les offres peuvent se cumuler.
+          <p style={{ marginTop: "1.75rem", textAlign: "center", opacity: 0.7, fontSize: "0.9rem" }}>
+            App 69 € · Appel 39 € · Pack 500 € · Premium sur devis
           </p>
         </div>
       </section>
