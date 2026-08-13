@@ -6,6 +6,7 @@ import type {
   TravelPlaceTag,
 } from "../../data/destination-types";
 import { kualaLumpurPlaces } from "../../data/kuala-lumpur-places";
+import { kualaLumpurPlacesExtra } from "../../data/kuala-lumpur-places-extra";
 
 const categoryMap: Record<Place["category"], TravelPlaceCategory> = {
   activite: "attraction",
@@ -60,7 +61,7 @@ export function legacyLombokPlaceToTravelPlace(place: Place): TravelPlace {
 }
 
 const lombokPlaces = legacyLombokPlaces.map(legacyLombokPlaceToTravelPlace);
-const allPlaces = [...lombokPlaces, ...kualaLumpurPlaces];
+const allPlaces = [...lombokPlaces, ...kualaLumpurPlaces, ...kualaLumpurPlacesExtra];
 
 export const placeRepository = {
   list(): readonly TravelPlace[] {
