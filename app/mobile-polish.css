@@ -1,13 +1,54 @@
 /* ===== Mobile audit: layout carré, lisible, cliquable ===== */
 
+/* Logo home : toujours lisible sur le hero (mobile + desktop) */
+.site-header--home:not(.is-scrolled):not(.menu-open) .brand-lockup,
+.site-header--home:not(.is-scrolled):not(.menu-open) .brand-lockup:link,
+.site-header--home:not(.is-scrolled):not(.menu-open) .brand-lockup:visited {
+  color: #fffaf1 !important;
+  text-decoration: none !important;
+  -webkit-text-fill-color: #fffaf1;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
+}
+.site-header--home:not(.is-scrolled):not(.menu-open) .brand-words strong {
+  color: #fffaf1 !important;
+  -webkit-text-fill-color: #fffaf1;
+}
+.site-header--home:not(.is-scrolled):not(.menu-open) .brand-words small {
+  color: #e3c79f !important;
+  -webkit-text-fill-color: #e3c79f;
+}
+.site-header--home:not(.is-scrolled):not(.menu-open) .brand-mark {
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  background: rgba(8, 20, 16, 0.55) !important;
+  color: #fffaf1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+.site-header--home:not(.is-scrolled):not(.menu-open) .brand-mark path {
+  stroke: #fffaf1 !important;
+}
+.site-header--home:not(.is-scrolled):not(.menu-open) .brand-mark .brand-wave {
+  stroke: #e3c79f !important;
+}
+
+/* Lockup toujours horizontal */
+.brand-lockup {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  text-decoration: none !important;
+}
+.brand-words {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
 @media (max-width: 900px) {
-  /* Contenu au-dessus de la bottom nav */
   .site-main,
   .inner-page {
     padding-bottom: calc(96px + env(safe-area-inset-bottom));
   }
 
-  /* Titres : moins énormes sur petit écran */
   h1 {
     font-size: clamp(34px, 10vw, 52px) !important;
     line-height: 1.05 !important;
@@ -26,7 +67,6 @@
     margin-bottom: 36px !important;
   }
 
-  /* Cartes éditoriales : empilées, plus de texte vertical / lien perdu */
   .service-editorial {
     grid-template-columns: 36px 44px 1fr !important;
     gap: 12px 14px !important;
@@ -60,7 +100,6 @@
     margin-top: 8px;
   }
 
-  /* Method list */
   .method-list li {
     grid-template-columns: 32px 36px 1fr !important;
     gap: 12px !important;
@@ -70,7 +109,6 @@
     font-size: 22px !important;
   }
 
-  /* Boutons CTAs : pleine largeur, touch-friendly */
   .final-cta .button,
   .home-hero__actions .button,
   .services-more .button {
@@ -86,7 +124,6 @@
     gap: 10px !important;
   }
 
-  /* Hero home */
   .home-hero__content {
     padding-bottom: 48px;
   }
@@ -96,26 +133,22 @@
     font-size: 12px;
   }
 
-  /* Bottom nav toujours au-dessus */
   .app-navigation {
     z-index: 1200 !important;
     border-radius: 18px !important;
   }
 
-  /* Pages tips / zones / hijrah : contenu aéré */
   .inner-page .site-section {
     padding-top: 48px;
     padding-bottom: 48px;
   }
 
-  /* Checkout / tarifs : bouton large */
   .service-editorial div [class*="button"],
   .service-editorial button {
     width: 100%;
     min-height: 48px;
   }
 
-  /* Listes dans les fiches */
   .inner-page ul {
     padding-left: 1.15rem;
   }
@@ -123,9 +156,19 @@
     margin-bottom: 0.35rem;
   }
 
-  /* Header mobile : pas de débordement */
   .site-header__inner {
     gap: 10px !important;
+  }
+
+  .brand-mark {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .brand-words strong {
+    font-size: 20px !important;
+  }
+  .brand-words small {
+    font-size: 8px !important;
   }
 }
 
