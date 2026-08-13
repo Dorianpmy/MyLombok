@@ -28,7 +28,6 @@ export function DestinationSwitcher() {
       /* ignore */
     }
     setOpen(false);
-    // Leave overflow lock before navigation
     document.body.style.overflow = "";
     router.push(destinationRouteForPath(pathname, nextDestinationId));
   }
@@ -100,7 +99,7 @@ export function DestinationSwitcher() {
                     </span>
                     <span className="destination-switcher__meta">
                       <strong>{destination.name}</strong>
-                      <small>{destination.tagline || destination.country || destination.shortName}</small>
+                      <small>{destination.country} · {destination.description}</small>
                     </span>
                     {selected ? <Check aria-hidden="true" /> : <span aria-hidden="true" />}
                   </button>
