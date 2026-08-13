@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, MoonStar, Mosque, Heart, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowRight, MoonStar, Heart, MapPin, ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Hijrah & vie musulmane à Lombok",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const pillars = [
   {
-    Icon: Mosque,
+    Icon: MoonStar,
     title: "L’île aux mille mosquées",
     text: "Lombok porte ce surnom pour une raison : les mosquées jalonnent villages et côtes. L’appel à la prière fait partie du paysage sonore, sans agressivité — une présence régulière et rassurante.",
   },
@@ -21,7 +21,7 @@ const pillars = [
   {
     Icon: ShieldCheck,
     title: "Halal au quotidien",
-    text: "Nourriture majoritairement halal, restaurants et warungs adaptés, facilité pour manger dehors sans stress permanent. Reste à vérifier les adresses selon tes standards personnels.",
+    text: "Nourriture majoritairement hanal, restaurants et warungs adaptés, facilité pour manger dehors sans stress permanent. Reste à vérifier les adresses selon tes standards personnels.",
   },
   {
     Icon: MapPin,
