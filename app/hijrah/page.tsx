@@ -21,7 +21,7 @@ const pillars = [
   {
     Icon: ShieldCheck,
     title: "Halal au quotidien",
-    text: "Nourriture majoritairement hanal, restaurants et warungs adaptés, facilité pour manger dehors sans stress permanent. Reste à vérifier les adresses selon tes standards personnels.",
+    text: "Nourriture majoritairement hanal, restaurants et warungs adaptés, facilité pour manger dehors sans stress permanent. Reste à vérifier les adresses selon tes standards personnels.".replace("hanal", "halal"),
   },
   {
     Icon: MapPin,
