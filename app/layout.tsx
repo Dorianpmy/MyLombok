@@ -9,14 +9,14 @@ import { AppNavigation } from "./components/app-navigation";
 export const metadata: Metadata = {
   metadataBase: new URL("https://my-lombok.vercel.app"),
   title: {
-    default: "MyLombok — Conciergerie locale à Lombok",
+    default: "MyLombok — S’installer à Lombok",
     template: "%s | MyLombok",
   },
-  description: "Une conciergerie locale et attentionnée pour préparer, organiser et simplifier votre séjour à Lombok.",
-  keywords: ["Lombok", "conciergerie Lombok", "voyage Lombok", "guide Lombok", "Indonésie"],
+  description: "Les meilleurs endroits pour vivre à Lombok, tips concrets d’installation, checklist et contacts utiles. Accompagnement local possible.",
+  keywords: ["Lombok", "s’installer à Lombok", "vivre à Lombok", "installation Lombok", "expat Lombok", "Indonésie"],
   openGraph: {
-    title: "MyLombok — Lombok, en toute sérénité.",
-    description: "Une présence locale pour préparer et simplifier votre séjour à Lombok.",
+    title: "MyLombok — S’installer à Lombok",
+    description: "Aide concrète pour s’installer proprement à Lombok : zones, tips, parcours et accompagnement local.",
     type: "website",
     locale: "fr_FR",
     siteName: "MyLombok",
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "MyLombok — Lombok, en toute sérénité.",
-    description: "Une présence locale pour préparer et simplifier votre séjour à Lombok.",
+    title: "MyLombok — S’installer à Lombok",
+    description: "Aide concrète pour s’installer proprement à Lombok : zones, tips, parcours et accompagnement local.",
     images: ["/mylombok-social-preview.jpg"],
   },
   manifest: "/manifest.webmanifest",
