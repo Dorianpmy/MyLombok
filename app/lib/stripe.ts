@@ -12,7 +12,7 @@ export const STRIPE_PRODUCTS = {
     id: "call_conseil",
     name: "MyLombok — Appel conseil",
     description: "Appel conseil personnalisé (installation à Lombok) : orientation zone, questions logement / visa, prochaines étapes.",
-    amountCents: 5500,
+    amountCents: 3900,
     currency: "eur" as const,
   },
 } as const;

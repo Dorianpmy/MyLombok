@@ -5,7 +5,7 @@ import { CheckoutButton } from "../components/checkout-button";
 
 export const metadata: Metadata = {
   title: "Tarifs — App & accompagnement",
-  description: "App 69 €, appel conseil 55 €, pack accompagnement 500 € ou sur devis pour s’installer à Lombok.",
+  description: "App 69 €, appel conseil 39 €, pack accompagnement 500 € ou sur devis pour s’installer à Lombok.",
 };
 
 function waLink(message: string) {
@@ -115,7 +115,7 @@ export default function AccompagnementPage() {
               <span className="service-editorial__icon"><Phone aria-hidden="true" /></span>
               <div>
                 <h3>Appel conseil</h3>
-                <p style={{ fontWeight: 700, fontSize: "1.35rem", margin: "0.35rem 0 0.75rem" }}>55 €</p>
+                <p style={{ fontWeight: 700, fontSize: "1.35rem", margin: "0.35rem 0 0.75rem" }}>39 €</p>
                 <p style={{ marginBottom: "0.75rem" }}>
                   Un appel pour clarifier ton projet, ta zone, le logement ou le visa — sans pack complet.
                 </p>
@@ -126,9 +126,9 @@ export default function AccompagnementPage() {
                 </ul>
                 <p style={{ fontSize: 13, opacity: 0.8, marginBottom: "0.75rem" }}>
                   <strong>WhatsApp sans paiement</strong> = message court pour réserver ou poser une question logistique.
-                  Un conseil détaillé ou un appel = 55 €.
+                  Un conseil détaillé ou un appel = 39 €.
                 </p>
-                <CheckoutButton label="Payer 55 € — réserver un appel" product="call_conseil" />
+                <CheckoutButton label="Payer 39 € — réserver un appel" product="call_conseil" />
               </div>
               <span aria-hidden="true" />
             </article>
@@ -170,13 +170,13 @@ export default function AccompagnementPage() {
             <h2>WhatsApp : à quoi ça sert ?</h2>
             <p>
               Un message court pour réserver un appel, confirmer un paiement ou une question pratique = ok.
-              Un conseil détaillé ou un échange long = <strong>appel 55 €</strong> (ou un pack).
+              Un conseil détaillé ou un échange long = <strong>appel 39 €</strong> (ou un pack).
             </p>
             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1.25rem" }}>
-              <CheckoutButton label="Réserver un appel — 55 €" product="call_conseil" />
+              <CheckoutButton label="Réserver un appel — 39 €" product="call_conseil" />
               <a
                 className="button button--outline"
-                href={waLink("Salut ! J’ai payé (ou je vais payer) l’appel conseil 55 €. On peut fixer un créneau ?")}
+                href={waLink("Salut ! J’ai payé (ou je vais payer) l’appel conseil 39 €. On peut fixer un créneau ?")}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -186,7 +186,7 @@ export default function AccompagnementPage() {
           </div>
 
           <p style={{ marginTop: "2rem", opacity: 0.75, fontSize: "0.95rem" }}>
-            <strong>App 69 €</strong> · <strong>Appel 55 €</strong> · <strong>Pack 500 €</strong> · <strong>Premium sur devis</strong>.
+            <strong>App 69 €</strong> · <strong>Appel 39 €</strong> · <strong>Pack 500 €</strong> · <strong>Premium sur devis</strong>.
             Les offres peuvent se cumuler.
           </p>
         </div>
