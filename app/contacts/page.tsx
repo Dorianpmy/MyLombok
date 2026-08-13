@@ -39,7 +39,7 @@ export default function ContactsPage() {
               <h1>Contacts utiles</h1>
             </div>
             <p>
-              C’est le cœur de l’app à 39 € : des contacts locaux que tu peux joindre pour savoir ci ou ça —
+              C’est le cœur de l’app à 69 € : des contacts locaux que tu peux joindre pour savoir ci ou ça —
               logement, démarches, vie sur place. Pas seulement des articles à lire.
             </p>
           </div>
@@ -70,7 +70,7 @@ export default function ContactsPage() {
 
           <p style={{ marginTop: "2rem", opacity: 0.8 }}>
             La base se remplit progressivement avec des contacts vérifiés. En attendant, tu peux m’écrire :
-            je t’oriente selon ta zone et ton projet.
+            je t’orientes selon ta zone et ton projet.
           </p>
 
           <div className="final-cta" style={{ marginTop: "2rem", padding: "2rem", borderRadius: "1rem" }}>
@@ -82,7 +82,7 @@ export default function ContactsPage() {
           </div>
 
           <div style={{ marginTop: "2rem", display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-            <Link className="editorial-link" href="/accompagnement">Accès app 39 € →</Link>
+            <Link className="editorial-link" href="/accompagnement">Accès app 69 € →</Link>
             <Link className="editorial-link" href="/parcours">Parcours guidé →</Link>
           </div>
         </div>

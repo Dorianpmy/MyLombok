@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Home, MapPin, MessageCircle, Phone, ShieldCheck, Sparkles, ListChecks } from "lucide-react";
+import { ArrowRight, CheckCircle2, MapPin, MessageCircle, Phone, ShieldCheck, ListChecks } from "lucide-react";
 import { WeatherChip } from "./components/weather-chip";
 
 export const metadata: Metadata = {
   title: "S’installer à Lombok",
-  description: "Contacts locaux utiles, zones d’installation et tips concrets pour s’installer à Lombok. Accès app 39 €. Accompagnement à partir de 250 €.",
+  description: "Contacts locaux utiles, zones d’installation et tips concrets pour s’installer à Lombok. Accès app 69 €. Accompagnement à partir de 250 €.",
   alternates: { canonical: "/" },
 };
 
@@ -63,7 +63,7 @@ export default function HomePage() {
           <div className="home-hero__assurance">
             <span><Phone aria-hidden="true" /> Contacts locaux</span>
             <span><MapPin aria-hidden="true" /> Zones pour vivre</span>
-            <span><ShieldCheck aria-hidden="true" /> App 39 € · Aide dès 250 €</span>
+            <span><ShieldCheck aria-hidden="true" /> App 69 € · Aide dès 250 €</span>
           </div>
         </div>
         <a className="home-hero__scroll" href="#introduction">Découvrir <span aria-hidden="true">↓</span></a>
@@ -77,7 +77,7 @@ export default function HomePage() {
           </div>
           <div className="home-intro__copy">
             <p className="lead-copy">Le cœur de MyLombok, c’est de te donner des contacts utiles sur place : logement, démarches, vie pratique. Tu les contactes quand tu as une question précise.</p>
-            <p>Autour de ça : zones, tips et parcours pour ne pas avancer à l’aveugle. L’app à 39 €. L’accompagnement humain à partir de 250 € si tu préfères déléguer.</p>
+            <p>Autour de ça : zones, tips et parcours pour ne pas avancer à l’aveugle. L’app à 69 €. L’accompagnement humain à partir de 250 € si tu préfères déléguer.</p>
             <Link className="editorial-link" href="/contacts">Accéder aux contacts <ArrowRight aria-hidden="true" /></Link>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function HomePage() {
           <div className="why-points">
             <article><Phone aria-hidden="true" /><div><h3>Des gens à joindre</h3><p>Le vrai levier : pouvoir écrire ou appeler pour un loyer, une démarche, une question pratique.</p></div></article>
             <article><MapPin aria-hidden="true" /><div><h3>Ancré sur place</h3><p>Zones, tips et contacts pensés pour s’installer — pas pour une semaine de vacances.</p></div></article>
-            <article><ShieldCheck aria-hidden="true" /><div><h3>Prix justes</h3><p>App 39 € one-shot. Accompagnement dès 250 €. Transparent, sans abonnement forcé.</p></div></article>
+            <article><ShieldCheck aria-hidden="true" /><div><h3>Prix justes</h3><p>App 69 € one-shot. Accompagnement dès 250 €. Transparent, sans abonnement forcé.</p></div></article>
           </div>
         </div>
       </section>
