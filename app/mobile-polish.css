@@ -1,0 +1,143 @@
+/* ===== Mobile audit: layout carré, lisible, cliquable ===== */
+
+@media (max-width: 900px) {
+  /* Contenu au-dessus de la bottom nav */
+  .site-main,
+  .inner-page {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+
+  /* Titres : moins énormes sur petit écran */
+  h1 {
+    font-size: clamp(34px, 10vw, 52px) !important;
+    line-height: 1.05 !important;
+  }
+  h2 {
+    font-size: clamp(28px, 7vw, 40px) !important;
+    line-height: 1.1 !important;
+  }
+
+  .lead-copy {
+    font-size: clamp(17px, 4.2vw, 22px) !important;
+  }
+
+  .section-heading {
+    gap: 14px !important;
+    margin-bottom: 36px !important;
+  }
+
+  /* Cartes éditoriales : empilées, plus de texte vertical / lien perdu */
+  .service-editorial {
+    grid-template-columns: 36px 44px 1fr !important;
+    gap: 12px 14px !important;
+    align-items: start !important;
+    padding: 22px 0 !important;
+  }
+  .service-editorial__number {
+    font-size: 16px !important;
+    padding-top: 10px;
+  }
+  .service-editorial__icon {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .service-editorial__icon svg {
+    width: 20px !important;
+  }
+  .service-editorial h3 {
+    font-size: clamp(22px, 6vw, 28px) !important;
+  }
+  .service-editorial p,
+  .service-editorial ul {
+    font-size: 13px !important;
+  }
+  .service-editorial > a,
+  .service-editorial > div .button,
+  .service-editorial .button {
+    grid-column: 1 / -1 !important;
+    justify-self: stretch;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  /* Method list */
+  .method-list li {
+    grid-template-columns: 32px 36px 1fr !important;
+    gap: 12px !important;
+    padding: 22px 0 !important;
+  }
+  .method-list h3 {
+    font-size: 22px !important;
+  }
+
+  /* Boutons CTAs : pleine largeur, touch-friendly */
+  .final-cta .button,
+  .home-hero__actions .button,
+  .services-more .button {
+    width: 100%;
+    min-height: 48px;
+  }
+  .final-cta > div,
+  .home-hero__actions,
+  .services-more {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  /* Hero home */
+  .home-hero__content {
+    padding-bottom: 48px;
+  }
+  .home-hero__assurance {
+    flex-wrap: wrap;
+    gap: 8px 14px !important;
+    font-size: 12px;
+  }
+
+  /* Bottom nav toujours au-dessus */
+  .app-navigation {
+    z-index: 1200 !important;
+    border-radius: 18px !important;
+  }
+
+  /* Pages tips / zones / hijrah : contenu aéré */
+  .inner-page .site-section {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+
+  /* Checkout / tarifs : bouton large */
+  .service-editorial div [class*="button"],
+  .service-editorial button {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  /* Listes dans les fiches */
+  .inner-page ul {
+    padding-left: 1.15rem;
+  }
+  .inner-page li {
+    margin-bottom: 0.35rem;
+  }
+
+  /* Header mobile : pas de débordement */
+  .site-header__inner {
+    gap: 10px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .service-editorial {
+    grid-template-columns: 28px 40px 1fr !important;
+    gap: 10px 12px !important;
+  }
+  .editorial-escape__copy {
+    padding: 40px 24px !important;
+  }
+  .editorial-escape__image {
+    min-height: 280px !important;
+  }
+}
