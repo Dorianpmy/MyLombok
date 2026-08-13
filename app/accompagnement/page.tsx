@@ -5,7 +5,7 @@ import { CheckoutButton } from "../components/checkout-button";
 
 export const metadata: Metadata = {
   title: "Tarifs — App & accompagnement",
-  description: "App 69 € avec contacts locaux. Accompagnement humain à partir de 250 € pour s’installer à Lombok.",
+  description: "App 69 € avec 2 contacts. Accompagnement humain à 500 € ou sur devis pour s’installer à Lombok.",
 };
 
 function waLink(message: string) {
@@ -15,47 +15,36 @@ function waLink(message: string) {
 const formulas = [
   {
     number: "01",
-    name: "Essentiel",
-    price: "250 €",
-    tagline: "Tu veux un cadre clair, sans tout déléguer.",
+    name: "Essentiel + Complet",
+    price: "500 €",
+    tagline: "Cadre clair + aide concrète pour t’installer proprement.",
     items: [
-      "Appel de clarification du projet",
-      "Orientation vers la bonne zone",
+      "Clarification du projet & orientation zone",
       "Checklist personnalisée",
-      "Support WhatsApp limité (quelques échanges)",
+      "Tips concrets : visa, logement, banque, SIM, budget, pièges",
+      "Aide visa / formalités (orientation)",
+      "Aide à la recherche de logement longue durée",
+      "Préparation de l’arrivée",
+      "Support WhatsApp pendant la phase d’installation",
     ],
     message:
-      "Salut ! Je suis intéressé par la formule Essentiel (250 €) pour m’installer à Lombok. Tu peux me dire comment on démarre ?",
+      "Salut ! Je suis intéressé par le pack Essentiel + Complet (500 €) pour m’installer à Lombok. Tu peux me dire comment on démarre ?",
   },
   {
     number: "02",
-    name: "Complet",
-    price: "600 €",
-    tagline: "Tu veux de l’aide concrète sur les démarches et le logement.",
-    items: [
-      "Tout le contenu Essentiel",
-      "Aide visa / formalités (orientation, pas cabinet d’avocat)",
-      "Aide à la recherche de logement longue durée",
-      "Préparation de l’arrivée",
-      "Support WhatsApp étendu pendant la phase d’installation",
-    ],
-    message:
-      "Salut ! Je regarde la formule Complet (600 €) — aide visa, logement et préparation arrivée. Tu as un créneau pour en parler ?",
-  },
-  {
-    number: "03",
     name: "Premium / A à Z",
-    price: "1 200 €",
+    price: "Sur devis",
     tagline: "Tu préfères déléguer le maximum jusqu’à être installé.",
     items: [
-      "Tout le contenu Complet",
+      "Tout le pack 500 €",
       "Suivi rapproché sur place",
       "Mise en relation prioritaire avec des contacts locaux",
       "Ajustements après ton arrivée",
       "Accompagnement prolongé sur les premiers mois",
+      "Devis selon ton projet et ta durée",
     ],
     message:
-      "Salut ! Je voudrais l’accompagnement Premium / A à Z (1 200 €) pour m’installer à Lombok sans stress. On peut en discuter ?",
+      "Salut ! Je voudrais un devis pour l’accompagnement Premium / A à Z pour m’installer à Lombok. On peut en discuter ?",
   },
 ];
 
@@ -70,12 +59,11 @@ export default function AccompagnementPage() {
               <h1>App seule, ou accompagné.</h1>
             </div>
             <p>
-              L’app te donne des outils et surtout des <strong>contacts à joindre</strong>.
+              L’app te donne des outils et des contacts à joindre.
               L’accompagnement humain, c’est du temps avec moi pour avancer plus vite — ou tout déléguer.
             </p>
           </div>
 
-          {/* —— PRODUIT : APP —— */}
           <div style={{ marginTop: "2.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.75rem" }}>
               <Smartphone aria-hidden="true" style={{ width: 18, color: "var(--bronze-text)" }} />
@@ -99,9 +87,8 @@ export default function AccompagnementPage() {
                   <strong>Paiement unique</strong> via Stripe · pas d’abonnement · tu avances seul avec les bons outils.
                 </p>
                 <ul style={{ margin: "0 0 1rem", paddingLeft: "1.1rem", opacity: 0.9 }}>
-                  <li><strong>Contacts locaux à joindre</strong> (logement, démarches, vie pratique) — le cœur de l’offre</li>
+                  <li><strong>2 contacts</strong> locaux à joindre</li>
                   <li>Fiches zones d’installation (ambiance, budget, pour qui)</li>
-                  <li>Tips concrets : visa, logement, banque, SIM, budget, pièges</li>
                   <li>Parcours guidé + checklist</li>
                 </ul>
                 <CheckoutButton label="Payer 69 € — accès immédiat" />
@@ -110,14 +97,13 @@ export default function AccompagnementPage() {
             </article>
           </div>
 
-          {/* —— SERVICE : HUMAIN —— */}
           <div style={{ marginTop: "3rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "0.5rem" }}>
               <Users aria-hidden="true" style={{ width: 18, color: "var(--bronze-text)" }} />
               <span className="eyebrow" style={{ margin: 0 }}>Service · accompagnement humain</span>
             </div>
             <p style={{ marginBottom: "1.25rem", maxWidth: 560, opacity: 0.9 }}>
-              Tu préfères qu’on en parle et que je t’aide concrètement ? Trois niveaux.
+              Tu préfères qu’on en parle et que je t’aide concrètement ? Deux niveaux.
               On commence toujours par un échange WhatsApp — pas de paiement forcé sans discussion.
             </p>
 
@@ -136,7 +122,9 @@ export default function AccompagnementPage() {
                       ))}
                     </ul>
                   </div>
-                  <a href={waLink(f.message)} target="_blank" rel="noopener noreferrer">Demander</a>
+                  <a href={waLink(f.message)} target="_blank" rel="noopener noreferrer">
+                    {f.price === "Sur devis" ? "Demander un devis" : "Demander"}
+                  </a>
                 </article>
               ))}
             </div>
@@ -159,8 +147,9 @@ export default function AccompagnementPage() {
           </div>
 
           <p style={{ marginTop: "2rem", opacity: 0.75, fontSize: "0.95rem" }}>
-            <strong>App 69 €</strong> = outils + contacts (self-service).
-            <strong> 250 € et plus</strong> = mon temps avec toi. Les deux peuvent se cumuler, aucun n’est obligatoire.
+            <strong>App 69 €</strong> = outils + 2 contacts (self-service).
+            <strong> Pack 500 €</strong> = mon temps avec toi.
+            <strong> Premium</strong> = sur devis. Les offres peuvent se cumuler.
           </p>
         </div>
       </section>
