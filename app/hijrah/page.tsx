@@ -21,7 +21,7 @@ const pillars = [
   {
     Icon: ShieldCheck,
     title: "Halal au quotidien",
-    text: "Nourriture majoritairement hanal, restaurants et warungs adaptés, facilité pour manger dehors sans stress permanent. Reste à vérifier les adresses selon tes standards personnels.".replace("hanal", "halal"),
+    text: "Nourriture majoritairement halal, restaurants et warungs adaptés, facilité pour manger dehors sans stress permanent. Reste à vérifier les adresses selon tes standards personnels.",
   },
   {
     Icon: MapPin,
@@ -69,9 +69,9 @@ export default function HijrahPage() {
             <p style={{ margin: 0, display: "flex", alignItems: "flex-start", gap: "0.85rem" }}>
               <MoonStar aria-hidden="true" style={{ flexShrink: 0, marginTop: 4 }} />
               <span>
-                <strong>MyLombok n’est pas une agence religieuse.</strong> On t’aide à poser des bases concrètes
-                (zone, logement, contacts, démarches) dans un environnement où la pratique musulmane du quotidien
-                est naturelle et visible.
+                <strong>MyLombok est là pour t’accompagner dans tes choix de vie.</strong> Zone, logement,
+                contacts, démarches : on t’aide à poser des bases concrètes, dans un environnement où la pratique
+                musulmane du quotidien est naturelle et visible.
               </span>
             </p>
           </div>
