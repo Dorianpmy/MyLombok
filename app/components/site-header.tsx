@@ -8,9 +8,9 @@ import { Brand } from "./brand";
 import { DestinationSwitcher } from "./destination-switcher";
 
 const links = [
-  { href: "/destinations", label: "Destinations" },
-  { href: "/services", label: "Nos services" },
-  { href: "/explorer", label: "Explorer" },
+  { href: "/zones", label: "Zones" },
+  { href: "/tips", label: "Tips" },
+  { href: "/parcours", label: "Parcours" },
   { href: "/a-propos", label: "À propos" },
 ];
 
@@ -90,9 +90,9 @@ export function SiteHeader() {
           })}
         </nav>
         <div className="site-header__destination"><DestinationSwitcher /></div>
-        <Link className="button button--primary header-cta" href="/conciergerie">
+        <Link className="button button--primary header-cta" href="/parcours">
           <MessageCircle aria-hidden="true" />
-          Organiser mon séjour
+          S’installer
         </Link>
         <button ref={triggerRef} className="mobile-menu-trigger" type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="mobile-menu" aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}>
           {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
@@ -105,7 +105,7 @@ export function SiteHeader() {
             const isCurrent = linkPath !== "/" && pathname === linkPath;
             return <Link key={link.href} href={link.href} aria-current={isCurrent ? "page" : undefined} tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}>{link.label}</Link>;
           })}
-          <Link className="button button--primary" href="/conciergerie" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}>Organiser mon séjour</Link>
+          <Link className="button button--primary" href="/parcours" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}>S’installer</Link>
         </nav>
       </div>
       {open && <button className="mobile-menu-backdrop" type="button" tabIndex={-1} aria-label="Fermer le menu" onClick={() => { setOpen(false); window.requestAnimationFrame(() => triggerRef.current?.focus()); }} />}
