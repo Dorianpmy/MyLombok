@@ -1,4 +1,4 @@
-/* Destination switcher — mobile touch fix + list media */
+/* Destination switcher — mobile full sheet */
 
 .destination-switcher__trigger {
   position: relative;
@@ -77,42 +77,69 @@
     text-overflow: ellipsis;
   }
 
+  /* Feuille quasi plein écran — plus de petit rectangle */
   .destination-switcher__backdrop {
-    place-items: end center !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    place-items: stretch !important;
     padding: 0 !important;
-    align-items: flex-end;
   }
 
   .destination-switcher__sheet {
     width: 100% !important;
-    max-height: min(88dvh, 100%) !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 100dvh !important;
     margin: 0 !important;
-    border-radius: 20px 20px 0 0;
-    padding: 22px 18px calc(28px + env(safe-area-inset-bottom)) !important;
+    border-radius: 0 !important;
+    padding: calc(18px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom)) !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .destination-switcher__heading {
+    flex: 0 0 auto;
     padding-right: 48px !important;
     gap: 12px !important;
   }
 
   .destination-switcher__heading h2 {
     font-size: clamp(28px, 7vw, 36px) !important;
-    margin-bottom: 18px !important;
+    margin: 0 0 20px !important;
+  }
+
+  .destination-switcher__list {
+    flex: 1 1 auto;
+    display: grid !important;
+    gap: 12px !important;
+    align-content: start;
   }
 
   .destination-switcher__list > button {
-    grid-template-columns: 64px minmax(0, 1fr) 22px !important;
-    gap: 12px !important;
-    padding: 10px !important;
-    min-height: 72px;
+    grid-template-columns: 72px minmax(0, 1fr) 28px !important;
+    gap: 14px !important;
+    padding: 12px !important;
+    min-height: 88px !important;
+    border-radius: 14px;
   }
 
   .destination-switcher__meta strong {
-    font-size: 18px !important;
+    font-size: 22px !important;
   }
 
   .destination-switcher__meta small {
-    font-size: 11px !important;
+    font-size: 13px !important;
+  }
+
+  .dialog-close {
+    position: absolute;
+    top: calc(12px + env(safe-area-inset-top));
+    right: 12px;
+    width: 44px;
+    height: 44px;
+    z-index: 2;
   }
 }
