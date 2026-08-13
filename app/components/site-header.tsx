@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { Brand } from "./brand";
 import { DestinationSwitcher } from "./destination-switcher";
 
 const links = [
@@ -45,13 +46,7 @@ export function SiteHeader() {
   return (
     <header className={`site-header${isHome ? " site-header--home" : ""}${scrolled ? " is-scrolled" : ""}${open ? " menu-open" : ""}`}>
       <div className="site-header__inner site-container">
-        <Link className="brand" href="/">
-          <span className="brand-mark" aria-hidden="true">m</span>
-          <span>
-            <strong>MyLombok</strong>
-            <small>Aide à l’installation</small>
-          </span>
-        </Link>
+        <Brand />
 
         <nav className="desktop-navigation" aria-label="Navigation principale">
           {links.map((link) => {
