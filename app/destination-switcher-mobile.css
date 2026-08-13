@@ -1,4 +1,4 @@
-/* Destination switcher — mobile touch fix */
+/* Destination switcher — mobile touch fix + list media */
 
 .destination-switcher__trigger {
   position: relative;
@@ -18,6 +18,33 @@
 .destination-switcher__sheet {
   pointer-events: auto !important;
   -webkit-overflow-scrolling: touch;
+}
+
+.destination-switcher__thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.2;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+.destination-switcher__meta {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.destination-switcher__meta strong {
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+
+.destination-switcher__meta small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .destination-switcher__list > button {
