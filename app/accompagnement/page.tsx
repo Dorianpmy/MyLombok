@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MessageCircle, Check } from "lucide-react";
+import { MessageCircle, Check, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Accompagnement A à Z",
@@ -9,16 +9,19 @@ export const metadata: Metadata = {
 
 const formulas = [
   {
+    number: "01",
     name: "Essentiel",
     price: "250–450 €",
     items: ["Clarification du projet", "Orientation zone", "Checklist personnalisée", "Support WhatsApp limité"],
   },
   {
+    number: "02",
     name: "Complet",
     price: "600–1000 €",
     items: ["Tout Essentiel", "Aide visa / démarches", "Recherche logement", "Préparation arrivée", "Support étendu"],
   },
   {
+    number: "03",
     name: "Premium / A à Z",
     price: "1200–2000 €",
     items: ["Tout Complet", "Suivi sur place", "Contacts locaux prioritaires", "Ajustements après arrivée", "Accompagnement prolongé"],
@@ -41,18 +44,14 @@ export default function AccompagnementPage() {
           <div className="service-editorial-list" style={{ marginTop: "2.5rem" }}>
             {formulas.map((f) => (
               <article className="service-editorial" key={f.name}>
+                <span className="service-editorial__number">{f.number}</span>
+                <span className="service-editorial__icon"><Sparkles aria-hidden="true" /></span>
                 <div>
                   <h3>{f.name}</h3>
-                  <p style={{ fontSize: "1.25rem", fontWeight: 600, margin: "0.5rem 0" }}>{f.price}</p>
-                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                    {f.items.map((item) => (
-                      <li key={item} style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start", marginBottom: "0.35rem" }}>
-                        <Check aria-hidden="true" size={18} style={{ flexShrink: 0, marginTop: 2 }} />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <p style={{ fontWeight: 600, marginBottom: "0.5rem" }}>{f.price}</p>
+                  <p>{f.items.join(" · ")}</p>
                 </div>
+                <a href="https://wa.me/33763664857" target="_blank" rel="noopener noreferrer">Demander</a>
               </article>
             ))}
           </div>
