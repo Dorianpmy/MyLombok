@@ -76,37 +76,14 @@ export default function HomePage() {
         <a className="home-hero__scroll" href="#explorer-blocks">Découvrir <span aria-hidden="true">↓</span></a>
       </section>
 
-      <section id="explorer-blocks" style={{ background: "var(--surface)", borderBottom: "1px solid var(--line)", paddingBottom: "calc(88px + env(safe-area-inset-bottom))" }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            maxWidth: 1280,
-            margin: "0 auto",
-          }}
-        >
+      <section id="explorer-blocks" className="home-explore-grid">
+        <div className="home-explore-grid__inner">
           {exploreBlocks.map(({ href, Icon, title, text }) => (
-            <Link
-              key={title}
-              href={href}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                gap: 10,
-                minHeight: 110,
-                padding: "22px 18px",
-                borderRight: "1px solid var(--line)",
-                borderBottom: "1px solid var(--line)",
-                color: "var(--ink)",
-                textDecoration: "none",
-                background: "var(--surface)",
-              }}
-            >
-              <Icon aria-hidden="true" style={{ width: 22, height: 22, color: "var(--bronze-text)", flexShrink: 0 }} />
-              <span style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0, width: "100%" }}>
-                <strong style={{ fontFamily: "var(--font-display)", fontSize: 20, lineHeight: 1.15 }}>{title}</strong>
-                <small style={{ color: "var(--muted)", fontSize: 12, lineHeight: 1.35 }}>{text}</small>
+            <Link key={title} href={href} className="home-explore-grid__card">
+              <Icon aria-hidden="true" className="home-explore-grid__icon" />
+              <span className="home-explore-grid__copy">
+                <strong>{title}</strong>
+                <small>{text}</small>
               </span>
             </Link>
           ))}
